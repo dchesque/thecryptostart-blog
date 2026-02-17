@@ -1,0 +1,189 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: #FF7400;
+    --dark-navy: #1A2A2F;
+    --background: #FFFFFF;
+    --text-charcoal: #1F2937;
+    /* Darker charcoal for better contrast */
+    --text-muted: #4B5563;
+    /* Medium gray */
+    --text-secondary: #6B7280;
+    /* Light gray but still legible */
+    --light-gray: #F3F4F6;
+  }
+
+  body {
+    @apply bg-white text-crypto-charcoal font-sans antialiased;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading font-bold text-crypto-navy;
+    letter-spacing: -0.02em;
+  }
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-crypto-primary text-white px-8 py-4 rounded-xl font-bold transition-all duration-300 hover:-translate-y-1 border-none cursor-pointer inline-flex items-center justify-center;
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 20px 40px -15px rgba(255, 116, 0, 0.3);
+  }
+
+  .card-article {
+    @apply relative overflow-hidden rounded-[2rem] p-8 min-h-[360px] text-white shadow-3 transition-all duration-500 hover:-translate-y-2 hover:shadow-4 bg-gradient-to-br from-crypto-navy to-[#2C3E50] border border-white/5;
+  }
+
+  .card-article::before {
+    content: '';
+    @apply absolute inset-0 bg-black/40 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-[1] transition-all duration-300;
+  }
+
+  .card-article:hover::before {
+    @apply opacity-100;
+  }
+
+  .card-article>* {
+    @apply relative z-[2];
+  }
+
+  /* NEW: Topic Card for better hierarchy */
+  .card-topic {
+    @apply bg-white border border-gray-100 p-8 rounded-[2rem] text-center transition-all duration-300 hover:-translate-y-2;
+  }
+
+  .card-topic:hover {
+    box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.1);
+    @apply border-crypto-primary;
+  }
+
+  .card-topic .icon-wrapper {
+    @apply text-5xl mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 block;
+  }
+
+  .badge {
+    @apply inline-block px-3 py-1 rounded-md text-[10px] uppercase font-bold tracking-wider text-white;
+  }
+
+  .badge-bitcoin {
+    @apply bg-crypto-bitcoin;
+  }
+
+  .badge-ethereum {
+    @apply bg-crypto-ethereum;
+  }
+
+  .badge-invest {
+    @apply bg-crypto-invest;
+  }
+
+  .badge-finance {
+    @apply bg-crypto-finance;
+  }
+
+  .badge-press {
+    @apply bg-crypto-press;
+  }
+
+  .badge-products {
+    @apply bg-crypto-products;
+  }
+
+  .navbar {
+    @apply bg-white/95 backdrop-blur-md px-6 py-5 sticky top-0 z-[1000] flex justify-between items-center shadow-sm border-b border-gray-100;
+  }
+
+  .input-search {
+    @apply flex items-center bg-gray-50 border border-gray-200 rounded-2xl p-2.5 focus-within:bg-white focus-within:border-crypto-primary focus-within:ring-8 focus-within:ring-crypto-primary/5 transition-all w-full md:max-w-sm;
+  }
+
+  .input-search input {
+    @apply bg-transparent border-none outline-none text-base px-4 w-full text-crypto-navy font-medium placeholder:text-gray-400;
+  }
+
+  .input-search button {
+    @apply bg-crypto-navy text-white text-xs uppercase font-extrabold px-6 py-2.5 rounded-xl hover:bg-crypto-primary transition-all;
+  }
+
+  .grid-categories {
+    @apply grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-6;
+  }
+}
+
+.prose {
+  @apply text-crypto-charcoal leading-relaxed max-w-none;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  @apply text-crypto-navy font-bold;
+}
+
+.prose a {
+  @apply text-crypto-primary font-bold hover:text-crypto-accent underline underline-offset-4 transition-all;
+}
+
+.prose blockquote {
+  @apply border-l-8 border-crypto-primary pl-10 py-4 my-12 italic text-crypto-navy bg-gray-50 rounded-r-3xl;
+}
+
+@layer utilities {
+  .shadow-1 {
+    @apply shadow-sm;
+  }
+
+  .shadow-2 {
+    @apply shadow;
+  }
+
+  .shadow-3 {
+    @apply shadow-lg;
+  }
+
+  .shadow-4 {
+    @apply shadow-2xl;
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+.section-spacing {
+  @apply py-20 sm:py-24;
+}
+
+.container {
+  @apply max-w-7xl mx-auto px-6 sm:px-8 lg:px-10;
+}
