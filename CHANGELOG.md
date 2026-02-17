@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.5] - 2026-02-17
+
+### Fixed
+- **Deploy**: Sincronizado `package-lock.json` com `package.json` para resolver erro de dependências ausentes durante o build no Docker (`ts-node`).
+
+### Changed
+- **Version**: Incrementada versão para `v0.1.5`.
+
 ## [0.1.4] - 2026-02-17
 
 ### Added
