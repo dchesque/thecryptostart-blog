@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.3] - 2026-02-17
+
+### Fixed
+- **Auth**: Corrigido erro de "module augmentation" em `types/auth.ts` que impedia o build no Docker (next-auth/jwt not found).
+
+### Changed
+- **Version**: Incrementada versão para `v0.1.3`.
+
 ## [0.1.2] - 2026-02-17
 
 ### Added
