@@ -14,13 +14,13 @@ const updateUserSchema = z.object({
 
 export async function PATCH(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await auth();
         AuthUtils.requireRole(session, "ADMIN");
 
-        const { id } = params;
+        const { id } = await params;
         const body = await req.json();
         const { name, email, password, roles } = updateUserSchema.parse(body);
 
@@ -58,13 +58,13 @@ export async function PATCH(
 
 export async function DELETE(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await auth();
         AuthUtils.requireRole(session, "ADMIN");
 
-        const { id } = params;
+        const { id } = await params;
 
         // Don't allow deleting self
         if (id === (session?.user as any)?.id) {

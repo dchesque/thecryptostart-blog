@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.7] - 2026-02-17
+
+### Fixed
+- **Build**: Corrigida falha no deploy causada pela tipagem de `params` e `searchParams` no Next.js 15+ (agora são Promises).
+- **API**: Atualizadas as rotas em `/api/users/[id]` para lidar com parâmetros assíncronos.
+- **Blog**: Atualizadas as páginas `PostPage` e `BlogPage` para conformidade com Next.js 15+.
+
+### Changed
+- **Version**: Incrementada versão para `v0.1.7`.
+
 ## [0.1.6] - 2026-02-17
 
 ### Added

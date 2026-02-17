@@ -15,11 +15,11 @@ export const metadata: Metadata = {
 }
 
 interface BlogPageProps {
-  searchParams: {
+  searchParams: Promise<{
     page?: string
     category?: string
     search?: string
-  }
+  }>
 }
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {

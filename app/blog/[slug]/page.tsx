@@ -18,7 +18,7 @@ import { BLOG_CONFIG, CACHE_CONFIG, getCategoryName, SITE_CONFIG } from '@/lib/c
 export const revalidate = 3600
 
 interface PostPageProps {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 // Generate static params for all posts
