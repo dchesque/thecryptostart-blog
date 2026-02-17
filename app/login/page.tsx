@@ -106,12 +106,9 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-crypto-primary/10 text-center">
-            <p className="text-gray-400 text-sm">
-              Demo credentials:
-            </p>
-            <p className="text-gray-500 text-xs mt-1 font-mono">
-              admin@cryptoacademy.com / admin123
+          <div className="mt-6 pt-6 border-t border-crypto-primary/10 text-center text-gray-400 text-sm">
+            <p>
+              Please use your registered account.
             </p>
           </div>
         </div>

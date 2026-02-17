@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String          @id @default(uuid())
+  name          String?
+  email         String?         @unique
+  passwordHash  String?
+  emailVerified DateTime?
+  image         String?
+  bio           String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  roles         UserRole[]
+  posts         Post[]
+  comments      Comment[]
+  following     Follower[]      @relation("Following")
+  followers     Follower[]      @relation("Followers")
+  passwordReset PasswordReset[]
+}
+
+model UserRole {
+  id        String   @id @default(uuid())
+  userId    String
+  role      Role     @default(AUTHOR)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  AUTHOR
+}
+
+model Post {
+  id           String    @id @default(uuid())
+  title        String
+  slug         String    @unique
+  content      String    @db.Text
+  authorId     String
+  contentfulId String?
+  published    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  author       User      @relation(fields: [authorId], references: [id])
+  comments     Comment[]
+
+  @@index([authorId])
+  @@index([slug])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  content   String   @db.Text
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([userId])
+}
+
+model Follower {
+  id          String   @id @default(uuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+}
+
+model UserPermission {
+  id         String     @id @default(uuid())
+  role       Role
+  permission Permission
+  createdAt  DateTime   @default(now())
+
+  @@unique([role, permission])
+}
+
+enum Permission {
+  MANAGE_USERS
+  MANAGE_ROLES
+  DELETE_POST
+  VIEW_ANALYTICS
+  MODERATE_COMMENTS
+  CREATE_POST
+  PUBLISH_POST
+  EDIT_ALL_POSTS
+  EDIT_OWN_POST
+  DELETE_OWN_POST
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

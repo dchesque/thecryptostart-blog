@@ -1,6 +1,7 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { compare } from "bcryptjs"
+import { prisma } from "@/lib/prisma"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -15,29 +16,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null
         }
 
-        // Mock user database (substituir por DB real em produção)
-        const users = [
-          {
-            id: "1",
-            email: "admin@cryptoacademy.com",
-            name: "Admin",
-            password: "$2b$12$dZxzgyIN3TGhYps44OhQc..pN1PrKnvDac7/S1tIM7qHkd8F1Wuam" // "admin123"
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email as string },
+          include: {
+            roles: {
+              select: {
+                role: true
+              }
+            }
           }
-        ]
+        })
 
-        const user = users.find(u => u.email === credentials.email)
-
-        if (!user) {
+        if (!user || !user.passwordHash) {
           return null
         }
 
-        const isValid = await compare(credentials.password as string, user.password)
+        const isValid = await compare(credentials.password as string, user.passwordHash)
 
         if (isValid) {
           return {
             id: user.id,
             email: user.email,
             name: user.name,
+            roles: user.roles.map((r: { role: any }) => r.role),
           }
         }
 
@@ -54,13 +55,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id
+        token.id = user.id as string
+        token.roles = user.roles
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
+        session.user.roles = token.roles as any
       }
       return session
     }

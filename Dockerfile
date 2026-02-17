@@ -6,11 +6,14 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (using legacy peer deps for React 19 compatibility)
+RUN npm ci --legacy-peer-deps
 
 # Copy source code
 COPY . .
+
+# Generate Prisma client
+RUN npx prisma generate
 
 # Build Next.js app
 # Disable telemetry during build
@@ -31,11 +34,15 @@ RUN adduser --system --uid 1001 nextjs
 
 # Copy necessary files
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/scripts ./scripts
 
 # Set correct permissions
-RUN mkdir -p /app/.next/cache && chown -R nextjs:nodejs /app/.next
+RUN mkdir -p /app/.next/cache && chown -R nextjs:nodejs /app
+RUN chmod +x /app/scripts/entrypoint.sh
 
 USER nextjs
 
@@ -44,4 +51,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+# Execute migrations before starting
+ENTRYPOINT ["/app/scripts/entrypoint.sh"]
