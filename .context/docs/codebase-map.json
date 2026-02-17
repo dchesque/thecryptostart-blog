@@ -1,0 +1,992 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-02-17T13:41:39.093Z",
+  "stack": {
+    "primaryLanguage": "typescript",
+    "languages": [
+      "javascript",
+      "typescript"
+    ],
+    "frameworks": [
+      "nextjs"
+    ],
+    "buildTools": [
+      "docker",
+      "docker-compose"
+    ],
+    "testFrameworks": [],
+    "packageManager": "npm",
+    "isMonorepo": false,
+    "hasDocker": true,
+    "hasCI": false,
+    "runtimeEnvironment": "browser"
+  },
+  "structure": {
+    "totalFiles": 69,
+    "rootPath": ".",
+    "topDirectories": [
+      {
+        "name": "app",
+        "fileCount": 13,
+        "description": "Application entry (Next.js app router)"
+      },
+      {
+        "name": "components",
+        "fileCount": 14,
+        "description": "UI components"
+      },
+      {
+        "name": "data",
+        "fileCount": 1,
+        "description": "Module directory"
+      },
+      {
+        "name": "lib",
+        "fileCount": 10,
+        "description": "Shared library code"
+      },
+      {
+        "name": "prisma",
+        "fileCount": 2,
+        "description": "Module directory"
+      },
+      {
+        "name": "prompts",
+        "fileCount": 2,
+        "description": "Prompt templates"
+      },
+      {
+        "name": "public",
+        "fileCount": 1,
+        "description": "Public static assets"
+      },
+      {
+        "name": "scripts",
+        "fileCount": 3,
+        "description": "Build and utility scripts"
+      },
+      {
+        "name": "styles",
+        "fileCount": 1,
+        "description": "CSS/SCSS stylesheets"
+      },
+      {
+        "name": "types",
+        "fileCount": 4,
+        "description": "TypeScript type definitions"
+      }
+    ],
+    "languageDistribution": [
+      {
+        "extension": ".ts",
+        "count": 23
+      },
+      {
+        "extension": ".tsx",
+        "count": 23
+      },
+      {
+        "extension": ".md",
+        "count": 9
+      },
+      {
+        "extension": ".json",
+        "count": 4
+      },
+      {
+        "extension": ".js",
+        "count": 3
+      },
+      {
+        "extension": ".mjs",
+        "count": 1
+      },
+      {
+        "extension": ".yml",
+        "count": 1
+      },
+      {
+        "extension": ".css",
+        "count": 1
+      },
+      {
+        "extension": ".txt",
+        "count": 1
+      },
+      {
+        "extension": ".sh",
+        "count": 1
+      }
+    ]
+  },
+  "architecture": {
+    "layers": [
+      {
+        "name": "Utils",
+        "description": "Shared utilities and helpers",
+        "directories": [
+          "lib"
+        ],
+        "symbolCount": 40,
+        "dependsOn": []
+      },
+      {
+        "name": "Controllers",
+        "description": "Request handling and routing",
+        "directories": [
+          "app\\api\\users",
+          "app\\api\\auth\\[...nextauth]",
+          "app\\api\\auth\\register"
+        ],
+        "symbolCount": 2,
+        "dependsOn": []
+      },
+      {
+        "name": "Components",
+        "description": "UI components and views",
+        "directories": [
+          "components",
+          "app",
+          "app\\login",
+          "app\\blog",
+          "app\\admin",
+          "app\\about",
+          "app\\blog\\[slug]",
+          "app\\admin\\users"
+        ],
+        "symbolCount": 27,
+        "dependsOn": []
+      }
+    ],
+    "patterns": [],
+    "entryPoints": [
+      "types\\index.ts"
+    ],
+    "mainEntryPoints": [
+      "types\\index.ts"
+    ],
+    "moduleExports": []
+  },
+  "symbols": {
+    "classes": [
+      {
+        "name": "AppError",
+        "kind": "class",
+        "file": "lib\\errors.ts",
+        "line": 1,
+        "exported": true
+      },
+      {
+        "name": "AuthenticationError",
+        "kind": "class",
+        "file": "lib\\errors.ts",
+        "line": 12,
+        "exported": true
+      },
+      {
+        "name": "AuthorizationError",
+        "kind": "class",
+        "file": "lib\\errors.ts",
+        "line": 18,
+        "exported": true
+      },
+      {
+        "name": "RateLimitError",
+        "kind": "class",
+        "file": "lib\\errors.ts",
+        "line": 33,
+        "exported": true
+      },
+      {
+        "name": "ValidationError",
+        "kind": "class",
+        "file": "lib\\errors.ts",
+        "line": 24,
+        "exported": true
+      }
+    ],
+    "interfaces": [
+      {
+        "name": "Author",
+        "kind": "interface",
+        "file": "types\\blog.ts",
+        "line": 44,
+        "exported": true
+      },
+      {
+        "name": "BlogMetadata",
+        "kind": "interface",
+        "file": "types\\blog.ts",
+        "line": 91,
+        "exported": true
+      },
+      {
+        "name": "BlogPost",
+        "kind": "interface",
+        "file": "types\\blog.ts",
+        "line": 61,
+        "exported": true
+      },
+      {
+        "name": "CategoryConfig",
+        "kind": "interface",
+        "file": "types\\blog.ts",
+        "line": 179,
+        "exported": true
+      },
+      {
+        "name": "ContentfulBlogPost",
+        "kind": "interface",
+        "file": "types\\blog.ts",
+        "line": 171,
+        "exported": true
+      },
+      {
+        "name": "ContentfulBlogPostFields",
+        "kind": "interface",
+        "file": "types\\blog.ts",
+        "line": 130,
+        "exported": true
+      },
+      {
+        "name": "ContentfulSys",
+        "kind": "interface",
+        "file": "types\\blog.ts",
+        "line": 162,
+        "exported": true
+      },
+      {
+        "name": "FeaturedImage",
+        "kind": "interface",
+        "file": "types\\blog.ts",
+        "line": 28,
+        "exported": true
+      },
+      {
+        "name": "PaginationOptions",
+        "kind": "interface",
+        "file": "types\\blog.ts",
+        "line": 109,
+        "exported": true
+      },
+      {
+        "name": "Post",
+        "kind": "interface",
+        "file": "types\\index.ts",
+        "line": 1,
+        "exported": true
+      },
+      {
+        "name": "SearchOptions",
+        "kind": "interface",
+        "file": "types\\blog.ts",
+        "line": 121,
+        "exported": true
+      },
+      {
+        "name": "SEOProps",
+        "kind": "interface",
+        "file": "types\\index.ts",
+        "line": 41,
+        "exported": true
+      },
+      {
+        "name": "SiteConfig",
+        "kind": "interface",
+        "file": "types\\index.ts",
+        "line": 33,
+        "exported": true
+      },
+      {
+        "name": "TagOptions",
+        "kind": "interface",
+        "file": "types\\blog.ts",
+        "line": 188,
+        "exported": true
+      },
+      {
+        "name": "AdSenseProps",
+        "kind": "interface",
+        "file": "components\\AdSense.tsx",
+        "line": 8,
+        "exported": false
+      },
+      {
+        "name": "BlogCardProps",
+        "kind": "interface",
+        "file": "components\\BlogCard.tsx",
+        "line": 6,
+        "exported": false
+      },
+      {
+        "name": "BlogPageProps",
+        "kind": "interface",
+        "file": "app\\blog\\page.tsx",
+        "line": 17,
+        "exported": false
+      },
+      {
+        "name": "BlogPostProps",
+        "kind": "interface",
+        "file": "components\\BlogPost.tsx",
+        "line": 8,
+        "exported": false
+      },
+      {
+        "name": "FAQItem",
+        "kind": "interface",
+        "file": "components\\FAQ.tsx",
+        "line": 5,
+        "exported": false
+      },
+      {
+        "name": "JWT",
+        "kind": "interface",
+        "file": "types\\auth.ts",
+        "line": 18,
+        "exported": false
+      },
+      {
+        "name": "MetadataInput",
+        "kind": "interface",
+        "file": "lib\\seo.ts",
+        "line": 11,
+        "exported": false
+      },
+      {
+        "name": "PostPageProps",
+        "kind": "interface",
+        "file": "app\\blog\\[slug]\\page.tsx",
+        "line": 20,
+        "exported": false
+      },
+      {
+        "name": "RelatedPostsProps",
+        "kind": "interface",
+        "file": "components\\RelatedPosts.tsx",
+        "line": 6,
+        "exported": false
+      },
+      {
+        "name": "SchemaInput",
+        "kind": "interface",
+        "file": "lib\\seo.ts",
+        "line": 80,
+        "exported": false
+      },
+      {
+        "name": "Session",
+        "kind": "interface",
+        "file": "types\\auth.ts",
+        "line": 9,
+        "exported": false
+      },
+      {
+        "name": "ShareButtonsProps",
+        "kind": "interface",
+        "file": "components\\ShareButtons.tsx",
+        "line": 5,
+        "exported": false
+      },
+      {
+        "name": "SidebarProps",
+        "kind": "interface",
+        "file": "components\\Sidebar.tsx",
+        "line": 8,
+        "exported": false
+      },
+      {
+        "name": "TableOfContentsProps",
+        "kind": "interface",
+        "file": "components\\TableOfContents.tsx",
+        "line": 13,
+        "exported": false
+      },
+      {
+        "name": "TOCItem",
+        "kind": "interface",
+        "file": "components\\TableOfContents.tsx",
+        "line": 7,
+        "exported": false
+      },
+      {
+        "name": "User",
+        "kind": "interface",
+        "file": "types\\auth.ts",
+        "line": 5,
+        "exported": false
+      }
+    ],
+    "functions": [
+      {
+        "name": "AboutPage",
+        "kind": "function",
+        "file": "app\\about\\page.tsx",
+        "line": 3,
+        "exported": true
+      },
+      {
+        "name": "AdminDashboard",
+        "kind": "function",
+        "file": "app\\admin\\page.tsx",
+        "line": 3,
+        "exported": true
+      },
+      {
+        "name": "AuthProvider",
+        "kind": "function",
+        "file": "components\\AuthProvider.tsx",
+        "line": 5,
+        "exported": true
+      },
+      {
+        "name": "calculateReadingTime",
+        "kind": "function",
+        "file": "lib\\utils.ts",
+        "line": 1,
+        "exported": true
+      },
+      {
+        "name": "checkRateLimit",
+        "kind": "function",
+        "file": "lib\\rate-limit.ts",
+        "line": 14,
+        "exported": true
+      },
+      {
+        "name": "fetchUsers",
+        "kind": "function",
+        "file": "app\\admin\\users\\page.tsx",
+        "line": 19,
+        "exported": true
+      },
+      {
+        "name": "Footer",
+        "kind": "function",
+        "file": "components\\Footer.tsx",
+        "line": 4,
+        "exported": true
+      },
+      {
+        "name": "formatDate",
+        "kind": "function",
+        "file": "lib\\utils.ts",
+        "line": 6,
+        "exported": true
+      },
+      {
+        "name": "generateBreadcrumbSchema",
+        "kind": "function",
+        "file": "lib\\seo.ts",
+        "line": 170,
+        "exported": true
+      },
+      {
+        "name": "generateCSRFToken",
+        "kind": "function",
+        "file": "lib\\csrf.ts",
+        "line": 8,
+        "exported": true
+      },
+      {
+        "name": "generateMetadata",
+        "kind": "function",
+        "file": "lib\\seo.ts",
+        "line": 24,
+        "exported": true
+      },
+      {
+        "name": "generateMetadata",
+        "kind": "function",
+        "file": "app\\blog\\[slug]\\page.tsx",
+        "line": 31,
+        "exported": true
+      },
+      {
+        "name": "generateOrganizationSchema",
+        "kind": "function",
+        "file": "lib\\seo.ts",
+        "line": 147,
+        "exported": true
+      },
+      {
+        "name": "generateSchema",
+        "kind": "function",
+        "file": "lib\\seo.ts",
+        "line": 93,
+        "exported": true
+      },
+      {
+        "name": "generateStaticParams",
+        "kind": "function",
+        "file": "app\\blog\\[slug]\\page.tsx",
+        "line": 25,
+        "exported": true
+      },
+      {
+        "name": "generateWebsiteSchema",
+        "kind": "function",
+        "file": "lib\\seo.ts",
+        "line": 126,
+        "exported": true
+      },
+      {
+        "name": "GET",
+        "kind": "function",
+        "file": "app\\api\\users\\route.ts",
+        "line": 7,
+        "exported": true
+      },
+      {
+        "name": "getAllCategories",
+        "kind": "function",
+        "file": "lib\\contentful.ts",
+        "line": 243,
+        "exported": true
+      },
+      {
+        "name": "getAllPosts",
+        "kind": "function",
+        "file": "lib\\contentful.ts",
+        "line": 144,
+        "exported": true
+      },
+      {
+        "name": "getAllPostSlugs",
+        "kind": "function",
+        "file": "lib\\contentful.ts",
+        "line": 308,
+        "exported": true
+      },
+      {
+        "name": "getCategoryBySlug",
+        "kind": "function",
+        "file": "lib\\constants.ts",
+        "line": 116,
+        "exported": true
+      },
+      {
+        "name": "getCategoryName",
+        "kind": "function",
+        "file": "lib\\constants.ts",
+        "line": 123,
+        "exported": true
+      },
+      {
+        "name": "getIP",
+        "kind": "function",
+        "file": "lib\\rate-limit.ts",
+        "line": 53,
+        "exported": true
+      },
+      {
+        "name": "getPostBySlug",
+        "kind": "function",
+        "file": "lib\\contentful.ts",
+        "line": 179,
+        "exported": true
+      },
+      {
+        "name": "getPostsByCategory",
+        "kind": "function",
+        "file": "lib\\contentful.ts",
+        "line": 203,
+        "exported": true
+      },
+      {
+        "name": "getRelatedPosts",
+        "kind": "function",
+        "file": "lib\\contentful.ts",
+        "line": 217,
+        "exported": true
+      },
+      {
+        "name": "getTotalPostsCount",
+        "kind": "function",
+        "file": "lib\\contentful.ts",
+        "line": 257,
+        "exported": true
+      },
+      {
+        "name": "hasPermission",
+        "kind": "function",
+        "file": "lib\\permissions.ts",
+        "line": 8,
+        "exported": true
+      },
+      {
+        "name": "hasRole",
+        "kind": "function",
+        "file": "lib\\permissions.ts",
+        "line": 15,
+        "exported": true
+      },
+      {
+        "name": "POST",
+        "kind": "function",
+        "file": "app\\api\\auth\\register\\route.ts",
+        "line": 12,
+        "exported": true
+      }
+    ],
+    "types": [
+      {
+        "name": "BlogCategory",
+        "kind": "type",
+        "file": "types\\blog.ts",
+        "line": 15,
+        "exported": true
+      },
+      {
+        "name": "LoginInput",
+        "kind": "type",
+        "file": "lib\\validations.ts",
+        "line": 20,
+        "exported": true
+      },
+      {
+        "name": "RegisterInput",
+        "kind": "type",
+        "file": "lib\\validations.ts",
+        "line": 21,
+        "exported": true
+      },
+      {
+        "name": "RolePermissions",
+        "kind": "type",
+        "file": "types\\roles.ts",
+        "line": 31,
+        "exported": true
+      },
+      {
+        "name": "UpdateProfileInput",
+        "kind": "type",
+        "file": "lib\\validations.ts",
+        "line": 22,
+        "exported": true
+      },
+      {
+        "name": "UserWithRoles",
+        "kind": "type",
+        "file": "types\\auth.ts",
+        "line": 24,
+        "exported": true
+      },
+      {
+        "name": "AdSlot",
+        "kind": "type",
+        "file": "components\\AdSense.tsx",
+        "line": 6,
+        "exported": false
+      },
+      {
+        "name": "PrismaClientSingleton",
+        "kind": "type",
+        "file": "lib\\prisma.ts",
+        "line": 7,
+        "exported": false
+      },
+      {
+        "name": "RateLimitStore",
+        "kind": "type",
+        "file": "lib\\rate-limit.ts",
+        "line": 1,
+        "exported": false
+      },
+      {
+        "name": "User",
+        "kind": "type",
+        "file": "app\\admin\\users\\page.tsx",
+        "line": 5,
+        "exported": false
+      }
+    ],
+    "enums": []
+  },
+  "publicAPI": [
+    {
+      "name": "AboutPage",
+      "kind": "function",
+      "file": "app\\about\\page.tsx",
+      "line": 3,
+      "exported": true
+    },
+    {
+      "name": "AdminDashboard",
+      "kind": "function",
+      "file": "app\\admin\\page.tsx",
+      "line": 3,
+      "exported": true
+    },
+    {
+      "name": "AppError",
+      "kind": "class",
+      "file": "lib\\errors.ts",
+      "line": 1,
+      "exported": true
+    },
+    {
+      "name": "AuthenticationError",
+      "kind": "class",
+      "file": "lib\\errors.ts",
+      "line": 12,
+      "exported": true
+    },
+    {
+      "name": "Author",
+      "kind": "interface",
+      "file": "types\\blog.ts",
+      "line": 44,
+      "exported": true
+    },
+    {
+      "name": "AuthorizationError",
+      "kind": "class",
+      "file": "lib\\errors.ts",
+      "line": 18,
+      "exported": true
+    },
+    {
+      "name": "AuthProvider",
+      "kind": "function",
+      "file": "components\\AuthProvider.tsx",
+      "line": 5,
+      "exported": true
+    },
+    {
+      "name": "BlogCategory",
+      "kind": "type",
+      "file": "types\\blog.ts",
+      "line": 15,
+      "exported": true
+    },
+    {
+      "name": "BlogMetadata",
+      "kind": "interface",
+      "file": "types\\blog.ts",
+      "line": 91,
+      "exported": true
+    },
+    {
+      "name": "BlogPost",
+      "kind": "interface",
+      "file": "types\\blog.ts",
+      "line": 61,
+      "exported": true
+    },
+    {
+      "name": "calculateReadingTime",
+      "kind": "function",
+      "file": "lib\\utils.ts",
+      "line": 1,
+      "exported": true
+    },
+    {
+      "name": "CategoryConfig",
+      "kind": "interface",
+      "file": "types\\blog.ts",
+      "line": 179,
+      "exported": true
+    },
+    {
+      "name": "checkRateLimit",
+      "kind": "function",
+      "file": "lib\\rate-limit.ts",
+      "line": 14,
+      "exported": true
+    },
+    {
+      "name": "ContentfulBlogPost",
+      "kind": "interface",
+      "file": "types\\blog.ts",
+      "line": 171,
+      "exported": true
+    },
+    {
+      "name": "ContentfulBlogPostFields",
+      "kind": "interface",
+      "file": "types\\blog.ts",
+      "line": 130,
+      "exported": true
+    },
+    {
+      "name": "ContentfulSys",
+      "kind": "interface",
+      "file": "types\\blog.ts",
+      "line": 162,
+      "exported": true
+    },
+    {
+      "name": "FeaturedImage",
+      "kind": "interface",
+      "file": "types\\blog.ts",
+      "line": 28,
+      "exported": true
+    },
+    {
+      "name": "fetchUsers",
+      "kind": "function",
+      "file": "app\\admin\\users\\page.tsx",
+      "line": 19,
+      "exported": true
+    },
+    {
+      "name": "Footer",
+      "kind": "function",
+      "file": "components\\Footer.tsx",
+      "line": 4,
+      "exported": true
+    },
+    {
+      "name": "formatDate",
+      "kind": "function",
+      "file": "lib\\utils.ts",
+      "line": 6,
+      "exported": true
+    },
+    {
+      "name": "generateBreadcrumbSchema",
+      "kind": "function",
+      "file": "lib\\seo.ts",
+      "line": 170,
+      "exported": true
+    },
+    {
+      "name": "generateCSRFToken",
+      "kind": "function",
+      "file": "lib\\csrf.ts",
+      "line": 8,
+      "exported": true
+    },
+    {
+      "name": "generateMetadata",
+      "kind": "function",
+      "file": "lib\\seo.ts",
+      "line": 24,
+      "exported": true
+    },
+    {
+      "name": "generateMetadata",
+      "kind": "function",
+      "file": "app\\blog\\[slug]\\page.tsx",
+      "line": 31,
+      "exported": true
+    },
+    {
+      "name": "generateOrganizationSchema",
+      "kind": "function",
+      "file": "lib\\seo.ts",
+      "line": 147,
+      "exported": true
+    },
+    {
+      "name": "generateSchema",
+      "kind": "function",
+      "file": "lib\\seo.ts",
+      "line": 93,
+      "exported": true
+    },
+    {
+      "name": "generateStaticParams",
+      "kind": "function",
+      "file": "app\\blog\\[slug]\\page.tsx",
+      "line": 25,
+      "exported": true
+    },
+    {
+      "name": "generateWebsiteSchema",
+      "kind": "function",
+      "file": "lib\\seo.ts",
+      "line": 126,
+      "exported": true
+    },
+    {
+      "name": "GET",
+      "kind": "function",
+      "file": "app\\api\\users\\route.ts",
+      "line": 7,
+      "exported": true
+    },
+    {
+      "name": "getAllCategories",
+      "kind": "function",
+      "file": "lib\\contentful.ts",
+      "line": 243,
+      "exported": true
+    }
+  ],
+  "dependencies": {
+    "mostImported": [
+      {
+        "file": ".next\\dev\\types\\routes.d.ts",
+        "importedBy": 1,
+        "description": "TypeScript type definitions"
+      },
+      {
+        "file": "lib\\constants.ts",
+        "importedBy": 1,
+        "description": "Configuration and constants"
+      },
+      {
+        "file": "styles\\globals.css",
+        "importedBy": 1,
+        "description": "CSS/SCSS stylesheets"
+      }
+    ]
+  },
+  "stats": {
+    "totalSymbols": 92,
+    "exportedSymbols": 63,
+    "analysisTimeMs": 336
+  },
+  "keyFiles": [
+    {
+      "path": "next.config.mjs",
+      "description": "Tool configuration",
+      "category": "config"
+    },
+    {
+      "path": "package.json",
+      "description": "Package manifest",
+      "category": "config"
+    },
+    {
+      "path": "postcss.config.js",
+      "description": "Tool configuration",
+      "category": "config"
+    },
+    {
+      "path": "tailwind.config.ts",
+      "description": "Tool configuration",
+      "category": "config"
+    },
+    {
+      "path": "tsconfig.json",
+      "description": "TypeScript configuration",
+      "category": "config"
+    },
+    {
+      "path": "types\\index.ts",
+      "description": "types module exports",
+      "category": "types"
+    },
+    {
+      "path": "lib\\utils.ts",
+      "description": "Utility functions",
+      "category": "util"
+    }
+  ],
+  "navigation": {
+    "tests": "src/**/*.test.ts",
+    "config": [
+      "package.json",
+      "tsconfig.json"
+    ],
+    "types": [
+      "next-env.d.ts"
+    ],
+    "mainLogic": [
+      "src"
+    ]
+  }
+}
