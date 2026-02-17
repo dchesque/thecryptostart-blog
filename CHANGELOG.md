@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.6] - 2026-02-17
+
+### Added
+- **Admin CRUD**: Implementado gerenciamento completo de usuários via modal (Criação, Edição, Exclusão).
+- **Admin API**: Adicionadas rotas `POST`, `PATCH` e `DELETE` em `/api/users`.
+- **Dashboard**: Links reais para "Quick Actions" e estatísticas em tempo real (Users, Posts, Comments).
+
+### Changed
+- **Version**: Incrementada versão para `v0.1.6`.
+
 ## [0.1.5] - 2026-02-17
 
 ### Fixed
