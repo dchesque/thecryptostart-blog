@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.4] - 2026-02-17
+
+### Added
+- **Dependencies**: Adicionado `ts-node` às `devDependencies` para permitir a execução do `prisma db seed`.
+
+### Changed
+- **Version**: Incrementada versão para `v0.1.4`.
+
 ## [0.1.3] - 2026-02-17
 
 ### Fixed
