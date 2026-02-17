@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.10] - 2026-02-17
+
+### Fixed
+- **Deploy**: Restaurado o acesso ao serviço corrigindo a execução de migrações do Prisma no Docker.
+- **Docker**: Adicionadas dependências seletivas do Prisma (`@prisma` e `prisma`) no estágio runner para permitir migrações sem a `node_modules` completa.
+- **Runtime**: Melhorada a resiliência do `entrypoint.sh` com logs e verificações de binários.
+
+
 ## [0.1.9] - 2026-02-17
 
 ### Fixed
