@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.9] - 2026-02-17
+
+### Fixed
+- **Docker**: Otimizado o processo de build para reduzir consumo de disco (resolvido erro "No space left on device").
+- **Docker**: Adicionado `.dockerignore` para reduzir o contexto de build.
+- **Docker**: Removida cópia redundante de `node_modules` na imagem final (aproveitando o modo `standalone`).
+
+
 ## [0.1.8] - 2026-02-17
 
 ### Fixed
