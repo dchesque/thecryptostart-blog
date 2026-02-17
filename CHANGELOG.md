@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.11] - 2026-02-17
+
+### Fixed
+- **Deploy**: Adicionada biblioteca `libc6-compat` ao estágio runner (essencial para rodar Prisma no Alpine Linux).
+- **Deploy**: Ajustada a cópia de binários do Prisma para incluir o diretório `.bin`.
+- **Scripts**: Melhorado o `entrypoint.sh` para usar o binário local do Prisma prioritariamente.
+
+
 ## [0.1.10] - 2026-02-17
 
 ### Fixed

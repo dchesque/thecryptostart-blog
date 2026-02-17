@@ -25,6 +25,9 @@ FROM node:20-alpine AS runner
 
 WORKDIR /app
 
+# Install dependencies needed for Prisma and runtime on Alpine
+RUN apk add --no-cache libc6-compat openssl
+
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
@@ -42,6 +45,7 @@ COPY --from=builder /app/scripts ./scripts
 # Copy only prisma dependencies for migrations to work
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
 
 # Set correct permissions
 RUN mkdir -p /app/.next/cache && chown -R nextjs:nodejs /app
