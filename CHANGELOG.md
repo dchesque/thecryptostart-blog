@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.8] - 2026-02-17
+
+### Fixed
+- **Admin**: Corrigido o botão "Create Post" no dashboard para redirecionar para o painel do Contentful.
+
+### Changed
+- **Version**: Incrementada versão para `v0.1.8`.
+
+
 ## [0.1.7] - 2026-02-17
 
 ### Fixed
