@@ -3,7 +3,8 @@
 ## [0.1.5] - 2026-02-17
 
 ### Fixed
-- **Deploy**: Sincronizado `package-lock.json` com `package.json` para resolver erro de dependências ausentes durante o build no Docker (`ts-node`).
+- **Auth**: Resolvido erro `UntrustedHost` adicionando `trustHost: true` na configuração do NextAuth para ambientes Docker/EasyPanel.
+- **Admin**: Adicionada verificação rigorosa de sessão no `AdminLayout` para evitar Erro 500 (`Cannot read properties of undefined reading roles`) quando o host não é confiável.
 
 ### Changed
 - **Version**: Incrementada versão para `v0.1.5`.
