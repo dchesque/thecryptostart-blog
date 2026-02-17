@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.12] - 2026-02-17
+
+### Fixed
+- **Deploy**: Corrigido erro de carregamento de arquivos `.wasm` do Prisma (`ENOENT prisma_schema_build_bg.wasm`) ao chamar o Prisma build diretamente no entrypoint, evitando problemas de resolução de caminhos do wrapper `.bin`.
+
+
 ## [0.1.11] - 2026-02-17
 
 ### Fixed
