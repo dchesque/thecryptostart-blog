@@ -2,6 +2,9 @@
 
 ## [0.1.13] - 2026-02-18
 
+### Fixed
+- **Deploy**: Adicionados pacotes `effect` e `@effect` ao runner stage do Dockerfile, necessários pelo Prisma v6.19.2 para executar migrations.
+
 ### Changed
 - **Security**: Gerado e configurado `AUTH_SECRET` seguro para autenticação.
 
