@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0] - 2026-02-18
+
+### Added
+- **Componentes**: Criados `StickyHeaderAd` (desktop, aparece ao scrollar para cima), `StickyFooterAd` (mobile, dismissível) e `RecommendedContent` (grid 2 artigos + native ad).
+- **Layout**: `StickyHeaderAd` e `StickyFooterAd` adicionados ao `app/layout.tsx` (globais em todas as páginas).
+- **Post Page**: `RecommendedContent` adicionado entre ShareButtons e Related Posts.
+- **Performance**: CLS prevention — containers de ads com `min-height` (blog-top: 120px, blog-middle: 280px) para evitar layout shift.
+- **Analytics**: Criado `lib/analytics.ts` com `sendWebVital()`, `trackAdImpression()` e `trackAdClick()` para monitoramento de Core Web Vitals e revenue no GA4.
+- **Constants**: Adicionados slots `homepage-sidebar`, `header-ad`, `footer-ad` e `recommended-native` em `ADSENSE_SLOTS` (total: 10 slots).
+
+---
+
 ## [0.3.0] - 2026-02-18
 
 ### Added

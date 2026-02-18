@@ -95,12 +95,20 @@ export const CACHE_CONFIG = {
  * AdSense slot configurations
  */
 export const ADSENSE_SLOTS = {
-  'blog-top': 'xxxxxxxxxxxx', // Replace with actual slot ID
+  // Post Page
+  'blog-top': 'xxxxxxxxxxxx',
   'blog-middle': 'xxxxxxxxxxxx',
   'blog-bottom': 'xxxxxxxxxxxx',
   'blog-sidebar': 'xxxxxxxxxxxx',
+  // Homepage
   'homepage-banner': 'xxxxxxxxxxxx',
   'homepage-mid': 'xxxxxxxxxxxx',
+  'homepage-sidebar': 'xxxxxxxxxxxx',
+  // Sticky (global layout)
+  'header-ad': 'xxxxxxxxxxxx',
+  'footer-ad': 'xxxxxxxxxxxx',
+  // Native / Recommended
+  'recommended-native': 'xxxxxxxxxxxx',
 } as const
 
 /**

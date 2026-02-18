@@ -4,6 +4,8 @@ import '../styles/globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import { AuthProvider } from '@/components/AuthProvider'
+import StickyHeaderAd from '@/components/StickyHeaderAd'
+import StickyFooterAd from '@/components/StickyFooterAd'
 import { SITE_CONFIG } from '@/lib/constants'
 import { Montserrat, Open_Sans } from 'next/font/google'
 
@@ -141,11 +143,17 @@ export default function RootLayout({
 
           <Header />
 
+          {/* Sticky Header Ad — desktop only, shows on scroll up */}
+          <StickyHeaderAd slot="header-ad" />
+
           <main id="main-content" className="min-h-screen">
             {children}
           </main>
 
           <Footer />
+
+          {/* Sticky Footer Ad — mobile only */}
+          <StickyFooterAd slot="footer-ad" />
         </AuthProvider>
 
         {/* Google Analytics 4 */}

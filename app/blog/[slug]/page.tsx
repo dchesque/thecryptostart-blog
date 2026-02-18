@@ -13,6 +13,7 @@ import RelatedPosts from '@/components/RelatedPosts'
 import BlogCard from '@/components/BlogCard'
 import ShareButtons from '@/components/ShareButtons'
 import AuthorCard from '@/components/AuthorCard'
+import RecommendedContent from '@/components/RecommendedContent'
 import { BLOG_CONFIG, CACHE_CONFIG, getCategoryName, SITE_CONFIG, getCategoryBySlug } from '@/lib/constants'
 
 // ISR: Revalidate every 5 minutes
@@ -337,8 +338,8 @@ export default async function PostPage({ params }: PostPageProps) {
                 </figure>
               )}
 
-              {/* Ad — Above Fold (blog-top) */}
-              <div className="my-8 rounded-xl overflow-hidden">
+              {/* Ad — Above Fold (blog-top) — min-height para CLS prevention */}
+              <div className="my-8 rounded-xl overflow-hidden bg-gray-50 min-h-[120px] flex items-center justify-center">
                 <AdSense slot="blog-top" />
               </div>
 
@@ -419,8 +420,8 @@ export default async function PostPage({ params }: PostPageProps) {
                   return (
                     <>
                       {documentToReactComponents(firstHalf, renderOptions)}
-                      {/* Ad — Middle Content (blog-middle) */}
-                      <div className="not-prose my-10 rounded-xl overflow-hidden">
+                      {/* Ad — Middle Content (blog-middle) — min-height para CLS prevention */}
+                      <div className="not-prose my-10 rounded-xl overflow-hidden bg-gray-50 min-h-[280px] flex items-center justify-center">
                         <AdSense slot="blog-middle" />
                       </div>
                       {documentToReactComponents(secondHalf, renderOptions)}
@@ -496,6 +497,20 @@ export default async function PostPage({ params }: PostPageProps) {
                   </p>
                 </div>
               </div>
+
+              {/* Recommended Content — artigos relacionados + native ad */}
+              {relatedPosts.length > 0 && (
+                <RecommendedContent
+                  posts={relatedPosts.map(p => ({
+                    slug: p.slug,
+                    title: p.title,
+                    category: p.category,
+                    categoryName: getCategoryName(p.category),
+                    featuredImage: p.featuredImage,
+                  }))}
+                  adSlot="recommended-native"
+                />
+              )}
 
               {/* Related Content */}
               {relatedPosts.length > 0 && (
