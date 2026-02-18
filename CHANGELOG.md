@@ -1,5 +1,10 @@
 # Changelog
  
+## [0.2.1] - 2026-02-18
+ 
+### Fixed
+- **Build**: Corrigido erro de tipagem TypeScript em `lib/constants.ts` que impedia o build em produção (conversão inválida de `readonly []`).
+ 
 ## [0.2.0] - 2026-02-18
  
 ### Added
