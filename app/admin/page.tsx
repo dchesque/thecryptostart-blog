@@ -33,7 +33,7 @@ export default async function AdminDashboard() {
         <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Quick Actions</h2>
         <div className="flex gap-4">
           <a
-            href={`https://app.contentful.com/spaces/${process.env.NEXT_PUBLIC_CONTENTFUL_SPACE_ID}/entries?contentTypeId=blogPost`}
+            href={`https://app.contentful.com/spaces/${process.env.CONTENTFUL_SPACE_ID}/entries?contentTypeId=blogPost`}
             target="_blank"
             rel="noopener noreferrer"
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition flex items-center gap-2"

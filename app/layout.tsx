@@ -73,9 +73,11 @@ export const metadata: Metadata = {
     description: SITE_CONFIG.description,
     images: ['/og-image.jpg'],
   },
-  verification: {
-    google: 'your-google-verification-code',
-  },
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION && {
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    },
+  }),
 }
 
 export default function RootLayout({
