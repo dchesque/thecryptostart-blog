@@ -1,5 +1,10 @@
 # Changelog
  
+## [0.2.5] - 2026-02-18
+
+### Fixed
+- **Dev**: Corrigido Turbopack panic loop causado por `output: 'standalone'` no `next.config.mjs` (opção exclusiva para builds de produção/Docker, incompatível com Turbopack no modo dev).
+
 ## [0.2.4] - 2026-02-18
  
 ### Fixed
