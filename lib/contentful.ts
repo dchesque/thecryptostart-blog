@@ -10,6 +10,7 @@ import { createClient, ContentfulClientApi } from 'contentful'
 import type {
   BlogPost,
   BlogCategory,
+  CategoryConfig,
   ContentfulBlogPost,
   PaginationOptions,
   SearchOptions,
@@ -238,15 +239,24 @@ export async function getRelatedPosts(
 }
 
 /**
- * Get all unique categories from published posts
+ * Get all categories from Contentful
+ * Fetches all entries of type 'category' ordered by the 'order' field
  */
-export async function getAllCategories(): Promise<string[]> {
+export async function getAllCategories(): Promise<CategoryConfig[]> {
   try {
-    const posts = await getAllPosts({ limit: 1000 })
-    const categories = [...new Set(posts.map(post => post.category))]
-    return categories.sort()
+    const response = await getClient().getEntries({
+      content_type: 'category',
+      order: ['fields.order', 'fields.name'],
+    })
+
+    return response.items.map((item: any) => ({
+      slug: item.fields.slug as BlogCategory,
+      name: item.fields.name,
+      description: item.fields.description,
+      icon: item.fields.icon || '📚', // Default icon if missing
+    }))
   } catch (error) {
-    console.error('Error fetching categories:', error)
+    console.error('Error fetching categories from Contentful:', error)
     return []
   }
 }

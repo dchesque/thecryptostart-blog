@@ -13,7 +13,42 @@ const envConfig = fs.readFileSync(envPath, 'utf8')
         return acc;
     }, {});
 
-async function testNestedQuery() {
+async function testPreview() {
+    const space = envConfig.CONTENTFUL_SPACE_ID || envConfig.NEXT_PUBLIC_CONTENTFUL_SPACE_ID;
+    const previewToken = envConfig.NEXT_PUBLIC_CONTENTFUL_PREVIEW_ACCESS_TOKEN;
+
+    if (!previewToken) {
+        console.error('Preview token not found in .env.local');
+        return;
+    }
+
+    const client = contentful.createClient({
+        space: space,
+        accessToken: previewToken,
+        host: 'preview.contentful.com'
+    });
+
+    try {
+        console.log('Fetching entries from PREVIEW API...');
+        const entries = await client.getEntries({
+            content_type: 'blogPost',
+            limit: 100
+        });
+
+        console.log('Total posts found (including drafts):', entries.total);
+        entries.items.forEach(item => {
+            console.log(`- Slug: ${item.fields.slug}`);
+            console.log(`  Title: ${item.fields.title}`);
+            console.log(`  Status: ${item.sys.publishedAt ? 'Published' : 'Draft/Changed'}`);
+            console.log('---');
+        });
+
+    } catch (error) {
+        console.error('Preview fetch failed:', error.message);
+    }
+}
+
+async function testCategoryFields() {
     const space = envConfig.CONTENTFUL_SPACE_ID || envConfig.NEXT_PUBLIC_CONTENTFUL_SPACE_ID;
     const accessToken = envConfig.CONTENTFUL_ACCESS_TOKEN || envConfig.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN;
 
@@ -22,24 +57,26 @@ async function testNestedQuery() {
         accessToken: accessToken,
     });
 
-    const categorySlug = 'crypto-opportunities';
-
-    console.log('Testing nested query for category slug:', categorySlug);
-
     try {
-        // Attempt 3: Nested fields with content type reference
-        console.log('\nAttempt 3: Complete nested query');
-        const response3 = await client.getEntries({
-            content_type: 'blogPost',
-            'fields.category.sys.contentType.sys.id': 'category',
-            'fields.category.fields.slug': categorySlug,
-            limit: 1
+        console.log('Fetching Category entries...');
+        const entries = await client.getEntries({
+            content_type: 'category',
+            limit: 5
         });
-        console.log('Result 3 total:', response3.total);
+
+        entries.items.forEach(item => {
+            console.log(`\nCategory: ${item.fields.name || item.fields.title}`);
+            console.log('Fields:', Object.keys(item.fields));
+            console.log('Slug:', item.fields.slug);
+            console.log('Description:', item.fields.description);
+            // Check for icon or similar
+            if (item.fields.icon) console.log('Icon:', item.fields.icon);
+        });
 
     } catch (error) {
-        console.error('Attempt 3 failed:', error.message);
+        console.error('Category field fetch failed:', error.message);
     }
 }
 
-testNestedQuery();
+testPreview();
+testCategoryFields();

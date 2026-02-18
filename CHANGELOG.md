@@ -1,5 +1,18 @@
 # Changelog
-
+ 
+## [0.2.0] - 2026-02-18
+ 
+### Added
+- **Contentful**: Implementada busca dinâmica de categorias diretamente do CMS via nova função `getAllCategories` em `lib/contentful.ts`.
+ 
+### Changed
+- **Performance**: Reduzido tempo de revalidação (ISR) de 1 hora para 5 minutos (300 segundos) nas páginas Home, Blog e Post [slug].
+- **UI**: Páginas Home e Blog atualizadas para renderizar categorias dinamicamente a partir do Contentful.
+- **BlogCard**: Adicionado mapeamento de estilos para novas categorias e fallbacks visuais para categorias futuras.
+ 
+### Fixed
+- **Sincronização**: Resolvido problema de categorias e posts "travados" devido a dados estáticos no código e cache excessivo.
+ 
 ## [0.1.13] - 2026-02-18
 
 ### Fixed

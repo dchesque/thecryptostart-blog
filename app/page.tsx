@@ -1,21 +1,22 @@
 import Link from 'next/link'
-import { getAllPosts } from '@/lib/contentful'
+import { getAllPosts, getAllCategories } from '@/lib/contentful'
 import BlogCard from '@/components/BlogCard'
 import NewsletterForm from '@/components/NewsletterForm'
 import FAQ from '@/components/FAQ'
 import { BLOG_CONFIG, SITE_CONFIG, CACHE_CONFIG } from '@/lib/constants'
 import { generateWebsiteSchema, generateOrganizationSchema } from '@/lib/seo'
 
-// ISR: Revalidate every hour
-export const revalidate = 3600
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300
 
 export default async function Homepage() {
   // Fetch data for sections
-  const [fundamentalPosts, recentPosts] = await Promise.all([
+  const [fundamentalPosts, recentPosts, categories] = await Promise.all([
     // Picking first 4 as "fundamental" for now (ideally filtered by tag 'fundamental' in the CMS)
     getAllPosts({ limit: 4 }),
     // Picking next 6 as "recent" (skipping the first 4 if they overlap)
     getAllPosts({ limit: 6, skip: 0 }),
+    getAllCategories(),
   ])
 
   // In a real scenario, we might want specific "fundamental" articles. 
@@ -149,7 +150,7 @@ export default async function Homepage() {
             <h2 className="text-4xl sm:text-5xl font-extrabold text-crypto-navy leading-tight">Explore by Topics</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
-            {BLOG_CONFIG.categories.map((cat) => (
+            {categories.map((cat) => (
               <Link
                 key={cat.slug}
                 href={`/blog?category=${cat.slug}`}

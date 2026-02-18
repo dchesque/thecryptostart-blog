@@ -1,13 +1,13 @@
 import Link from 'next/link'
-import { getAllPosts, getTotalPostsCount, searchPosts } from '@/lib/contentful'
+import { getAllPosts, getTotalPostsCount, searchPosts, getAllCategories } from '@/lib/contentful'
 import BlogCard from '@/components/BlogCard'
 import { BLOG_CONFIG, CACHE_CONFIG, getCategoryName } from '@/lib/constants'
 import type { BlogCategory } from '@/types/blog'
 import type { Metadata } from 'next'
 import { SITE_CONFIG } from '@/lib/constants'
 
-// ISR: Revalidate every hour
-export const revalidate = 3600
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300
 
 export const metadata: Metadata = {
   title: `Blog | ${SITE_CONFIG.name}`,
@@ -31,18 +31,23 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   // Fetch posts based on search or regular listing
   let posts
   let totalCount
+  let categories: any[] = []
 
   if (searchQuery) {
-    posts = await searchPosts(searchQuery, { limit: BLOG_CONFIG.postsPerPage })
+    [posts, categories] = await Promise.all([
+      searchPosts(searchQuery, { limit: BLOG_CONFIG.postsPerPage }),
+      getAllCategories(),
+    ])
     totalCount = posts.length
   } else {
-    [posts, totalCount] = await Promise.all([
+    [posts, totalCount, categories] = await Promise.all([
       getAllPosts({
         limit: BLOG_CONFIG.postsPerPage,
         skip: (page - 1) * BLOG_CONFIG.postsPerPage,
         category,
       }),
       getTotalPostsCount(category),
+      getAllCategories(),
     ])
   }
 
@@ -79,7 +84,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         <section className="mb-12">
           <h2 className="text-2xl font-bold mb-6 text-crypto-navy">Categories</h2>
           <div className="grid-categories">
-            {BLOG_CONFIG.categories.map((cat) => {
+            {categories.map((cat) => {
               const bgColors: Record<string, string> = {
                 bitcoin: '#FF7400',
                 ethereum: '#0071C3',
@@ -87,6 +92,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                 'investing-and-strategy': '#FF1493',
                 'crypto-security': '#FF6B6B',
                 'web3-and-innovation': '#1A2A2F',
+                'crypto-opportunities': '#00A86B', // Added emerald for opportunities
               }
               return (
                 <Link

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { documentToReactComponents, Options } from '@contentful/rich-text-react-renderer'
 import { BLOCKS, INLINES, MARKS } from '@contentful/rich-text-types'
-import { getPostBySlug, getRelatedPosts, getAllPostSlugs } from '@/lib/contentful'
+import { getPostBySlug, getRelatedPosts, getAllPostSlugs, getAllCategories } from '@/lib/contentful'
 import { generateMetadata as generateSeoMetadata, generateSchema, generateBreadcrumbSchema } from '@/lib/seo'
 import AdSense from '@/components/AdSense'
 import TableOfContents from '@/components/TableOfContents'
@@ -12,10 +12,10 @@ import NewsletterForm from '@/components/NewsletterForm'
 import RelatedPosts from '@/components/RelatedPosts'
 import BlogCard from '@/components/BlogCard'
 import ShareButtons from '@/components/ShareButtons'
-import { BLOG_CONFIG, CACHE_CONFIG, getCategoryName, SITE_CONFIG } from '@/lib/constants'
+import { BLOG_CONFIG, CACHE_CONFIG, getCategoryName, SITE_CONFIG, getCategoryBySlug } from '@/lib/constants'
 
-// ISR: Revalidate every hour
-export const revalidate = 3600
+// ISR: Revalidate every 5 minutes
+export const revalidate = 300
 
 interface PostPageProps {
   params: Promise<{ slug: string }>
@@ -159,13 +159,16 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound()
   }
 
-  const relatedPosts = await getRelatedPosts(
-    slug,
-    post.category,
-    BLOG_CONFIG.relatedPostsCount
-  )
+  const [relatedPosts, categories] = await Promise.all([
+    getRelatedPosts(
+      slug,
+      post.category,
+      BLOG_CONFIG.relatedPostsCount
+    ),
+    getAllCategories(),
+  ])
 
-  const categoryInfo = BLOG_CONFIG.categories.find(c => c.slug === post.category)
+  const categoryInfo = categories.find(c => c.slug === post.category)
 
   // Format dates
   const publishedDate = new Date(post.publishedAt).toLocaleDateString('en-US', {
@@ -236,17 +239,25 @@ export default async function PostPage({ params }: PostPageProps) {
                 href={`/blog?category=${post.category}`}
                 className={`
                   inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest
-                  ${post.category === 'bitcoin' ? 'bg-bitcoin/20 text-bitcoin border border-bitcoin/30' :
-                    post.category === 'ethereum' ? 'bg-ethereum/20 text-ethereum border border-ethereum/30' :
-                      post.category === 'defi' ? 'bg-invest/20 text-invest border border-invest/30' :
-                        post.category === 'investing-and-strategy' ? 'bg-finance/20 text-finance border border-finance/30' :
-                          post.category === 'crypto-security' ? 'bg-press/20 text-press border border-press/30' :
-                            'bg-crypto-primary/20 text-crypto-primary border border-crypto-primary/30'
-                  }
-                  mb-8 animate-slide-up
+                  animate-slide-up
                 `}
+                style={{
+                  backgroundColor: post.category === 'bitcoin' ? 'rgba(255, 116, 0, 0.2)' :
+                    post.category === 'ethereum' ? 'rgba(0, 113, 195, 0.2)' :
+                      post.category === 'defi' ? 'rgba(123, 63, 242, 0.2)' :
+                        post.category === 'investing-and-strategy' ? 'rgba(255, 20, 147, 0.2)' :
+                          post.category === 'crypto-security' ? 'rgba(255, 107, 107, 0.2)' :
+                            'rgba(26, 42, 47, 0.2)',
+                  color: post.category === 'bitcoin' ? '#FF7400' :
+                    post.category === 'ethereum' ? '#0071C3' :
+                      post.category === 'defi' ? '#7B3FF2' :
+                        post.category === 'investing-and-strategy' ? '#FF1493' :
+                          post.category === 'crypto-security' ? '#FF6B6B' :
+                            '#1A2A2F',
+                  border: '1px solid currentColor'
+                }}
               >
-                {categoryInfo?.name}
+                {categoryInfo?.name || getCategoryName(post.category)}
               </Link>
 
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold font-heading text-white mb-8 leading-[1.1] animate-slide-up [animation-delay:100ms]">

@@ -21,15 +21,17 @@ export default function BlogCard({ post, variant = 'standard' }: BlogCardProps) 
 
   // Define category style mapping
   const categoryStyles: Record<string, string> = {
-    bitcoin: 'badge-bitcoin',
-    ethereum: 'badge-ethereum',
-    defi: 'badge-invest',
-    trading: 'badge-finance',
-    security: 'badge-press',
-    web3: 'bg-crypto-navy',
+    'bitcoin': 'badge-bitcoin',
+    'ethereum': 'badge-ethereum',
+    'defi': 'badge-invest',
+    'investing-and-strategy': 'badge-invest',
+    'crypto-security': 'badge-press',
+    'web3-and-innovation': 'bg-crypto-navy',
+    'crypto-opportunities': 'bg-green-600',
+    'crypto-basics': 'badge-bitcoin',
   }
 
-  const badgeClass = categoryStyles[post.category] || 'bg-gray-500'
+  const badgeClass = categoryStyles[post.category] || 'bg-crypto-navy'
   const isLarge = variant === 'large'
 
   return (

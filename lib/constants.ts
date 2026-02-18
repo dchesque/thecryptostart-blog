@@ -46,17 +46,8 @@ export const BLOG_CONFIG = {
   excerptLength: 160,
   /** Average reading speed (words per minute) */
   readingSpeed: 200,
-  /** Available categories with display info */
-  categories: [
-    { slug: 'crypto-basics' as BlogCategory, name: 'Fundamentals', icon: '📚' },
-    { slug: 'bitcoin' as BlogCategory, name: 'Bitcoin', icon: '₿' },
-    { slug: 'ethereum' as BlogCategory, name: 'Ethereum', icon: '🔹' },
-    { slug: 'crypto-security' as BlogCategory, name: 'Security', icon: '🔒' },
-    { slug: 'defi' as BlogCategory, name: 'DeFi', icon: '💰' },
-    { slug: 'investing-and-strategy' as BlogCategory, name: 'Investing', icon: '📊' },
-    { slug: 'web3-and-innovation' as BlogCategory, name: 'Web3 & Innovation', icon: '🌐' },
-    { slug: 'crypto-opportunities' as BlogCategory, name: 'Opportunities', icon: '💎' },
-  ] as const satisfies readonly CategoryConfig[],
+  /** Available categories with display info (deprecated: use getAllCategories() from lib/contentful) */
+  categories: [] as const satisfies readonly CategoryConfig[],
 } as const
 
 /**
@@ -111,15 +102,22 @@ export const ADSENSE_SLOTS = {
 } as const
 
 /**
- * Helper to get category by slug
+ * Helper to get category by slug (deprecated: use categories from getAllCategories())
  */
 export function getCategoryBySlug(slug: string): CategoryConfig | undefined {
-  return BLOG_CONFIG.categories.find(cat => cat.slug === slug)
+  return (BLOG_CONFIG.categories as any[]).find(cat => cat.slug === slug)
 }
 
 /**
  * Helper to get category name by slug
  */
 export function getCategoryName(slug: string): string {
-  return getCategoryBySlug(slug)?.name || slug
+  const name = getCategoryBySlug(slug)?.name
+  if (name) return name
+
+  // Fallback: transform slug-to-title
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
 }
