@@ -46,7 +46,6 @@ COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/effect ./node_modules/effect
-COPY --from=builder /app/node_modules/@effect ./node_modules/@effect
 
 # Set correct permissions
 RUN mkdir -p /app/.next/cache && chown -R nextjs:nodejs /app
