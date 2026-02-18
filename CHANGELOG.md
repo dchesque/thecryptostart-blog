@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.13] - 2026-02-18
+
+### Changed
+- **Security**: Gerado e configurado `AUTH_SECRET` seguro para autenticação.
+
 ## [0.1.12] - 2026-02-17
 
 ### Fixed
