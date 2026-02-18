@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+// NOTA: output: 'standalone' foi removido pois causa conflito com Turbopack no dev.
+// Para build de produção/Docker, adicione novamente via variável de ambiente ou Dockerfile.
 const nextConfig = {
   images: {
     domains: ['images.ctfassets.net'],
@@ -10,7 +12,6 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   generateEtags: true,
-  output: 'standalone',
   headers: async () => [{
     source: '/:path*',
     headers: [
