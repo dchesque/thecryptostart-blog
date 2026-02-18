@@ -5,13 +5,14 @@ import React from 'react'
 interface ShareButtonsProps {
     title: string
     url: string
+    direction?: 'horizontal' | 'vertical'
 }
 
 /**
  * ShareButtons component
  * Handles social sharing interactivity
  */
-const ShareButtons: React.FC<ShareButtonsProps> = ({ title, url }) => {
+const ShareButtons: React.FC<ShareButtonsProps> = ({ title, url, direction = 'horizontal' }) => {
     const encodedTitle = encodeURIComponent(title)
     const encodedUrl = encodeURIComponent(url)
 
@@ -19,6 +20,7 @@ const ShareButtons: React.FC<ShareButtonsProps> = ({ title, url }) => {
         if (typeof navigator !== 'undefined' && navigator.clipboard) {
             navigator.clipboard.writeText(url)
                 .then(() => {
+                    // Using a more modern notification would be better, but alert works for now
                     alert('Link copiado para a área de transferência!')
                 })
                 .catch(err => {
@@ -28,7 +30,7 @@ const ShareButtons: React.FC<ShareButtonsProps> = ({ title, url }) => {
     }
 
     return (
-        <div className="flex gap-3">
+        <div className={`flex ${direction === 'vertical' ? 'flex-col' : 'flex-row'} gap-3`}>
             {/* Twitter */}
             <a
                 href={`https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`}

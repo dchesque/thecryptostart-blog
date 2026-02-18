@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.6.0] - 2026-02-18
+
+### Added
+- **Lead Gen Avançado**: Criado `GatedContent.tsx` para entrega de recursos exclusivos (PDFs/E-books) mediante inscrição.
+- **Polish**: Refinamento visual de todos os componentes de engajamento.
+
+## [0.5.0] - 2026-02-18
+
+### Added
+- **UX de Retenção**: Criado `ReadingProgressBar.tsx` (global no topo) e aprimorado `TableOfContents.tsx` com scroll sync e estados ativos premium.
+- **Social**: `ShareButtons.tsx` agora suporta layout vertical e foi integrado como barra sticky na sidebar dos posts.
+- **Interação**: Criado `SocialComments.tsx` com integração Giscus para discussões.
+- **Conversão**: Criados `InlineNewsletter.tsx` (corpo do post) e `ExitIntentPopup.tsx` (captura de saída).
+- **Componentes**: `NewsletterForm.tsx` e `PostMeta.tsx` otimizados com novos estilos e funcionalidades (Trending badge, Last Updated).
+
+---
+
 ## [0.4.0] - 2026-02-18
 
 ### Added

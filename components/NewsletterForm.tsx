@@ -2,11 +2,15 @@
 
 import { useState, FormEvent } from 'react'
 
+interface NewsletterFormProps {
+  className?: string
+}
+
 /**
  * Newsletter subscription form component
  * Handles email collection for marketing
  */
-export default function NewsletterForm() {
+export default function NewsletterForm({ className = '' }: NewsletterFormProps) {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
@@ -33,7 +37,7 @@ export default function NewsletterForm() {
   }
 
   return (
-    <div className="w-full">
+    <div className={`w-full ${className}`}>
       <form onSubmit={handleSubmit} className="relative group">
         <input
           type="email"

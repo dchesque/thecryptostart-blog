@@ -6,6 +6,8 @@ import Footer from '@/components/Footer'
 import { AuthProvider } from '@/components/AuthProvider'
 import StickyHeaderAd from '@/components/StickyHeaderAd'
 import StickyFooterAd from '@/components/StickyFooterAd'
+import ReadingProgressBar from '@/components/ReadingProgressBar'
+import ExitIntentPopup from '@/components/ExitIntentPopup'
 import { SITE_CONFIG } from '@/lib/constants'
 import { Montserrat, Open_Sans } from 'next/font/google'
 
@@ -141,6 +143,7 @@ export default function RootLayout({
             Skip to main content
           </a>
 
+          <ReadingProgressBar />
           <Header />
 
           {/* Sticky Header Ad — desktop only, shows on scroll up */}
@@ -154,6 +157,9 @@ export default function RootLayout({
 
           {/* Sticky Footer Ad — mobile only */}
           <StickyFooterAd slot="footer-ad" />
+
+          {/* Exit Intent Popup — Lead Generation */}
+          <ExitIntentPopup />
         </AuthProvider>
 
         {/* Google Analytics 4 */}

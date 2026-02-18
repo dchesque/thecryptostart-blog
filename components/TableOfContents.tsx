@@ -97,15 +97,18 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
 
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.id)
-          }
-        })
+        // Find the intersection that is most "active" (at the top of the viewport)
+        const visibleHeadings = entries
+          .filter(entry => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+
+        if (visibleHeadings.length > 0) {
+          setActiveId(visibleHeadings[0].target.id)
+        }
       },
       {
-        rootMargin: '-100px 0px -66% 0px',
-        threshold: 0,
+        rootMargin: '-80px 0px -70% 0px',
+        threshold: [0, 1.0],
       }
     )
 
@@ -126,7 +129,7 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
   const handleClick = (id: string) => {
     const element = document.getElementById(id)
     if (element) {
-      const offset = 100 // Account for sticky header
+      const offset = 120 // Increased offset for better visibility under sticky header
       const elementPosition = element.getBoundingClientRect().top
       const offsetPosition = elementPosition + window.pageYOffset - offset
 
@@ -134,26 +137,28 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
         top: offsetPosition,
         behavior: 'smooth'
       })
+      setActiveId(id)
     }
   }
 
   return (
     <nav
       aria-label="Table of Contents"
+      className="relative"
     >
-      <ul className="space-y-4">
+      <ul className="space-y-4 relative z-10">
         {headings.map((heading) => (
           <li
             key={heading.id}
-            className={`${heading.level === 3 ? 'ml-6' : ''} border-l-2 ${activeId === heading.id ? 'border-crypto-primary' : 'border-transparent'} transition-all duration-300`}
+            className={`${heading.level === 3 ? 'ml-6' : ''} transition-all duration-300`}
           >
             <button
               onClick={() => handleClick(heading.id)}
               className={`
-                text-left text-sm transition-all duration-300 block w-full pl-4 py-1
+                text-left text-sm transition-all duration-300 block w-full pl-4 py-1.5 border-l-2
                 ${activeId === heading.id
-                  ? 'text-crypto-navy font-bold translate-x-1'
-                  : 'text-crypto-charcoal/50 hover:text-crypto-primary hover:translate-x-1'
+                  ? 'text-crypto-primary font-bold border-crypto-primary bg-crypto-primary/5 rounded-r-lg'
+                  : 'text-crypto-charcoal/50 border-transparent hover:text-crypto-primary hover:border-crypto-primary/30 hover:translate-x-1'
                 }
               `}
             >

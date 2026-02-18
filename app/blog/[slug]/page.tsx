@@ -14,6 +14,8 @@ import BlogCard from '@/components/BlogCard'
 import ShareButtons from '@/components/ShareButtons'
 import AuthorCard from '@/components/AuthorCard'
 import RecommendedContent from '@/components/RecommendedContent'
+import InlineNewsletter from '@/components/InlineNewsletter'
+import SocialComments from '@/components/SocialComments'
 import { BLOG_CONFIG, CACHE_CONFIG, getCategoryName, SITE_CONFIG, getCategoryBySlug } from '@/lib/constants'
 
 // ISR: Revalidate every 5 minutes
@@ -313,6 +315,20 @@ export default async function PostPage({ params }: PostPageProps) {
         </div>
 
         <div className="container relative py-16 -mt-12 lg:-mt-20">
+          {/* Desktop Sticky Share Bar */}
+          <div className="hidden lg:block absolute -left-16 top-24 h-full pointer-events-none">
+            <div className="sticky top-40 pointer-events-auto">
+              <div className="bg-white rounded-2xl shadow-4 border border-crypto-light p-3 flex flex-col items-center gap-4">
+                <span className="text-[10px] font-black text-crypto-charcoal/30 uppercase tracking-widest vertical-text py-2">Share</span>
+                <ShareButtons
+                  title={post.title}
+                  url={`${SITE_CONFIG.url}/blog/${slug}`}
+                  direction="vertical"
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="grid lg:grid-cols-[1fr,350px] gap-16">
             {/* Main Content Area */}
             <div className="animate-slide-up [animation-delay:400ms]">
@@ -424,6 +440,10 @@ export default async function PostPage({ params }: PostPageProps) {
                       <div className="not-prose my-10 rounded-xl overflow-hidden bg-gray-50 min-h-[280px] flex items-center justify-center">
                         <AdSense slot="blog-middle" />
                       </div>
+
+                      {/* Inline Newsletter — Lead Generation */}
+                      <InlineNewsletter />
+
                       {documentToReactComponents(secondHalf, renderOptions)}
                     </>
                   )
@@ -444,6 +464,9 @@ export default async function PostPage({ params }: PostPageProps) {
                   />
                 </div>
               </div>
+
+              {/* Social Comments — Engagement */}
+              <SocialComments slug={slug} />
 
               {/* Tags Cloud */}
               {post.tags && post.tags.length > 0 && (
