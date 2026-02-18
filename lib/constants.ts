@@ -105,7 +105,7 @@ export const ADSENSE_SLOTS = {
  * Helper to get category by slug (deprecated: use categories from getAllCategories())
  */
 export function getCategoryBySlug(slug: string): CategoryConfig | undefined {
-  return (BLOG_CONFIG.categories as unknown as any[]).find(cat => cat.slug === slug)
+  return (BLOG_CONFIG.categories as readonly CategoryConfig[]).find(cat => cat.slug === slug)
 }
 
 /**

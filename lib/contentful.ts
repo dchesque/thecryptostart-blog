@@ -29,6 +29,11 @@ function getClient(): ContentfulClientApi<undefined> {
     const spaceId = process.env.CONTENTFUL_SPACE_ID
     const accessToken = process.env.CONTENTFUL_ACCESS_TOKEN
 
+    console.log('--- Contentful Client Init ---')
+    console.log('Space ID:', spaceId ? `${spaceId.substring(0, 4)}...` : 'MISSING')
+    console.log('Token:', accessToken ? `${accessToken.substring(0, 4)}...` : 'MISSING')
+    console.log('Env:', process.env.NEXT_PUBLIC_CONTENTFUL_ENVIRONMENT || 'master')
+
     if (!spaceId || !accessToken) {
       throw new Error(
         'Contentful environment variables are not configured. ' +
@@ -155,6 +160,8 @@ export async function getAllPosts(options?: PaginationOptions & TagOptions): Pro
       'fields.publishDate[lte]': new Date().toISOString(),
     }
 
+    console.log(`[Contentful] Querying posts at: ${query['fields.publishDate[lte]']}`)
+
     // Filter by category if provided (reference field)
     if (category) {
       query['fields.category.sys.contentType.sys.id'] = 'category'
@@ -167,6 +174,8 @@ export async function getAllPosts(options?: PaginationOptions & TagOptions): Pro
     }
 
     const response = await getClient().getEntries(query)
+    console.log(`getAllPosts found: ${response.items.length} posts (Total in space: ${response.total})`)
+
     return response.items.map((item) => transformPost(item as unknown as ContentfulBlogPost))
   } catch (error) {
     console.error('Error fetching posts:', error)

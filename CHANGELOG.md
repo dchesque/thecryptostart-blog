@@ -1,5 +1,21 @@
 # Changelog
  
+## [0.2.4] - 2026-02-18
+ 
+### Fixed
+- **Deploy**: Corrigido `Dockerfile` para capturar e utilizar variáveis de ambiente do Contentful durante o build (`next build`), essencial para geração de páginas estáticas e ISR.
+ 
+## [0.2.3] - 2026-02-18
+ 
+### Changed
+- **Dev**: Desativado Turbopack temporariamente para evitar crashes no Windows.
+- **Debug**: Refinados logs de data e query no Contentful para diagnóstico de produção.
+ 
+## [0.2.2] - 2026-02-18
+ 
+### Added
+- **Debug**: Adicionados logs de diagnóstico em `lib/contentful.ts` para rastrear conexão com CMS e filtragem de posts em produção.
+ 
 ## [0.2.1] - 2026-02-18
  
 ### Fixed
