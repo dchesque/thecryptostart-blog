@@ -32,12 +32,20 @@ export function generateMetadata(input: MetadataInput): Metadata {
     noIndex = false,
   } = input
 
+  // Keyword-first title format for better SEO
   const fullTitle = `${title} | ${SITE_CONFIG.name}`
   const ogImage = image || SEO_CONFIG.ogImage
 
+  // Ensure description is 155-160 chars with CTA
+  const optimizedDescription = description.length > 160
+    ? description.slice(0, 157) + '...'
+    : description.length < 100
+      ? `${description} Learn more at TheCryptoStart — your crypto education hub.`
+      : description
+
   return {
     title: fullTitle,
-    description,
+    description: optimizedDescription,
     keywords: keywords?.join(', '),
     authors: [{ name: SITE_CONFIG.author }],
     creator: SITE_CONFIG.author,
@@ -47,7 +55,7 @@ export function generateMetadata(input: MetadataInput): Metadata {
       locale: 'en_US',
       url: SITE_CONFIG.url,
       title: fullTitle,
-      description,
+      description: optimizedDescription,
       siteName: SITE_CONFIG.name,
       images: [
         {
@@ -63,7 +71,7 @@ export function generateMetadata(input: MetadataInput): Metadata {
     twitter: {
       card: SEO_CONFIG.twitterCard,
       title: fullTitle,
-      description,
+      description: optimizedDescription,
       images: [ogImage],
       creator: SEO_CONFIG.twitterHandle,
     },
@@ -176,6 +184,29 @@ export function generateBreadcrumbSchema(items: { name: string; url: string }[])
       position: index + 1,
       name: item.name,
       item: `${SITE_CONFIG.url}${item.url}`,
+    })),
+  }
+}
+
+interface FAQItem {
+  question: string
+  answer: string
+}
+
+/**
+ * Generate FAQPage JSON-LD schema
+ */
+export function generateFAQSchema(items: FAQItem[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
     })),
   }
 }

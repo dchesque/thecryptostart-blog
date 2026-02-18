@@ -96,9 +96,11 @@ export const CACHE_CONFIG = {
  */
 export const ADSENSE_SLOTS = {
   'blog-top': 'xxxxxxxxxxxx', // Replace with actual slot ID
+  'blog-middle': 'xxxxxxxxxxxx',
   'blog-bottom': 'xxxxxxxxxxxx',
   'blog-sidebar': 'xxxxxxxxxxxx',
   'homepage-banner': 'xxxxxxxxxxxx',
+  'homepage-mid': 'xxxxxxxxxxxx',
 } as const
 
 /**

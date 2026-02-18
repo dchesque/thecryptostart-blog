@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getAllPosts, getTotalPostsCount, searchPosts, getAllCategories } from '@/lib/contentful'
 import BlogCard from '@/components/BlogCard'
+import AdSense from '@/components/AdSense'
 import { BLOG_CONFIG, CACHE_CONFIG, getCategoryName } from '@/lib/constants'
 import type { BlogCategory } from '@/types/blog'
 import type { Metadata } from 'next'
@@ -9,9 +10,19 @@ import { SITE_CONFIG } from '@/lib/constants'
 // ISR: Revalidate every 5 minutes
 export const revalidate = 300
 
-export const metadata: Metadata = {
-  title: `Blog | ${SITE_CONFIG.name}`,
-  description: 'Explore our latest articles about cryptocurrency, blockchain, DeFi, NFTs, and Web3.',
+export async function generateMetadata({ searchParams }: BlogPageProps): Promise<Metadata> {
+  const { category } = await searchParams
+  if (category) {
+    const categoryName = getCategoryName(category)
+    return {
+      title: `${categoryName} Articles — Crypto Guides | ${SITE_CONFIG.name}`,
+      description: `Explore our best ${categoryName} articles. Learn everything about ${categoryName} with practical, beginner-friendly guides focused on real security and education.`,
+    }
+  }
+  return {
+    title: `Crypto Blog — Bitcoin, Ethereum & DeFi Articles | ${SITE_CONFIG.name}`,
+    description: 'Explore our latest articles about cryptocurrency, blockchain, DeFi, NFTs, and Web3. Practical guides for beginners and advanced investors.',
+  }
 }
 
 interface BlogPageProps {
@@ -65,6 +76,25 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   return (
     <div className="min-h-screen bg-white py-12">
       <div className="container">
+        {/* Category Header — shown when a category is selected */}
+        {category && (
+          <section className="mb-10 p-8 bg-gray-50 rounded-2xl border border-crypto-light">
+            <div className="flex flex-wrap items-center gap-4">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-widest text-crypto-charcoal/40 mb-1 block">Category</span>
+                <h1 className="text-3xl sm:text-4xl font-extrabold text-crypto-navy">
+                  {getCategoryName(category)}
+                </h1>
+                <p className="text-crypto-charcoal/60 mt-2">
+                  Explore all articles about {getCategoryName(category)} — from beginner guides to advanced strategies.
+                </p>
+              </div>
+              <span className="ml-auto bg-crypto-primary/10 text-crypto-primary font-bold px-4 py-2 rounded-full text-sm border border-crypto-primary/20">
+                {totalCount} {totalCount === 1 ? 'article' : 'articles'}
+              </span>
+            </div>
+          </section>
+        )}
         {/* Featured Section */}
         {!searchQuery && !category && page === 1 && posts.length > 0 && (
           <section className="mb-12">
@@ -141,6 +171,11 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         </div>
 
         {/* Posts Grid */}
+        {/* Ad — Blog Top (topo da listagem) */}
+        <div className="mb-8 rounded-xl overflow-hidden">
+          <AdSense slot="blog-top" />
+        </div>
+
         {posts.length > 0 ? (
           <div className="grid-posts mb-12">
             {(searchQuery || category || page > 1 ? posts : posts.slice(3)).map((post) => (

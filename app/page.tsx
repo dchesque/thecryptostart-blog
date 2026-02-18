@@ -1,13 +1,20 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { getAllPosts, getAllCategories } from '@/lib/contentful'
 import BlogCard from '@/components/BlogCard'
 import NewsletterForm from '@/components/NewsletterForm'
 import FAQ from '@/components/FAQ'
+import AdSense from '@/components/AdSense'
 import { BLOG_CONFIG, SITE_CONFIG, CACHE_CONFIG } from '@/lib/constants'
 import { generateWebsiteSchema, generateOrganizationSchema } from '@/lib/seo'
 
 // ISR: Revalidate every 5 minutes
 export const revalidate = 300
+
+export const metadata: Metadata = {
+  title: `Crypto for Beginners — Bitcoin, Ethereum & DeFi Guides | ${SITE_CONFIG.name}`,
+  description: 'Learn how to invest in Bitcoin and Web3 with practical, educational guides focused on real security. The best starting point for your crypto journey. Start here.',
+}
 
 export default async function Homepage() {
   // Fetch data for sections
@@ -90,6 +97,13 @@ export default async function Homepage() {
         </div>
       </section>
 
+      {/* AD — Homepage Banner (após hero) */}
+      <div className="container py-4">
+        <div className="rounded-xl overflow-hidden">
+          <AdSense slot="homepage-banner" />
+        </div>
+      </div>
+
       {/* START HERE - Fundamental Articles */}
       <section className="section-spacing bg-gray-50/50">
         <div className="container">
@@ -142,7 +156,12 @@ export default async function Homepage() {
         </div>
       </section>
 
-      {/* CATEGORIES */}
+      {/* AD — Homepage Mid (após recent articles) */}
+      <div className="container py-4">
+        <div className="rounded-xl overflow-hidden">
+          <AdSense slot="homepage-mid" />
+        </div>
+      </div>
       <section className="section-spacing bg-gray-50/50">
         <div className="container">
           <div className="text-center mb-16">

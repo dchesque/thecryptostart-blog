@@ -1,5 +1,25 @@
 # Changelog
- 
+
+## [0.3.0] - 2026-02-18
+
+### Added
+- **Componentes**: Criados 5 novos componentes UI — `Breadcrumb`, `PostMeta`, `FeaturedImage`, `AuthorCard` e `InfoBox` (callout boxes).
+- **Monetização**: Adicionados ad slots `blog-top` e `blog-middle` na Post Page (split do rich text ao meio para inserção do ad).
+- **Monetização**: Adicionados ad slots `homepage-banner` (após hero) e `homepage-mid` (após recent articles) na Homepage.
+- **Monetização**: Adicionado ad slot `blog-top` no topo da listagem da Category Page.
+- **UX**: Adicionado `AuthorCard` detalhado (avatar, bio, social links, CTA) após o conteúdo do post.
+- **UX**: Adicionado category header contextual na Category Page quando uma categoria está selecionada.
+- **SEO**: Adicionada `generateFAQSchema()` em `lib/seo.ts` para schema FAQPage.
+- **SEO**: Metadata dinâmica keyword-first na Homepage e Category Page.
+- **Tailwind**: Customizadas prose classes — H2 com border-bottom, blockquote com border-left colorida, code blocks com fundo escuro.
+
+### Changed
+- **Post Page**: Melhorado espaçamento do rich text para maior legibilidade (prose-p:my-4, leading-8).
+- **SEO**: `generateMetadata()` agora trunca descriptions para 155-160 chars com CTA.
+- **Constants**: Adicionados slots `blog-middle` e `homepage-mid` em `ADSENSE_SLOTS`.
+
+---
+
 ## [0.2.5] - 2026-02-18
 
 ### Fixed

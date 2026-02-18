@@ -12,6 +12,7 @@ import NewsletterForm from '@/components/NewsletterForm'
 import RelatedPosts from '@/components/RelatedPosts'
 import BlogCard from '@/components/BlogCard'
 import ShareButtons from '@/components/ShareButtons'
+import AuthorCard from '@/components/AuthorCard'
 import { BLOG_CONFIG, CACHE_CONFIG, getCategoryName, SITE_CONFIG, getCategoryBySlug } from '@/lib/constants'
 
 // ISR: Revalidate every 5 minutes
@@ -316,7 +317,7 @@ export default async function PostPage({ params }: PostPageProps) {
             <div className="animate-slide-up [animation-delay:400ms]">
               {/* Featured Image - Premium Presentation */}
               {post.featuredImage && (
-                <figure className="mb-16 transform hover:scale-[1.01] transition-transform duration-700 group">
+                <figure className="mb-8 transform hover:scale-[1.01] transition-transform duration-700 group">
                   <div className="aspect-[21/9] relative rounded-[2.5rem] overflow-hidden shadow-5 border-4 border-white">
                     <Image
                       src={post.featuredImage.url}
@@ -336,6 +337,11 @@ export default async function PostPage({ params }: PostPageProps) {
                 </figure>
               )}
 
+              {/* Ad — Above Fold (blog-top) */}
+              <div className="my-8 rounded-xl overflow-hidden">
+                <AdSense slot="blog-top" />
+              </div>
+
               {/* Share Floating Bottom Mobile */}
               <div className="lg:hidden sticky bottom-6 z-50 flex justify-center content-center animate-bounce-subtle">
                 <div className="bg-white/80 backdrop-blur-xl px-6 py-4 rounded-[2rem] shadow-5 border border-crypto-light/50 flex items-center gap-4">
@@ -348,14 +354,19 @@ export default async function PostPage({ params }: PostPageProps) {
               </div>
 
               {/* Main Text Content */}
-              <div className="prose prose-lg max-w-none prose-p:my-3 prose-h2:mt-10 prose-h2:mb-4 prose-h3:mt-8 prose-h3:mb-3 prose-headings:font-heading prose-headings:text-crypto-navy prose-p:text-crypto-charcoal/80 prose-p:leading-7 prose-a:text-crypto-primary prose-a:no-underline hover:prose-a:text-crypto-accent prose-a:font-bold prose-img:rounded-3xl prose-strong:text-crypto-navy prose-strong:font-bold">
+              <div className="prose prose-lg max-w-none prose-p:my-4 prose-p:leading-8 prose-h2:mt-12 prose-h2:mb-5 prose-h3:mt-10 prose-h3:mb-4 prose-headings:font-heading prose-headings:text-crypto-navy prose-p:text-crypto-charcoal/80 prose-a:text-crypto-primary prose-a:no-underline hover:prose-a:text-crypto-accent prose-a:font-bold prose-img:rounded-3xl prose-strong:text-crypto-navy prose-strong:font-bold">
                 {(() => {
                   const seenIds = new Map<string, number>()
-                  return documentToReactComponents(post.content, {
+                  const nodes = post.content.content
+                  const midIndex = Math.floor(nodes.length / 2)
+                  const firstHalf = { ...post.content, content: nodes.slice(0, midIndex) }
+                  const secondHalf = { ...post.content, content: nodes.slice(midIndex) }
+
+                  const renderOptions = {
                     ...richTextOptions,
                     renderNode: {
                       ...richTextOptions.renderNode,
-                      [BLOCKS.HEADING_2]: (node, children) => {
+                      [BLOCKS.HEADING_2]: (node: any, children: any) => {
                         const text = (node.content[0] as any)?.value || ''
                         let id = slugify(text)
 
@@ -373,7 +384,7 @@ export default async function PostPage({ params }: PostPageProps) {
                           </h2>
                         )
                       },
-                      [BLOCKS.HEADING_3]: (node, children) => {
+                      [BLOCKS.HEADING_3]: (node: any, children: any) => {
                         const text = (node.content[0] as any)?.value || ''
                         let id = slugify(text)
 
@@ -391,7 +402,7 @@ export default async function PostPage({ params }: PostPageProps) {
                           </h3>
                         )
                       },
-                      [BLOCKS.QUOTE]: (node, children) => (
+                      [BLOCKS.QUOTE]: (node: any, children: any) => (
                         <blockquote className="border-l-0 pl-0 py-12 my-16 relative bg-crypto-darker rounded-[2.5rem] overflow-hidden shadow-4 group">
                           <div className="absolute top-0 left-0 w-1.5 h-full bg-crypto-primary"></div>
                           <div className="relative z-10 px-12 italic text-2xl text-white/90 font-medium leading-7 font-heading">
@@ -403,7 +414,18 @@ export default async function PostPage({ params }: PostPageProps) {
                         </blockquote>
                       ),
                     }
-                  })
+                  }
+
+                  return (
+                    <>
+                      {documentToReactComponents(firstHalf, renderOptions)}
+                      {/* Ad — Middle Content (blog-middle) */}
+                      <div className="not-prose my-10 rounded-xl overflow-hidden">
+                        <AdSense slot="blog-middle" />
+                      </div>
+                      {documentToReactComponents(secondHalf, renderOptions)}
+                    </>
+                  )
                 })()}
               </div>
 
@@ -443,6 +465,13 @@ export default async function PostPage({ params }: PostPageProps) {
                   </div>
                 </div>
               )}
+
+              {/* Author Card — Credibility after content */}
+              <AuthorCard
+                author={post.author}
+                category={post.category}
+                className="mt-16"
+              />
 
               {/* Newsletter Premium Card */}
               <div className="mt-24 p-12 relative overflow-hidden bg-crypto-darker rounded-[3rem] text-white shadow-5 group">
