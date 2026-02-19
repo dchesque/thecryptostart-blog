@@ -26,7 +26,7 @@ export const SITE_CONFIG = {
   },
   adSense: {
     enabled: process.env.NODE_ENV === 'production',
-    clientId: 'ca-pub-xxxxxxxxxxxxxxx', // Replace with actual client ID
+    clientId: process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID || 'ca-pub-xxxxxxxxxxxxxxx',
   },
 } as const
 
