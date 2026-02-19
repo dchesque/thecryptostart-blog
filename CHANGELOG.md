@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.9.0] - 2026-02-19
+### Added
+- **i18n**: Padronização completa do blog para Inglês Americano (en-US).
+- **UX**: Refatoração da seção de comentários para layout de coluna única com formulário no topo.
+- **UI**: Espaçamento entre linhas dos posts ajustado para `leading-tight` para maior densidade.
+- **UI**: Melhoria no espaçamento e balanceamento visual do `ExitIntentPopup`.
+
+### Fixed
+- **Typography**: Corrigido alinhamento e espaçamento de bullet points em artigos do Contentful.
+- **Build**: Corrigidos erros de sintaxe no renderizador de rich text.
+
+## [0.8.1] - 2026-02-19
+### Fixed
+- **Comentários**: Corrigido erro de runtime `comments.map is not a function` ao lidar com respostas de erro da API.
+- **i18n**: Ajustada localidade de exibição de data para `pt-BR` em todo o sistema de comentários.
+
 ## [0.8.0] - 2026-02-19
 ### Added
 - Refatoração da Blog Listing Page (`app/blog/page.tsx`) para layout Triple-Column (Grade + Sidebar).

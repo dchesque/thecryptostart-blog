@@ -62,19 +62,51 @@ model Post {
 }
 
 model Comment {
-  id        String   @id @default(uuid())
-  postId    String
-  userId    String
-  content   String   @db.Text
-  approved  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String    @id @default(uuid())
+  postSlug     String
+  authorName   String
+  authorEmail  String
+  content      String    @db.Text
+  status       CommentStatus @default(PENDING)
+  spamScore    Float     @default(0)
+  ipAddress    String?
+  userAgent    String?
+  parentId     String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  modifiedAt   DateTime?
+  modifiedBy   String?
+  
+  post         Post?     @relation(fields: [postSlug], references: [slug])
+  parent       Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies      Comment[] @relation("CommentReplies")
+  user         User?     @relation(fields: [authorEmail], references: [email])
 
-  @@index([postId])
-  @@index([userId])
+  @@index([postSlug])
+  @@index([status])
+  @@index([authorEmail])
+  @@index([parentId])
 }
+
+model SpamLog {
+  id          String   @id @default(uuid())
+  authorEmail String
+  ipAddress   String
+  reason      String
+  severity    String
+  createdAt   DateTime @default(now())
+
+  @@index([authorEmail])
+  @@index([ipAddress])
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SPAM
+}
+
 
 model Follower {
   id          String   @id @default(uuid())

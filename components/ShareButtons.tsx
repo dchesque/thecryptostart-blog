@@ -21,7 +21,7 @@ const ShareButtons: React.FC<ShareButtonsProps> = ({ title, url, direction = 'ho
             navigator.clipboard.writeText(url)
                 .then(() => {
                     // Using a more modern notification would be better, but alert works for now
-                    alert('Link copiado para a área de transferência!')
+                    alert('Link copied to clipboard!')
                 })
                 .catch(err => {
                     console.error('Erro ao copiar link:', err)

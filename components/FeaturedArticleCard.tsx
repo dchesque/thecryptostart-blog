@@ -34,7 +34,7 @@ export default function FeaturedArticleCard({
                     <span className="px-4 py-1.5 bg-crypto-primary rounded-full text-white text-xs font-bold uppercase tracking-widest">
                         {post.category}
                     </span>
-                    <span className="text-white/60 text-xs font-bold uppercase tracking-widest">
+                    <span className="text-white/80 text-xs font-bold uppercase tracking-widest">
                         {post.readingTime} min read
                     </span>
                 </div>
@@ -43,7 +43,7 @@ export default function FeaturedArticleCard({
                     {post.title}
                 </h2>
 
-                <p className="text-white/70 text-lg md:text-xl line-clamp-2 max-w-2xl mb-8 leading-relaxed">
+                <p className="text-white/90 text-lg md:text-xl line-clamp-2 max-w-2xl mb-8 leading-relaxed">
                     {post.description}
                 </p>
 

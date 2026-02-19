@@ -22,7 +22,7 @@ export default function CategoryCard({
                 <h3 className="font-bold text-crypto-darker group-hover:text-crypto-primary transition-colors">
                     {category.name}
                 </h3>
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">
                     Explore Topics →
                 </p>
             </div>

@@ -12,28 +12,33 @@ export default async function CategoryLinks({
     limit = 5,
     className = '',
 }: CategoryLinksProps) {
-    const categories = await getAllCategories()
+    try {
+        const categories = await getAllCategories()
 
-    // Filter current category and limit
-    const filtered = categories
-        .filter(c => c.slug !== categorySlug)
-        .slice(0, limit)
+        // Filter current category and limit
+        const filtered = categories
+            .filter(c => c.slug !== categorySlug)
+            .slice(0, limit)
 
-    return (
-        <ul className={`space-y-3 ${className}`}>
-            {filtered.map(cat => (
-                <li key={cat.slug}>
-                    <Link
-                        href={`/blog?category=${cat.slug}`}
-                        className="group flex items-center justify-between text-sm text-gray-600 hover:text-crypto-primary transition-colors"
-                    >
-                        <span className="flex items-center gap-2">
-                            <span className="w-1 h-1 rounded-full bg-gray-300 group-hover:bg-crypto-primary transition-colors" />
+        if (filtered.length === 0) return null
+
+        return (
+            <ul className={`flex flex-wrap gap-2 ${className}`}>
+                {filtered.map(cat => (
+                    <li key={cat.slug}>
+                        <Link
+                            href={`/blog?category=${cat.slug}`}
+                            className="px-3 py-1 text-xs font-medium text-gray-600 hover:text-crypto-primary hover:bg-crypto-primary/5 border border-gray-100 rounded-full transition-all"
+                        >
                             {cat.name}
-                        </span>
-                    </Link>
-                </li>
-            ))}
-        </ul>
-    )
+                        </Link>
+                    </li>
+                ))}
+            </ul>
+        )
+    } catch (error) {
+        console.error('Error fetching categories:', error)
+        return null
+    }
 }
+

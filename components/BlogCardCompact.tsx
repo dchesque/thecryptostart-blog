@@ -37,7 +37,7 @@ export default function BlogCardCompact({
                     {post.title}
                 </h3>
 
-                <p className="text-gray-500 text-sm line-clamp-2 mb-6 leading-relaxed flex-1">
+                <p className="text-gray-600 text-sm line-clamp-2 mb-6 leading-relaxed flex-1">
                     {post.description}
                 </p>
 
@@ -52,9 +52,9 @@ export default function BlogCardCompact({
                                 </div>
                             )}
                         </div>
-                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">{post.author.name}</span>
+                        <span className="text-[11px] font-bold text-gray-500 uppercase tracking-tighter">{post.author.name}</span>
                     </div>
-                    <span className="text-[10px] font-medium text-gray-400">{post.readingTime} min read</span>
+                    <span className="text-[10px] font-bold text-gray-500">{post.readingTime} min read</span>
                 </div>
             </div>
         </Link>

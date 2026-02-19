@@ -1,6 +1,9 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
+import CommentForm from './CommentForm'
+import CommentsList from './CommentsList'
+import { MessageSquare } from 'lucide-react'
 
 interface SocialCommentsProps {
     slug: string
@@ -8,50 +11,43 @@ interface SocialCommentsProps {
 
 /**
  * SocialComments component
- * Integrates Giscus for post discussions
+ * Custom internal commenting system with anti-spam
  */
 export default function SocialComments({ slug }: SocialCommentsProps) {
-    const [mounted, setMounted] = useState(false)
+    const [refreshKey, setRefreshKey] = useState(0)
 
-    useEffect(() => {
-        setMounted(true)
-    }, [])
-
-    if (!mounted) return <div className="min-h-[200px] flex items-center justify-center bg-gray-50 rounded-[2.5rem] mt-20 animate-pulse text-crypto-charcoal/30">Loading comments...</div>
+    const handleSuccess = () => {
+        setRefreshKey(prev => prev + 1)
+    }
 
     return (
-        <section className="mt-20 pt-20 border-t border-crypto-light">
-            <div className="flex items-center gap-3 mb-10">
-                <h3 className="text-2xl font-bold text-crypto-navy font-heading italic">Join the Discussion</h3>
-                <div className="flex-1 h-px bg-crypto-light" />
+        <section id="comments" className="mt-24 pt-20 border-t border-gray-100">
+            <div className="flex items-center gap-4 mb-12">
+                <div className="w-12 h-12 bg-crypto-primary/10 text-crypto-primary rounded-2xl flex items-center justify-center">
+                    <MessageSquare className="w-6 h-6" />
+                </div>
+                <div>
+                    <h3 className="text-2xl md:text-3xl font-black text-crypto-darker tracking-tight italic">Community & Discussion</h3>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Join the secure conversation</p>
+                </div>
+                <div className="flex-1 h-px bg-gradient-to-r from-gray-100 to-transparent ml-4" />
             </div>
 
-            <div className="min-h-[200px]">
-                {/* Giscus Integration */}
-                <script
-                    src="https://giscus.app/client.js"
-                    data-repo="[REPLACE_WITH_YOUR_REPO]"
-                    data-repo-id="[REPLACE_WITH_YOUR_REPO_ID]"
-                    data-category="Announcements"
-                    data-category-id="[REPLACE_WITH_YOUR_CATEGORY_ID]"
-                    data-mapping="pathname"
-                    data-strict="0"
-                    data-reactions-enabled="1"
-                    data-emit-metadata="0"
-                    data-input-position="top"
-                    data-theme="light_high_contrast"
-                    data-lang="en"
-                    data-loading="lazy"
-                    crossOrigin="anonymous"
-                    async
-                ></script>
+            <div className="max-w-3xl mx-auto space-y-16">
+                {/* Top: Form */}
+                <div className="bg-white p-8 md:p-12 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-50/50">
+                    <h4 className="text-xl font-bold text-crypto-darker mb-8 flex items-center gap-2">
+                        Leave your comment
+                    </h4>
+                    <CommentForm postSlug={slug} onSuccess={handleSuccess} />
+                </div>
 
-                {/* Fallback if Giscus Repo is not set */}
-                <div className="p-10 text-center bg-crypto-light rounded-[2.5rem] border border-crypto-light/50">
-                    <p className="text-crypto-navy font-bold text-lg mb-2">Discussion is currently disabled.</p>
-                    <p className="text-crypto-charcoal/50 text-sm">Please configure your Giscus repository in <code>SocialComments.tsx</code> to enable comments.</p>
+                {/* Bottom: List */}
+                <div className="pt-8 border-t border-gray-50">
+                    <CommentsList postSlug={slug} refreshKey={refreshKey} />
                 </div>
             </div>
         </section>
     )
 }
+

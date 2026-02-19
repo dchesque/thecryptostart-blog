@@ -22,6 +22,7 @@ import FeaturedImage from '@/components/FeaturedImage'
 import CompactTableOfContents from '@/components/CompactTableOfContents'
 import CategoryLinks from '@/components/CategoryLinks'
 import PopularPosts from '@/components/PopularPosts'
+
 import { BLOG_CONFIG, CACHE_CONFIG, getCategoryName, SITE_CONFIG, getCategoryBySlug } from '@/lib/constants'
 
 // ISR: Revalidate every 5 minutes
@@ -114,12 +115,9 @@ const richTextOptions: Options = {
     ),
   },
   renderNode: {
-    [BLOCKS.PARAGRAPH]: (node, children) => {
-      // Avoid rendering empty paragraphs which add unnecessary vertical space
-      const isEmpty = node.content.every((c: any) => c.nodeType === 'text' && !c.value.trim())
-      if (isEmpty) return null
-      return <p className="leading-7">{children}</p>
-    },
+    [BLOCKS.PARAGRAPH]: (node, children) => (
+      <p className="leading-tight mb-2 last:mb-0 text-crypto-charcoal/80">{children}</p>
+    ),
     [BLOCKS.HEADING_2]: (node, children) => {
       const text = (node.content[0] as any)?.value || ''
       const id = slugify(text)
@@ -142,14 +140,16 @@ const richTextOptions: Options = {
       <h4 className="text-lg font-semibold mt-6 mb-2">{children}</h4>
     ),
     [BLOCKS.UL_LIST]: (node, children) => (
-      <ul className="list-disc list-inside mb-6 space-y-2">{children}</ul>
+      <ul className="list-disc list-outside mb-4 ml-6 space-y-1">{children}</ul>
     ),
     [BLOCKS.OL_LIST]: (node, children) => (
-      <ol className="list-decimal list-inside mb-6 space-y-2">{children}</ol>
+      <ol className="list-decimal list-outside mb-4 ml-6 space-y-1">{children}</ol>
     ),
-    [BLOCKS.LIST_ITEM]: (node, children) => (
-      <li className="text-gray-300">{children}</li>
-    ),
+    [BLOCKS.LIST_ITEM]: (node, children) => {
+      // If children is a paragraph, we might want to unwrap it if it's the only one
+      // but Tailwind Typography .prose li p handles it better if we just control margins
+      return <li className="text-crypto-charcoal/80 pl-2 leading-tight">{children}</li>
+    },
     [BLOCKS.QUOTE]: (node, children) => (
       <blockquote className="border-l-4 border-crypto-primary pl-4 py-2 my-6 italic text-gray-400 bg-crypto-darker/50 rounded-r-lg">
         {children}
@@ -428,7 +428,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
                 {relatedPosts.length > 0 && (
                   <div>
-                    <h3 className="text-2xl font-bold text-crypto-navy mb-8">Mais Artigos Relacionados</h3>
+                    <h3 className="text-2xl font-bold text-crypto-navy mb-8">More Related Articles</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {relatedPosts.map(p => (
                         <BlogCard key={p.id} post={p} />
@@ -455,7 +455,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
                 {/* Related Categories */}
                 <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-4">
-                  <h4 className="font-bold text-sm mb-4 uppercase tracking-widest text-crypto-navy">Mais Categorias</h4>
+                  <h4 className="font-bold text-sm mb-4 uppercase tracking-widest text-crypto-navy">More Categories</h4>
                   <CategoryLinks categorySlug={post.category} limit={6} />
                 </div>
 
@@ -466,7 +466,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
                 {/* Popular Posts */}
                 <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-4">
-                  <h4 className="font-bold text-sm mb-4 uppercase tracking-widest text-crypto-navy">Popular agora</h4>
+                  <h4 className="font-bold text-sm mb-4 uppercase tracking-widest text-crypto-navy">Popular Now</h4>
                   <PopularPosts categorySlug={post.category} limit={3} />
                 </div>
 

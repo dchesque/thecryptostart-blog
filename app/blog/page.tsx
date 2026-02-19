@@ -92,7 +92,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
             <div>
               <h1 className="text-4xl md:text-6xl font-black text-crypto-darker tracking-tight mb-4">
                 {searchQuery
-                  ? `Resultados para: "${searchQuery}"`
+                  ? `Results for: "${searchQuery}"`
                   : category
                     ? getCategoryName(category)
                     : 'Library & Insights'
@@ -100,8 +100,8 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
               </h1>
               <p className="text-lg text-gray-500 max-w-2xl font-medium">
                 {category
-                  ? `Explorando os melhores guias e tutoriais sobre ${getCategoryName(category)}.`
-                  : 'Sua enciclopédia definitiva sobre o mercado de criptoativos, segurança e inovação.'
+                  ? `Exploring the best guides and tutorials on ${getCategoryName(category)}.`
+                  : 'Your ultimate encyclopedia on the cryptoasset market, security, and innovation.'
                 }
               </p>
             </div>
@@ -164,9 +164,9 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
             ) : (
               <div className="text-center py-24 bg-white rounded-[3rem] border border-gray-100">
                 <div className="text-6xl mb-6">🔍</div>
-                <h3 className="text-2xl font-black text-crypto-darker mb-2">Nada encontrado</h3>
-                <p className="text-gray-500 mb-8 max-w-sm mx-auto">Não encontramos artigos para sua busca. Tente palavras-chave diferentes ou explore nossas categorias.</p>
-                <Link href="/blog" className="px-8 py-3 bg-crypto-primary text-white font-bold rounded-xl">Ver Tudo</Link>
+                <h3 className="text-2xl font-black text-crypto-darker mb-2">Nothing found</h3>
+                <p className="text-gray-500 mb-8 max-w-sm mx-auto">We couldn't find any articles for your search. Try different keywords or explore our categories.</p>
+                <Link href="/blog" className="px-8 py-3 bg-crypto-primary text-white font-bold rounded-xl">View All</Link>
               </div>
             )}
           </div>
@@ -183,7 +183,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
               <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
                 <h4 className="font-bold text-xs uppercase tracking-widest text-crypto-darker mb-6 flex items-center gap-2">
                   <span className="w-1.5 h-4 bg-crypto-primary rounded-full"></span>
-                  Explorar Tópicos
+                  Explore Topics
                 </h4>
                 <CategoryLinks categorySlug={category || ''} limit={8} />
               </div>
@@ -197,7 +197,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
               <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
                 <h4 className="font-bold text-xs uppercase tracking-widest text-crypto-darker mb-6 flex items-center gap-2">
                   <span className="w-1.5 h-4 bg-crypto-primary rounded-full"></span>
-                  Mais Lidos
+                  Most Read
                 </h4>
                 <PopularPosts categorySlug={category || ''} limit={4} />
               </div>
@@ -213,7 +213,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
         {/* Categories Section (Secondary Grid) */}
         {!category && !searchQuery && (
           <section className="mt-24 pt-24 border-t border-gray-100">
-            <h2 className="text-3xl font-black text-crypto-darker mb-10">Arquivos por Categoria</h2>
+            <h2 className="text-3xl font-black text-crypto-darker mb-10">Articles by Category</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {categories.map(cat => (
                 <CategoryCard key={cat.slug} category={cat} />

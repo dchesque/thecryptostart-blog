@@ -61,35 +61,41 @@ export default function ExitIntentPopup() {
 
                 <div className="grid md:grid-cols-2">
                     {/* Visual Side */}
-                    <div className="hidden md:flex flex-col justify-center p-12 bg-crypto-primary text-white relative overflow-hidden">
+                    <div className="hidden md:flex flex-col justify-center p-10 lg:p-12 bg-crypto-primary text-white relative overflow-hidden">
                         <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
                         <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
 
-                        <div className="relative z-10">
-                            <span className="text-white/70 font-bold uppercase tracking-widest text-[10px] mb-4 block">Exclusive Gift</span>
-                            <h2 className="text-4xl font-bold font-heading mb-6 italic leading-tight">
-                                Wait! Before you leave...
-                            </h2>
-                            <p className="text-white/80 font-medium text-lg leading-relaxed">
-                                Download our <span className="text-white font-bold underline decoration-white/30 decoration-2 underline-offset-4">"The Crypto 2026 Checklist"</span> for free.
+                        <div className="relative z-10 space-y-4">
+                            <div>
+                                <span className="text-white/70 font-bold uppercase tracking-widest text-[9px] mb-1 block">Exclusive Gift</span>
+                                <h2 className="text-3xl lg:text-4xl font-bold font-heading italic leading-tight">
+                                    Wait! Before you leave...
+                                </h2>
+                            </div>
+                            <p className="text-white/80 font-medium text-base leading-snug">
+                                Download our <span className="text-white font-bold underline decoration-white/30 decoration-2 underline-offset-2">"The Crypto 2026 Checklist"</span> for free.
                             </p>
                         </div>
                     </div>
 
                     {/* Form Side */}
-                    <div className="p-8 sm:p-12 flex flex-col justify-center bg-white">
-                        <h3 className="text-2xl font-bold text-crypto-navy mb-4 font-heading md:hidden italic">
-                            Wait! Free Gift Inside.
-                        </h3>
-                        <p className="text-crypto-charcoal/60 mb-8 font-medium text-sm leading-relaxed">
-                            Sign up for our newsletter and get the exclusive roadmap delivered to your inbox instantly.
-                        </p>
+                    <div className="p-8 sm:p-10 flex flex-col justify-center bg-white">
+                        <div className="space-y-6">
+                            <div>
+                                <h3 className="text-xl font-bold text-crypto-navy mb-3 font-heading md:hidden italic">
+                                    Wait! Free Gift Inside.
+                                </h3>
+                                <p className="text-crypto-charcoal/60 font-medium text-sm leading-normal">
+                                    Sign up for our newsletter and get the exclusive roadmap delivered to your inbox instantly.
+                                </p>
+                            </div>
 
-                        <NewsletterForm className="scale-105" />
+                            <NewsletterForm />
 
-                        <p className="mt-6 text-[10px] text-crypto-charcoal/30 font-medium text-center">
-                            Join 25,000+ crypto enthusiasts. 100% Privacy guaranteed.
-                        </p>
+                            <p className="text-[10px] text-crypto-charcoal/40 font-medium text-center">
+                                Join 25,000+ crypto enthusiasts. 100% Privacy guaranteed.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>

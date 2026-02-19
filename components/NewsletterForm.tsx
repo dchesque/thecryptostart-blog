@@ -46,15 +46,15 @@ export default function NewsletterForm({ className = '' }: NewsletterFormProps) 
           placeholder="your@email.com"
           required
           disabled={status === 'loading'}
-          className="w-full pl-6 pr-40 py-5 rounded-2xl bg-white border-2 border-crypto-primary/10 text-crypto-navy placeholder:text-crypto-charcoal/30 focus:border-crypto-primary focus:outline-none focus:ring-4 focus:ring-crypto-primary/5 transition-all text-lg font-medium disabled:opacity-50"
+          className="w-full pl-5 pr-32 py-3 rounded-xl bg-white border-2 border-crypto-primary/10 text-crypto-navy placeholder:text-crypto-charcoal/30 focus:border-crypto-primary focus:outline-none focus:ring-4 focus:ring-crypto-primary/5 transition-all text-base font-medium disabled:opacity-50"
         />
         <button
           type="submit"
           disabled={status === 'loading'}
-          className="absolute right-2 top-2 bottom-2 px-8 rounded-xl bg-crypto-primary hover:bg-crypto-accent text-white font-bold transition-all flex items-center gap-2 group-hover:shadow-lg disabled:opacity-50"
+          className="absolute right-1.5 top-1.5 bottom-1.5 px-6 rounded-lg bg-crypto-primary hover:bg-crypto-accent text-white font-bold transition-all flex items-center gap-2 group-hover:shadow-lg disabled:opacity-50 text-sm"
         >
           {status === 'loading' ? (
-            <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           ) : (
             'Subscribe'
           )}

@@ -24,30 +24,39 @@ export default function FAQAccordion({
     }
 
     return (
-        <div className={`space-y-3 ${className}`}>
+        <div className={`space-y-4 ${className}`}>
             {faqs.map((faq, index) => (
                 <div
                     key={index}
-                    className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:border-crypto-primary/30 transition-colors"
+                    className={`group border transition-all duration-300 rounded-2xl overflow-hidden ${openIndex === index
+                            ? 'border-crypto-primary/30 bg-white shadow-xl shadow-crypto-primary/5'
+                            : 'border-gray-100 bg-gray-50/30 hover:bg-white hover:border-gray-200 shadow-sm'
+                        }`}
                 >
                     <button
                         onClick={() => toggle(index)}
-                        className="w-full flex items-center justify-between p-5 text-left transition-colors"
+                        className="w-full flex items-center justify-between p-5 md:p-6 text-left transition-colors"
                         aria-expanded={openIndex === index}
                     >
-                        <span className="font-bold text-gray-800 text-base md:text-lg leading-tight">
+                        <span className={`font-bold text-gray-800 text-base md:text-lg leading-tight transition-colors ${openIndex === index ? 'text-crypto-primary' : 'text-gray-700'}`}>
                             {faq.question}
                         </span>
-                        <ChevronDown
-                            className={`w-5 h-5 text-crypto-primary transition-transform duration-300 ${openIndex === index ? 'rotate-180' : ''}`}
-                        />
+                        <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${openIndex === index ? 'bg-crypto-primary text-white rotate-180' : 'bg-gray-100 text-gray-400'}`}>
+                            <ChevronDown className="w-4 h-4" />
+                        </div>
                     </button>
 
                     <div
-                        className={`transition-all duration-300 ease-in-out ${openIndex === index ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
+                        className={`transition-all duration-500 ease-in-out ${openIndex === index
+                                ? 'max-h-[1000px] opacity-100'
+                                : 'max-h-0 opacity-0'
+                            }`}
+                        style={{ overflow: 'hidden' }}
                     >
-                        <div className="p-5 pt-0 text-gray-600 text-sm md:text-base leading-relaxed border-t border-gray-50 bg-gray-50/30">
-                            {faq.answer}
+                        <div className="px-5 md:px-6 pb-6 text-gray-600 text-sm md:text-base leading-relaxed">
+                            <div className="pt-4 border-t border-gray-100/50">
+                                {faq.answer}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -55,3 +64,4 @@ export default function FAQAccordion({
         </div>
     )
 }
+

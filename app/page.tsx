@@ -8,6 +8,7 @@ import TrendingList from '@/components/TrendingList'
 import FAQAccordion from '@/components/FAQAccordion'
 import NewsletterCTALarge from '@/components/NewsletterCTALarge'
 import AdSense from '@/components/AdSense'
+
 import { SITE_CONFIG } from '@/lib/constants'
 import { generateWebsiteSchema, generateOrganizationSchema } from '@/lib/seo'
 
@@ -64,18 +65,18 @@ export default async function Homepage() {
 
         <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8 relative z-10">
           <div className="max-w-3xl">
-            <h1 className="text-5xl md:text-7xl font-black mb-6 leading-[0.95] tracking-tight">
-              Aprenda Cripto do <span className="text-crypto-primary">Zero ao Profissional</span>.
+            <h1 className="text-5xl md:text-7xl font-black mb-6 leading-[0.95] tracking-tight text-white">
+              Learn Crypto from <span className="text-crypto-primary">Zero to Professional</span>.
             </h1>
-            <p className="text-xl md:text-2xl text-white/70 mb-10 leading-relaxed max-w-2xl font-medium">
-              Guias práticos e educativos focados em segurança real. O melhor ponto de partida para sua jornada no mercado de Bitcoin e Ethereum.
+            <p className="text-xl md:text-2xl text-gray-100 mb-10 leading-relaxed max-w-2xl font-medium">
+              Practical and educational guides focused on real security. The best starting point for your Bitcoin and Ethereum journey.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/blog" className="px-8 py-4 bg-crypto-primary hover:bg-crypto-accent text-white font-bold rounded-2xl transition-all shadow-lg shadow-crypto-primary/20 flex items-center justify-center">
-                Começar Guia Inicial →
+                Start Beginner Guide →
               </Link>
               <Link href="/blog" className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl transition-all border border-white/10 flex items-center justify-center backdrop-blur-sm">
-                Ver Todos os Artigos
+                View All Articles
               </Link>
             </div>
           </div>
@@ -98,7 +99,7 @@ export default async function Homepage() {
             {/* Featured Article - 2/3 width */}
             <div className="lg:col-span-2">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl md:text-3xl font-black text-crypto-darker tracking-tight">Destaque da Semana</h2>
+                <h2 className="text-2xl md:text-3xl font-black text-crypto-darker tracking-tight">Featured of the Week</h2>
                 <div className="w-12 h-1 bg-crypto-primary/20 rounded-full" />
               </div>
               {featuredPost && <FeaturedArticleCard post={featuredPost} />}
@@ -108,7 +109,7 @@ export default async function Homepage() {
             <div className="hidden lg:block">
               <div className="sticky top-24 space-y-6">
                 <div className="text-center">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 block">Publicidade</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 block">Advertisement</span>
                   <div className="rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 aspect-[300/600] flex items-center justify-center">
                     <AdSense slot="homepage-featured-ad" />
                   </div>
@@ -123,9 +124,9 @@ export default async function Homepage() {
       <section className="py-12 md:py-16 bg-gray-50/50">
         <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between mb-10">
-            <h2 className="text-3xl md:text-4xl font-black text-crypto-darker tracking-tight">Artigos Recentes</h2>
+            <h2 className="text-3xl md:text-4xl font-black text-crypto-darker tracking-tight">Recent Articles</h2>
             <Link href="/blog" className="text-crypto-primary font-bold hover:underline text-sm uppercase tracking-widest">
-              Ver todos →
+              View all →
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
@@ -148,7 +149,7 @@ export default async function Homepage() {
       {/* 6. CATEGORIES SECTION */}
       <section className="py-12 md:py-16 bg-white overflow-hidden">
         <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-black text-crypto-darker tracking-tight mb-10">Explorar Tópicos</h2>
+          <h2 className="text-3xl md:text-4xl font-black text-crypto-darker tracking-tight mb-10">Explore Topics</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {categories.slice(0, 8).map(cat => (
               <CategoryCard key={cat.slug} category={cat} />
@@ -167,7 +168,7 @@ export default async function Homepage() {
             </div>
             <div className="hidden lg:block">
               <div className="sticky top-24">
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 block text-center">Patrocinado</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 block text-center">Sponsored</span>
                 <div className="rounded-2xl overflow-hidden bg-white border border-gray-100 aspect-[300/300] shadow-sm flex items-center justify-center">
                   <AdSense slot="homepage-trending-ad" />
                 </div>
@@ -182,8 +183,8 @@ export default async function Homepage() {
         <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <h2 className="text-3xl md:text-4xl font-black text-crypto-darker tracking-tight mb-4">Perguntas Frequentes</h2>
-              <p className="text-gray-500 mb-10">Tudo o que você precisa saber para começar com segurança.</p>
+              <h2 className="text-3xl md:text-4xl font-black text-crypto-darker tracking-tight mb-4">Frequently Asked Questions</h2>
+              <p className="text-gray-500 mb-10">Everything you need to know to start securely.</p>
               <FAQAccordion faqs={faqs} />
             </div>
             <div className="hidden lg:block">
