@@ -18,20 +18,36 @@ export const dynamic = 'force-dynamic';
 export default async function AdminDashboard() {
   const session = await auth();
 
-  // Fetch real stats
-  const [userCount, postCount, commentCount, pendingComments] = await Promise.all([
-    prisma.user.count(),
-    prisma.post.count(),
-    prisma.comment.count(),
-    prisma.comment.findMany({
-      where: { status: "PENDING" },
-      take: 5,
-      orderBy: { createdAt: "desc" },
-      include: { post: { select: { title: true, slug: true } } }
-    }),
-  ]);
+  let userCount = 0;
+  let postCount = 0;
+  let commentCount = 0;
+  let pendingComments: any[] = [];
+  let pendingCount = 0;
+  let error: string | null = null;
 
-  const pendingCount = await prisma.comment.count({ where: { status: "PENDING" } });
+  try {
+    // Fetch real stats
+    const [uCount, pCount, cCount, pComments] = await Promise.all([
+      prisma.user.count(),
+      prisma.post.count(),
+      prisma.comment.count(),
+      prisma.comment.findMany({
+        where: { status: "PENDING" },
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        include: { post: { select: { title: true, slug: true } } }
+      }),
+    ]);
+
+    userCount = uCount;
+    postCount = pCount;
+    commentCount = cCount;
+    pendingComments = pComments;
+    pendingCount = await prisma.comment.count({ where: { status: "PENDING" } });
+  } catch (err: any) {
+    console.error("[AdminDashboard] Error fetching stats:", err);
+    error = err.message || "Failed to fetch dashboard stats. Check database connection.";
+  }
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -84,6 +100,24 @@ export default async function AdminDashboard() {
         <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-white/5 to-transparent skew-x-12" />
         <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-crypto-primary/20 rounded-full blur-3xl" />
       </div>
+
+      {error && (
+        <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-xl shadow-sm">
+          <div className="flex">
+            <div className="ml-3">
+              <p className="text-sm text-red-700 font-bold">
+                Critical System Error
+              </p>
+              <p className="text-xs text-red-600 mt-1">
+                {error}
+              </p>
+              <p className="text-[10px] text-red-500 mt-2 italic">
+                Tip: Ensure database migrations are up to date and connection strings are correct.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

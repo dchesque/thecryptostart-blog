@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.15.3] - 2026-02-19
+
+### Fixed
+- **Admin**: Resolvido Erro 500 no painel administrativo adicionando tratamento de erros resiliente em `AdminLayout` e `AdminDashboard`.
+- **Auth**: Adicionado logging detalhado no callback `authorize` para diagnosticar falhas de conexão com o banco de dados.
+
+### Changed
+- **UI**: Adicionado alerta de erro crítico visual no Dashboard para informar sobre desconexão com o banco de dados.
+
 ## [0.15.2] - 2026-02-19
 
 ### Added

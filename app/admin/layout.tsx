@@ -7,7 +7,13 @@ export default async function AdminLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const session = await auth();
+    let session = null;
+    try {
+        session = await auth();
+    } catch (err) {
+        console.error("[AdminLayout] Auth error:", err);
+        redirect("/login?error=DatabaseError");
+    }
 
     if (!session || !session.user) {
         redirect("/login");
