@@ -49,6 +49,12 @@ export default async function AdminDashboard() {
           >
             Manage Users
           </Link>
+          <Link
+            href="/admin/seo"
+            className="px-4 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 transition flex items-center gap-2"
+          >
+            SEO Intelligence
+          </Link>
         </div>
       </div>
     </div>

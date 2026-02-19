@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.14.0] - 2026-02-19
+
+### Added
+- **SEO Intelligence Dashboard**: Novo painel administrativo em `/admin/seo` com métricas em tempo real, análise de densidade de keywords e sugestões de links.
+- **Link Builder**: Algoritmo de sugestão de links internos baseado em relevância semântica (`lib/link-builder.ts`).
+- **SEO Analyzer**: Utilitário robusto para análise de conteúdo do Contentful (`lib/seo-analyzer.ts`).
+- **Content Expansion**: Ferramenta que identifica posts curtos e sugere tópicos para atingir a meta de 1500+ palavras.
+- **Guest Post System**: Página pública de diretrizes em `/guest-post-guidelines` com design premium para atrair backlinks.
+- **Content Clusters**: Nova estrutura de organização temática de posts em `/blog/clusters`.
+- **Broken Link Detection**: Scanner de links quebrados integrado (`lib/broken-link-finder.ts`).
+- **Monitoring**: Script de monitoramento diário em `scripts/seo-monitor.ts` e modelos de e-mail para outreach.
+
+### Changed
+- **Admin Layout**: Adicionado link direto para o SEO Intelligence Dashboard no painel principal.
+- **SEO API**: Novo endpoint `/api/seo/metrics` para alimentar o dashboard administrativo.
+
+
 ## [0.13.0] - 2026-02-19
 
 ### Added
