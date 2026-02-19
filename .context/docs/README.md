@@ -1,16 +1,16 @@
 # The Crypto Start Blog - Documentation
 
-Welcome to the comprehensive documentation for **The Crypto Start Blog**, a modern Next.js blog platform focused on cryptocurrency education, startup guides, and Web3 insights. Built with TypeScript, App Router, Contentful CMS, Prisma ORM, and production-ready features like SEO optimization, authentication, rate limiting, and an admin dashboard.
+Welcome to the comprehensive documentation for **The Crypto Start Blog**, a modern Next.js 14+ blog platform focused on cryptocurrency education, startup guides, and Web3 insights. Built with TypeScript, App Router, Contentful CMS for content, Prisma ORM for user data, and production-ready features including SEO optimization, NextAuth.js authentication, rate limiting, spam prevention, and an admin dashboard.
 
-This docs site serves as your knowledge base. Use the sidebar or the guide index below to navigate.
+This documentation serves as your knowledge base for onboarding, development, deployment, and maintenance. Navigate via the sidebar or the guide index below.
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+
-- PostgreSQL (via Docker or local)
-- Contentful account (free tier works)
-- Vercel or similar for deployment (optional)
+- PostgreSQL 15+ (local or Docker)
+- Contentful account (free tier sufficient)
+- Optional: Vercel for deployment, Docker for local DB
 
 ### Setup Steps
 1. **Clone & Install**:
@@ -20,162 +20,194 @@ This docs site serves as your knowledge base. Use the sidebar or the guide index
    npm install
    ```
 
-2. **Environment Variables** (copy `.env.example` to `.env.local`):
+2. **Environment Variables**:
+   Copy `.env.example` to `.env.local` and configure:
    ```
-   DATABASE_URL="postgresql://..."
-   CONTENTFUL_SPACE_ID=...
-   CONTENTFUL_ACCESS_TOKEN=...
-   NEXTAUTH_SECRET=...
+   DATABASE_URL="postgresql://user:pass@localhost:5432/dbname"
+   CONTENTFUL_SPACE_ID=your_space_id
+   CONTENTFUL_ACCESS_TOKEN=your_delivery_token
+   CONTENTFUL_PREVIEW_TOKEN=your_preview_token  # Optional
+   NEXTAUTH_SECRET=openssl rand -base64 32  # Generate once
    NEXTAUTH_URL=http://localhost:3000
-   # See lib/env.ts for full list
+   UPSTASH_REDIS_REST_URL=...  # For rate limiting
+   # Full list in lib/env.ts
    ```
 
-3. **Database**:
+3. **Database Setup**:
    ```bash
    npx prisma generate
-   npx prisma db push  # Or migrate
-   npx prisma db seed   # Optional: seed.ts
+   npx prisma db push  # Schema sync
+   npx prisma db seed   # Optional: Seed users/roles
+   npx prisma studio    # Explore DB
    ```
 
 4. **Contentful Setup**:
-   - Create space and environment
-   - Install Contentful CLI: `npm i -g contentful-cli`
-   - Follow `CONTENTFUL_SETUP.md` for content types (BlogPost, Category, Author)
+   - Create a space/environment.
+   - Install CLI: `npm i -g contentful-cli`
+   - Define content types: `BlogPost`, `Category`, `Author` (see [CONTENTFUL_SETUP.md](./CONTENTFUL_SETUP.md)).
+   - Import sample content if needed.
 
-5. **Run Dev Server**:
+5. **Development**:
    ```bash
    npm run dev
    ```
-   Open [http://localhost:3000](http://localhost:3000)
+   Visit [http://localhost:3000](http://localhost:3000).
 
-6. **Build & Deploy**:
+6. **Build & Production**:
    ```bash
    npm run build
    npm run start
    ```
 
-For Docker: `docker-compose up`
+**Docker**: `docker-compose up` (includes Postgres + app).
 
 ## 🏗️ Architecture Overview
 
-| Layer | Key Components | Tech |
-|-------|----------------|------|
-| **Frontend** | App Router pages (`app/`), Components (`components/`) | Next.js 14+, Tailwind CSS, shadcn/ui |
-| **Backend** | API Routes (`app/api/`), Lib utils | Prisma, NextAuth.js, Upstash Rate Limit |
-| **Data** | Blog Posts/Categories (CMS), Users/Roles (DB) | Contentful, PostgreSQL |
-| **Auth** | Session-based (NextAuth), RBAC | Credentials + Database provider |
-| **SEO/Perf** | Metadata API, Schema.org, Sitemap | next-seo patterns, Core Web Vitals optimized |
+Next.js App Router with hybrid rendering (SSG/ISR for blog, SSR for admin).
 
-- **Pages**: Home (`/`), Blog (`/blog`), Post (`/blog/[slug]`), Admin (`/admin`), About (`/about`), Login (`/login`)
-- **Key Libs**: `lib/contentful.ts` (CMS queries), `lib/seo.ts` (structured data), `lib/permissions.ts` (RBAC)
-- **Middleware**: Auth guards, rate limiting (`middleware.ts`)
+| Layer | Directories | Key Tech/Features |
+|-------|-------------|-------------------|
+| **Pages/UI** | `app/` (blog, admin, about), `components/` | Tailwind, shadcn/ui, React Server Components |
+| **API Routes** | `app/api/` (users, comments, auth) | Edge Runtime, Zod validation |
+| **Data Layer** | Contentful (posts/categories), Prisma (users/comments) | ISR caching, pagination/search |
+| **Auth & Security** | NextAuth.js, `lib/permissions.ts` | RBAC (User/Admin), CSRF, rate limiting (Upstash) |
+| **Utils & Libs** | `lib/` (contentful.ts, seo.ts, utils.ts) | Custom errors, spam detection, Web Vitals |
+| **Types** | `types/` (blog.ts, auth.ts) | Full TS coverage |
 
-See [Architecture Notes](./architecture.md) for diagrams and ADRs.
+- **Routing**: `/` (home), `/blog` (listing), `/blog/[slug]` (post), `/admin` (dashboard), `/admin/users`, `/login`.
+- **Middleware**: `middleware.ts` - Auth guards, IP-based rate limits.
+- **Providers**: `AuthProvider` in `app/layout.tsx`.
 
-## ✨ Key Features
+**Data Flow Example** (Blog Post):
+```tsx
+// app/blog/[slug]/page.tsx
+import { getPostBySlug } from '@/lib/contentful';
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  const post = await getPostBySlug(params.slug);
+  return <PostContent post={post} />;
+}
+```
 
-- **Dynamic Blog**: Fetch posts/categories from Contentful with pagination, search, related posts.
-  ```ts
-  // Example: lib/contentful.ts
-  export const getAllPosts = async (options: PaginationOptions) => { ... };
-  ```
-- **Authentication**: Register/Login, Admin-only routes, Role-based access (User/Admin).
-- **Admin Dashboard**: User management (`/admin/users`), protected with `hasRole`.
-- **SEO Optimized**: Auto-generated metadata, JSON-LD schemas (Breadcrumb, Organization, Website).
-- **Performance**: SSG/ISR for posts, reading time calc, TOC extraction, AdSense integration.
-- **Security**: CSRF protection, rate limiting, Zod validations.
-- **Utils**: `calculateReadingTime`, `formatDate`, `slugify`, custom errors (AppError, RateLimitError).
+Cross-references:
+- [Architecture Deep Dive](./architecture.md)
+- [Data Models](./glossary.md)
 
-Public API exports: 50+ functions/types (e.g., `BlogPost`, `getPostBySlug`, `generateMetadata`).
+## ✨ Key Features & Public API
+
+50+ exported symbols for extensibility.
+
+### Core Functions
+| Function | File | Purpose | Example |
+|----------|------|---------|---------|
+| `getAllPosts(options: PaginationOptions)` | `lib/contentful.ts` | Fetch paginated posts | `getAllPosts({ limit: 10, skip: 0 })` |
+| `getPostBySlug(slug: string)` | `lib/contentful.ts` | Single post fetch | Used in `/blog/[slug]` |
+| `generateMetadata(props: MetadataInput)` | `lib/seo.ts` | Dynamic SEO | Auto OpenGraph/JSON-LD |
+| `calculateReadingTime(text: string)` | `lib/utils.ts` | Est. read time | `~5 min read` |
+| `checkRateLimit(ip: string, identifier: string)` | `lib/rate-limit.ts` | Upstash-backed limits | API routes |
+| `detectSpam(content: string, ip: string)` | `lib/spam-prevention.ts` | AI-free spam filter | Comments |
+
+### Key Types/Interfaces
+- `BlogPost` (`types/blog.ts:61`): Full post shape (title, slug, content, author).
+- `BlogCategory` (`types/blog.ts:15`): Categories like "DeFi", "NFTs".
+- `UserWithRoles` (`types/auth.ts:26`): Users + RBAC.
+- `RolePermissions` (`types/roles.ts:31`): Admin/User perms.
+
+### Components
+- `CommentsList` (`components/CommentsList.tsx`): Nested comments.
+- `AuthProvider` (`components/AuthProvider.tsx`): Session wrapper.
+- Reusable: `CategoryLinks`, `Footer`, `ExitIntentPopup`.
+
+**Security Utils**:
+- `hasRole(session: Session, role: string)` (`lib/permissions.ts`).
+- Custom errors: `AppError`, `RateLimitError` (`lib/errors.ts`).
+
+Full [Symbol Index](./symbols.md) (classes, interfaces, functions).
 
 ## 📁 Repository Structure
 
 ```
 .
-├── app/                 # Next.js App Router (pages, API routes)
-│   ├── api/             # Auth, users, register
-│   ├── admin/           # Dashboard, users
-│   ├── blog/            # Listing, [slug]
-│   ├── layout.tsx       # Root layout + AuthProvider
-│   └── globals.css
-├── components/          # Reusable UI (TOC, Sidebar, Footer, AdSense)
-├── lib/                 # Core logic (contentful, seo, utils, prisma)
-├── types/               # TS interfaces (blog.ts, auth.ts, roles.ts)
-├── prisma/              # Schema, seed.ts
-├── public/              # Static assets
-├── docs/                # This docs site
-├── scripts/             # Utils (test-query.js)
-├── styles/              # Tailwind/PostCSS
-├── middleware.ts        # Edge runtime guards
-├── next.config.mjs      # Images, env
-├── tailwind.config.ts
-├── package.json         # Turbopack, shadcn, @contentful/rich-text-types
-└── ... (Dockerfile, etc.)
+├── app/                    # Pages & API routes
+│   ├── api/                # users/, comments/, auth/
+│   ├── admin/              # Protected dashboard
+│   ├── blog/               # Posts & listing
+│   └── layout.tsx          # Root + providers
+├── components/             # UI: Sidebar, TOC, Ads, Newsletter
+├── lib/                    # Business logic: contentful, seo, utils
+├── types/                  # TS defs: blog.ts (BlogPost, etc.)
+├── prisma/                 # schema.prisma, seed.ts
+├── public/                 # Images, favicon
+├── docs/                   # This site (MDX-powered)
+├── middleware.ts           # Guards
+├── next.config.mjs         # ISR, images
+└── package.json            # Next.js 14, @contentful, prisma
 ```
 
-Full snapshot: See [Repository Snapshot](#repository-snapshot).
+**Key Dependencies**:
+- `lib/contentful.ts`: Imported by blog pages.
+- `lib/seo.ts`: Metadata everywhere.
+- `components/SocialComments.tsx`: Used in post views.
 
-## 📚 Core Guides
+[Full Snapshot](#repository-snapshot) | [Dependency Graph](./architecture.md#dependencies)
 
-| Guide | Description | Key Topics |
-|-------|-------------|------------|
-| [Project Overview](./project-overview.md) | High-level roadmap, goals, stakeholders | Milestones, FASE3_STATUS.md |
-| [Architecture Notes](./architecture.md) | Deep dive into layers, data flow | Dependency graph, symbols index |
-| [Development Workflow](./development-workflow.md) | Git flow, PRs, CI/CD | Branching, CHANGELOG.md |
-| [Testing Strategy](./testing-strategy.md) | Unit/E2E, coverage | Jest, Playwright plans |
-| [Glossary & Domain Concepts](./glossary.md) | Terms: BlogPost, RolePermissions | Crypto/blog domain |
-| [Security & Compliance](./security.md) | Auth model, secrets, rate limits | AUTH_ARCHITECTURE.md |
-| [Tooling & Productivity](./tooling.md) | Scripts, IDE setup, linting | shadcn, Prisma Studio |
-| [Contentful Setup](./CONTENTFUL_SETUP.md) | CMS config | Content types, queries |
-| [Database Setup](./SETUP_DATABASE.md) | Prisma migrations | Docker Postgres |
+## 📚 Guides & References
 
-## 🔧 Tooling & Scripts
+| Category | Guides |
+|----------|--------|
+| **Setup** | [Contentful](./CONTENTFUL_SETUP.md), [Database](./SETUP_DATABASE.md) |
+| **Development** | [Workflow](./development-workflow.md), [Testing](./testing-strategy.md) |
+| **Advanced** | [Security](./security.md), [SEO](./seo-guide.md), [Admin RBAC](./permissions.md) |
+| **Domain** | [Glossary](./glossary.md): BlogPost, CategoryConfig |
+| **Ops** | [Deployment](./deployment.md), [Monitoring](./monitoring.md) |
 
-- `npm run dev` / `build` / `start` / `lint` / `type-check`
-- `npx prisma studio` - DB explorer
-- `npm run db:seed` - Run seed.ts
-- Contentful: `contentful login`, `contentful space environment import`
+## 🔧 Tooling & Commands
+
+```bash
+npm run dev      # Turbopack dev server
+npm run build    # Production build
+npm run lint     # ESLint + Prettier
+npm run db:push  # Prisma sync
+npm run db:seed  # Sample data
+npx prisma studio # DB GUI
+```
+
+- **Editor**: VS Code + Tailwind IntelliSense, Prisma extension.
+- **Testing**: Jest (utils), Playwright (E2E) planned.
 
 ## 🤝 Contributing
 
-1. Fork & branch: `feat/your-feature`
-2. Commit conventionally: `feat: add TOC extraction`
-3. PR with changelog entry
-4. Tests: Add to `__tests__/` (expand coverage)
+1. Branch: `feat/your-feature` or `fix/issue`.
+2. Commit: Conventional (e.g., `feat(blog): add search`).
+3. PR: Linked issues, changelog update.
+4. Tests: `__tests__/`, >80% coverage.
 
-See [Development Workflow](./development-workflow.md).
-
-## 📈 Metrics & Monitoring
-
-- **Core Web Vitals**: Optimized (see CORE_WEB_VITALS.md)
-- **Analytics**: Google Analytics/Tag Manager ready
-- **Deployment**: Vercel preview deploys auto
+See [CHANGELOG.md](CHANGELOG.md), [Development Workflow](./development-workflow.md).
 
 ## 🚨 Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| Contentful 404 | Check env vars, space ID |
-| Prisma connect fail | Verify DATABASE_URL |
-| Auth mismatch | Sync NEXTAUTH_URL |
-| Rate limit hit | Upstash Redis config |
+| Issue | Fix |
+|-------|-----|
+| Contentful fetch fails | Verify `CONTENTFUL_SPACE_ID`/`ACCESS_TOKEN` |
+| Prisma connection error | Check `DATABASE_URL`, run `db:push` |
+| Rate limit exceeded | Configure Upstash Redis |
+| Auth session mismatch | Match `NEXTAUTH_URL` to deploy URL |
+| Build ISR errors | `revalidatePath('/blog')` in cron |
 
-Report issues with reproduction steps.
+## 📈 Monitoring & Perf
 
-## 📄 License & Credits
+- **Web Vitals**: `lib/analytics.ts` tracks LCP/FID/CLS to GA4.
+- **SEO**: Sitemap (`app/sitemap.ts`), schemas (`lib/seo.ts`).
+- **Ads**: AdSense slots in `StickyHeaderAd`, `RecommendedContent`.
 
-MIT License. Powered by Next.js, Contentful, Prisma.
+## 📄 License
 
----
+MIT. Credits: Next.js, Contentful, shadcn/ui, Prisma.
 
-**Last Updated**: Auto-generated from codebase analysis. Edit prompts/ for regenerations.
+**Last Updated**: From codebase analysis (symbols, exports). Regenerate via docs generator.
 
 ### Repository Snapshot
 ```
-app/ AUTH_ARCHITECTURE.md/ auth.ts/ CHANGELOG.md/ components/
-CONTENTFUL_SETUP.md/ CORE_WEB_VITALS.md/ data/ docker-compose.yml/
-Dockerfile/ FASE3_STATUS.md/ lib/ middleware.ts/ next-env.d.ts/
-next.config.mjs/ package-lock.json/ package.json/ postcss.config.js/
-prisma/ prompts/ public/ README.md/ scripts/ SETUP_DATABASE.md/
-styles/ tailwind.config.ts/ tsconfig.json/ types/
+app/ AUTH_ARCHITECTURE.md components/ CONTENTFUL_SETUP.md CORE_WEB_VITALS.md
+docker-compose.yml Dockerfile FASE3_STATUS.md lib/ prisma/ prompts/ public/
+scripts/ types/ ... (full list in context)
 ```

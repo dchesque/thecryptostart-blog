@@ -1,97 +1,138 @@
-## Development Workflow
+# Development Workflow
 
-This repository follows a streamlined, collaborative development process optimized for a small team or solo maintainers working on a Next.js blog platform integrated with Contentful and Prisma. The day-to-day cycle emphasizes rapid iteration, automated testing, and continuous deployment:
+This repository implements a modern Next.js 14+ blog platform (App Router, TypeScript, Tailwind CSS) integrated with Contentful for content management, Prisma for PostgreSQL user data/comments, NextAuth for authentication, and advanced features like SEO optimization, spam prevention, rate limiting, and analytics. The workflow supports rapid iteration for solo maintainers or small teams, emphasizing trunk-based development, automated CI/CD, and production-ready deploys.
 
-1. **Plan and Branch**: Identify work from GitHub issues. Create a feature branch from `main` (e.g., `git checkout -b feature/add-user-analytics`).
-2. **Develop Locally**: Implement changes using the local setup (see [Local Development](#local-development)). Focus on TypeScript types, Zod validations, and Contentful data fetching utilities in `lib/contentful.ts`.
-3. **Test Iteratively**: Run tests locally (`npm test`) and ensure UI changes render correctly in dev mode. Update SEO metadata generators in `lib/seo.ts` and permissions in `lib/permissions.ts` as needed.
-4. **Commit and Push**: Use conventional commits (e.g., `feat: add reading time to blog posts`). Push to open a draft PR.
-5. **Review and Iterate**: Request reviews, address feedback, and re-run CI checks.
-6. **Merge and Deploy**: Squash-merge to `main` after approvals. Vercel (or your host) auto-deploys on push.
-7. **Monitor**: Check production logs, Contentful previews, and analytics post-deploy.
+## Quickstart Commands
 
-Prioritize small, atomic PRs (<300 lines) to maintain velocity. Use GitHub Actions for CI/CD pipelines that run linting, type-checking, and tests on every PR.
+```bash
+# Clone, setup, and run locally
+git clone https://github.com/yourorg/thecryptostartblog.git
+cd thecryptostartblog
+cp .env.example .env.local  # Set CONTENTFUL_SPACE_ID, DATABASE_URL, NEXTAUTH_SECRET, etc.
+npm install
+npx prisma db push
+npx prisma generate
+npm run db:seed  # Optional: Seed users/comments via prisma/seed.ts
+npm run dev      # http://localhost:3000
+```
 
-## Branching & Releases
+Key ports: Dev server (`3000`), Prisma Studio (`3333` via `npx prisma studio`).
 
-- **Model**: Trunk-based development with short-lived feature branches.
-  - `main`: Always deployable production branch.
-  - `feature/*`: For new features (e.g., `feature/blog-search`).
-  - `fix/*`: For bugs (e.g., `fix/auth-rate-limit`).
-  - `release/*`: Rare hotfixes on stable releases.
-- **Workflow**:
-  - Branch from `main`.
-  - No long-running `develop` or release branches.
-  - Delete branches after merge.
-- **Releases**:
-  - Cadence: Continuous (deploy on `main` push).
-  - Tagging: Semantic versioning (`v1.2.0`) on major changes. Use `git tag v1.2.0 && git push --tags`.
-  - Automated: GitHub Releases draft from tags; changelog via conventional commits.
+## Branching Strategy
+
+**Trunk-based development** with short-lived branches (<2 days):
+
+| Branch Type | Prefix     | Purpose                          | Example                  |
+|-------------|------------|----------------------------------|--------------------------|
+| Main        | `main`     | Production-ready (always deployable) | - |
+| Feature     | `feature/*` | New functionality                | `feature/blog-search`    |
+| Bugfix      | `fix/*`    | Hotfixes/bugs                    | `fix/auth-rate-limit`    |
+| Hotfix      | `hotfix/*` | Urgent production issues         | `hotfix/spam-detection`  |
+
+**Workflow**:
+1. `git checkout main && git pull origin main`
+2. `git checkout -b feature/your-feature`
+3. Commit with [Conventional Commits](https://www.conventionalcommits.org/): `feat: add post reading time`, `fix: resolve CSRF validation`
+4. `git push origin feature/your-feature` → Creates draft PR
+5. Merge via squash to `main` after review/CI
+6. Delete branch: `git branch -d feature/your-feature`
+
+**Releases**: Continuous deployment on `main` push (Vercel/Netlify). Tag majors: `git tag v1.2.0 && git push --tags`. Changelog auto-generated from commits.
 
 ## Local Development
 
-- **Prerequisites**:
-  - Node.js 20+.
-  - PostgreSQL (local or Docker) for Prisma.
-  - Contentful space ID, access token, and preview token.
-  - NextAuth secret and provider credentials.
+### Prerequisites
+- Node.js 20+
+- PostgreSQL 15+ (Docker: `docker run -p 5432:5432 -e POSTGRES_PASSWORD=password postgres`)
+- Contentful account (space ID, access token, preview token)
+- Google Analytics/OAuth creds for NextAuth
 
-```
-# Clone and setup
-git clone https://github.com/yourorg/thecryptostartblog.git
-cd thecryptostartblog
-
-# Copy env
-cp .env.example .env.local  # Edit with your CONTENTFUL_SPACE_ID, DATABASE_URL, NEXTAUTH_SECRET, etc.
-
-# Install dependencies
-npm install
-
-# Database setup
-npx prisma db push  # Migrate schema
-npx prisma generate  # Generate client
-npm run db:seed      # Optional: node prisma/seed.ts
-
-# Run dev server (http://localhost:3000)
-npm run dev
-
-# Build for production
-npm run build
-
-# Run tests
-npm test
-
-# Lint and type-check
-npm run lint
+### Scripts
+```bash
+npm run dev          # Development server with hot reload
+npm run build        # Production build (checks types/lint)
+npm run start        # Production server
+npm run lint         # ESLint + Prettier
+npm run type-check   # tsc --noEmit
+npm test             # Vitest unit/integration tests
+npm run test:e2e     # Playwright E2E
+npm run db:studio    # Prisma Studio (http://localhost:3333)
+npm run db:seed      # Seed dev data
 ```
 
-Hot-reload enabled in dev. Contentful fetches cache in dev; clear with `npm run dev -- --turbo` if needed. For admin features, log in via `/admin`.
+**Tips**:
+- Contentful data caches in dev; restart for changes or use preview mode.
+- Test admin routes (`/admin`) after login (seed creates test users).
+- Debug API routes: `curl http://localhost:3000/api/comments`.
+- Clear Next.js cache: `rm -rf .next`.
 
-## Code Review Expectations
+**Example: Adding a new blog utility**
+Edit `lib/contentful.ts` (e.g., extend `getPostsByCategory`):
+```typescript
+// lib/contentful.ts
+export async function getPostsByCategory(category: string, options: PaginationOptions = {}) {
+  // Fetch from Contentful using getClient()
+  // Transform with transformPost()
+}
+```
+Test: `npm test`, then verify in `/blog/[slug]`.
 
-Code reviews ensure high-quality, secure contributions aligned with the app's architecture (App Router, server components, RSC patterns). Every PR requires:
+## Testing Strategy
 
-- **Checklists**:
-  - [ ] Linting and types pass (`npm run lint && tsc --noEmit`).
-  - [ ] Tests updated/passing (unit for utils like `lib/contentful.ts`; E2E for pages).
-  - [ ] No console.logs or `any` types.
-  - [ ] Security: Rate limiting (`lib/rate-limit.ts`), CSRF (`lib/csrf.ts`), permissions (`lib/permissions.ts`).
-  - [ ] SEO/docs: Metadata via `lib/seo.ts`; update types in `types/`.
-  - [ ] Performance: No blocking fetches; use `generateStaticParams` for dynamic routes.
-- **Approvals**: At least 1 maintainer approval. Self-review drafts for WIP.
-- **Agent Collaboration**: Use AI agents (e.g., via Cursor or GitHub Copilot) for initial drafts, but always human-review. See [AGENTS.md](AGENTS.md) for prompts on reviewing Contentful integrations and Prisma queries.
+- **Unit**: Utils (`lib/utils.ts`: `calculateReadingTime`, `formatDate`), Contentful fetchers (`lib/contentful.ts`: `getPostBySlug`), validations (`lib/validations.ts`).
+- **Integration**: API routes (`app/api/comments/route.ts`: POST/GET handlers), auth (`lib/permissions.ts`: `hasRole`).
+- **E2E**: User flows (login → comment → admin approve) via Playwright.
+- Coverage: >85% enforced in CI.
 
-PRs auto-block on failing CI. Aim for <24h turnaround.
+Run specific: `npm test -- lib/contentful.test.ts`.
 
-## Onboarding Tasks
+See [testing-strategy.md](./testing-strategy.md) for mocks (Contentful/Prisma).
 
-New contributors:
-- [ ] Run local setup and deploy a test change to `/about`.
-- [ ] Fix a "good first issue" like enhancing `calculateReadingTime` in `lib/utils.ts`.
-- [ ] Add a test for `getPostBySlug` in `lib/contentful.ts`.
-- Resources: [testing-strategy.md](./testing-strategy.md), [tooling.md](./tooling.md), Contentful dashboard for blog posts.
+## Code Review Checklist
 
-## Related Resources
+Every PR must pass GitHub Actions CI (lint, types, tests, build). Reviewers check:
 
-- [testing-strategy.md](./testing-strategy.md)
-- [tooling.md](./tooling.md)
+- [ ] **Types/Security**: No `any`; Zod schemas (`lib/validations.ts`); rate limits (`lib/rate-limit.ts`, `lib/spam-prevention.ts`: `detectSpam`); CSRF (`lib/csrf.ts`); permissions (`lib/permissions.ts`).
+- [ ] **Performance/SEO**: Streaming fetches; static params (`app/blog/[slug]/page.tsx`); metadata (`lib/seo.ts`: `generateMetadata`).
+- [ ] **Accessibility**: ARIA on components (`components/CommentsList.tsx`).
+- [ ] **Contentful**: Type-safe (`types/blog.ts`: `BlogPost`, `ContentfulBlogPost`); handle empty states.
+- [ ] **Changes**: <400 LOC/PR; atomic commits.
+
+**Example PR Feedback**:
+```
+Great use of `generateStaticParams`! Add test for `getAllPostSlugs` and update `types/blog.ts`.
+```
+
+Self-review drafts; 1+ approval required.
+
+## Deployment & Monitoring
+
+- **Platforms**: Vercel (auto-deploys `main`), preview deploys per PR.
+- **Environment Vars**: Same as `.env.local` + analytics keys.
+- **Post-Deploy**:
+  - Check build logs, Core Web Vitals (`lib/analytics.ts`: `sendWebVital`).
+  - Validate sitemap (`app/sitemap.ts`), schemas (`lib/seo.ts`).
+  - Monitor spam logs, comment approvals (`/api/admin/comments`).
+
+## Onboarding for Contributors
+
+1. Setup local env, run `npm run dev`.
+2. Deploy a test PR changing `/app/about/page.tsx` (uses `generateMetadata`).
+3. Fix a "good first issue": e.g., enhance `components/CategoryLinks.tsx`.
+4. Add test for `lib/contentful.ts#getRelatedPosts`.
+
+**Key Files to Know**:
+- Content: `lib/contentful.ts` (queries: `getAllPosts`, `getPostBySlug`)
+- Auth/Users: `app/api/users/route.ts`, `app/api/admin/users/page.tsx`
+- UI: `components/` (e.g., `CommentsList`, `FAQAccordion`)
+- Utils: `lib/utils.ts`, `lib/errors.ts` (custom errors like `RateLimitError`)
+
+See [tooling.md](./tooling.md), [AGENTS.md](./AGENTS.md) for AI-assisted reviews (prompts for Prisma/Contentful).
+
+## Common Pitfalls
+- **Contentful**: Ensure `transformPost` handles missing fields.
+- **Prisma**: Use transactions for comments/users.
+- **Next.js**: Prefer server components; `use client` sparingly.
+- **Rate Limiting**: Test `checkRateLimit` with multiple IPs.
+
+Happy coding! 🚀

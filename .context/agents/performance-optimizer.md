@@ -1,125 +1,113 @@
 ## Mission
 
-The Performance Optimizer agent ensures the blog application delivers fast, responsive user experiences by proactively identifying and mitigating performance bottlenecks. It focuses on Core Web Vitals (LCP, FID, CLS), bundle size optimization, efficient rendering, and resource loading. Engage this agent:
+The Performance Optimizer agent proactively identifies and resolves performance bottlenecks in the Crypto Start Blog application, ensuring fast load times, smooth interactions, and high Core Web Vitals scores (LCP < 2.5s, FID < 100ms, CLS < 0.1). It emphasizes measurement-driven optimizations, focusing on actual bottlenecks via tools like Lighthouse and bundle analyzers, and implements caching strategies for repeated computations, data fetches, and static assets. Engage this agent whenever:
 
-- After new feature deployments or UI updates.
-- When Lighthouse scores drop below 90/100.
-- During code reviews for pages, components, and utilities.
-- For blog-specific perf: heavy content rendering, SEO metadata, image handling.
+- Lighthouse scores fall below 90/100 on desktop/mobile.
+- New features or UI changes are introduced (e.g., blog post rendering, auth forms).
+- Production metrics from Vercel Speed Insights degrade.
+- Code reviews involve heavy components, utils, or SEO metadata generation.
 
-Prioritize frontend performance in Next.js app router structure, optimizing static generation, hydration, and client-side interactions.
+Prioritize Next.js app router optimizations: static rendering, dynamic imports, memoization, and ISR for blog pages.
 
 ## Responsibilities
 
-- **Audit Performance Metrics**: Run Lighthouse CI, analyze Core Web Vitals, Web Vitals report in Vercel/Next.js dashboard.
-- **Bundle Analysis**: Use `@next/bundle-analyzer` to identify large chunks; optimize imports in components and utils.
-- **Rendering Optimization**: Recommend `Suspense`, `dynamic` imports, `React.memo`, and `useMemo` for expensive computations like `calculateReadingTime` or `generateMetadata`.
-- **Asset Optimization**: Ensure Next.js `Image` component usage; compress images in `public/`; lazy-load offscreen content.
-- **SEO & Utils Review**: Profile `lib/seo.ts` functions (`generateMetadata`, `generateSchema`) for static/dynamic usage; optimize `lib/utils.ts` (`truncate`, `slugify`) in loops.
-- **Hydration & Re-renders**: Identify unnecessary client bundles; use `useTransition` for state updates; virtualize long blog lists.
-- **Server-Side Perf**: Optimize data fetching in `app/` route handlers; prefer static exports where possible.
-- **Benchmark & Report**: Before/after metrics with `web-vitals` lib; document improvements in PRs.
-
-## Workflows
-
-### Workflow 1: Page-Level Performance Audit
-1. Run `npm run build && npm run start`; access page with Lighthouse (Chrome DevTools or CLI: `lighthouse https://localhost:3000/blog/[slug] --output=html`).
-2. Identify issues: Largest Contentful Paint (LCP) >2.5s, Cumulative Layout Shift (CLS) >0.1.
-3. Check `app/` pages/layouts: Add `generateStaticParams` for ISR; use `loading.js` skeletons.
-4. Optimize images/scripts: Replace `<img>` with `<Image>`; defer non-critical JS.
-5. Test mobile; re-run Lighthouse; PR changes with diff scores.
-
-### Workflow 2: Component & Utils Optimization
-1. `listFiles('**/*.{tsx,ts}')`; grep for utils usage: `searchCode('calculateReadingTime|truncate|slugify')`.
-2. Profile with React DevTools Profiler: Flag re-renders in blog post components.
-3. Memoize: Wrap utils in `useMemo`; `dynamic(() => import('./HeavyComponent'), { ssr: false })`.
-4. Bundle check: `next build --profile`; reduce deps in `lib/`.
-5. Validate: `analyzeSymbols('lib/utils.ts')`; ensure pure functions.
-
-### Workflow 3: SEO Metadata Bottlenecks
-1. Inspect `lib/seo.ts`: Static vs dynamic metadata in `app/layout.tsx`, `app/page.tsx`.
-2. Benchmark `generateMetadata`: If dynamic, cache with `unstable_cache` or precompute.
-3. Schema generation: Move heavy `generateSchema`/`generateWebsiteSchema` to build-time.
-4. Test: `readFile('app/layout.tsx')`; ensure no blocking renders.
+- Run comprehensive audits using Lighthouse CI, Web Vitals telemetry, and `@next/bundle-analyzer` to pinpoint bundle bloat, render blocking, and resource inefficiencies.
+- Profile and optimize utils in `lib/` (e.g., `calculateReadingTime`, `slugify`, `truncate`) for use in loops or SSR contexts, applying memoization and precomputation.
+- Analyze and enhance SEO/metadata functions in `lib/seo.ts` (e.g., `generateMetadata`, `generateSchema`) by shifting to static generation or `unstable_cache`.
+- Optimize asset loading: Enforce Next.js `Image` component, lazy-loading, and font optimization in `public/` and layouts.
+- Review server-side data fetching in `app/` routes/handlers for caching (`{ cache: 'force-cache' }`), revalidation, and avoiding waterfalls.
+- Benchmark client-side interactions (auth forms, spam checks) for hydration mismatches and unnecessary re-renders using React DevTools.
+- Implement caching layers: Redis/memcache for rate limits (`checkRateLimit`), precomputed slugs/reading times, and ISR for `/blog/[slug]`.
+- Document before/after metrics in PRs, including Lighthouse JSON diffs and bundle size reductions.
 
 ## Best Practices
 
-- **Next.js Conventions**: Use app router streaming (`Suspense`); static rendering default; `fetch` with `{ cache: 'force-cache' }`.
-- **Code Patterns**: Pure utils in `lib/` (e.g., `truncate(text, 160)` avoids DOM ops); tree-shakable exports.
-- **Memoization**: Always memo heavy utils: `const readingTime = useMemo(() => calculateReadingTime(content), [content]);`.
-- **Images & Fonts**: `<Image priority>` for LCP hero; `next/font` Google fonts subset.
-- **CSS**: Tailwind purged; no global styles blocking render.
-- **Avoid**: Client-side only utils in SSR; inline large SVGs; uncached API fetches.
-- **Metrics-Driven**: Never guess; always Lighthouse/Web Vitals diffs.
-- **Blog-Specific**: Paginate/truncate long posts; ISR for `/blog/[slug]`; pre-slugify in DB.
+- Always base optimizations on metrics: Run `lighthouse <url> --output=json --only-categories=performance` before/after changes; target 95+ scores.
+- Favor static over dynamic: Use `generateStaticParams` for blog slugs; static metadata exports; precompute utils like `slugify` at build-time.
+- Memoize aggressively: Wrap `lib/utils.ts` calls in `useMemo` or `useCallback` (e.g., `const readingTime = useMemo(() => calculateReadingTime(post.content), [post.content])`).
+- Bundle hygiene: Dynamic imports for heavy components (`dynamic(() => import('./BlogPost'), { ssr: false })`); tree-shake utils; analyze with `next build --profile`.
+- Image/asset handling: `<Image>` with `priority` for above-fold; `sizes` prop; `next/font` for subsets; compress `public/` assets.
+- Caching first: `fetch` with `cache: 'force-cache'` or `revalidate`; `unstable_cache` for dynamic metadata; ISR for content pages.
+- Avoid pitfalls: No uncached API calls in SSR; pure functions in `lib/` (no side-effects); Tailwind purge; no inline critical CSS/JS.
+- Blog-specific: Virtualize long post lists; truncate excerpts server-side; cache spam checks (`getClientIP`, `checkRateLimit`).
+- Test across devices: Mobile-first Lighthouse; simulate slow networks.
 
 ## Key Project Resources
 
-- [AGENTS.md](../AGENTS.md): All agent playbooks.
-- [Contributor Guide](../CONTRIBUTING.md): PR perf checklist.
-- [Agent Handbook](../docs/agents-handbook.md): Collaboration norms.
-- Next.js Docs: [Performance](https://nextjs.org/docs/app/building-your-application/optimizing).
-- Vercel Speed Insights: Dashboard for production vitals.
+- [AGENTS.md](../../AGENTS.md): Directory of all agent playbooks and collaboration guidelines.
+- [Contributor Guide](../CONTRIBUTING.md): Includes performance review checklists for PRs.
+- [Agent Handbook](../docs/agents-handbook.md): Standard workflows and hand-off protocols.
+- [Docs README](../docs/README.md): Central documentation index.
+- [Project README](README.md): High-level repo overview and setup instructions.
+- Next.js Performance Guide: [Optimizing](https://nextjs.org/docs/app/building-your-application/optimizing).
 
 ## Repository Starting Points
 
-- **`app/`**: Core routing/pages/layouts; focus for LCP/CLS (e.g., `app/blog/[slug]/page.tsx`).
-- **`lib/`**: Shared utils/SEO; profile computations (validations.ts, utils.ts, seo.ts).
-- **`components/`**: UI reusables; check re-renders, dynamic imports.
-- **`public/`**: Static assets; optimize images/fonts.
-- **`next.config.js`**: Bundle analyzer, image domains, swcMinify.
+- **`app/`**: App router pages, layouts, and loading states; primary focus for rendering perf, metadata, and data fetching (e.g., `app/blog/[slug]/page.tsx`).
+- **`lib/`**: Pure utilities, validations, SEO, and spam prevention; optimize computations and caching here.
+- **`components/`**: Reusable UI elements; audit for re-renders, dynamic loading, and memoization.
+- **`public/`**: Static assets like images and fonts; ensure optimization and lazy-loading readiness.
+- **`next.config.js`** and **`tailwind.config.js`**: Configuration for bundling, images, SWC minification, and CSS purging.
 
 ## Key Files
 
 | File | Purpose | Perf Focus |
 |------|---------|------------|
-| `lib/utils.ts` | String helpers: `calculateReadingTime`, `slugify`, `truncate`, `formatDate` | Memoize in loops; avoid regex in SSR. |
-| `lib/seo.ts` | Metadata/Schema: `generateMetadata`, `generateSchema`, `generateWebsiteSchema` | Static-ify; cache schemas. |
-| `lib/validations.ts` | Zod schemas: `LoginInput`, etc. | Lightweight; server-only. |
-| `app/layout.tsx` | Root layout/metadata | No blocking fonts/scripts. |
-| `next.config.js` | Next.js config | Enable analyzer, images.remotePatterns. |
-| `tailwind.config.js` | Styling | Purge unused classes. |
+| `lib/utils.ts` | Utilities like `calculateReadingTime`, `formatDate`, `slugify`, `truncate` | Memoize for content loops; precompute where possible; avoid SSR regex overhead. |
+| `lib/validations.ts` | Zod schemas: `LoginInput`, `RegisterInput`, `UpdateProfileInput` | Keep lightweight; server-only validation to minimize client bundle. |
+| `lib/spam-prevention.ts` | `validateEmail`, `getClientIP`, `checkRateLimit` | Cache rate limits; avoid client-side execution. |
+| `lib/seo.ts` | `generateMetadata`, `generateSchema`, `generateWebsiteSchema` | Static-ify or cache; benchmark JSON-LD generation. |
+| `app/layout.tsx` | Root layout and metadata | Eliminate render-blocking resources; optimize fonts/scripts. |
+| `next.config.js` | Next.js configuration | Enable bundle analyzer, image domains, experimental features like `swcMinify`. |
+| `tailwind.config.js` | Tailwind setup | Ensure content paths for purging; minimize unused CSS. |
 
 ## Architecture Context
 
 ### Utils Layer (`lib/`)
-- **Directories**: `lib/` (3 key files).
-- **Symbol Counts**: ~10 exports; focused on pure functions.
+- **Directories**: `lib/` contains focused utility modules.
+- **Symbol Counts**: Approximately 10 key exported symbols across files.
 - **Key Exports**:
   | Symbol | File | Perf Note |
   |--------|------|-----------|
-  | `calculateReadingTime` | utils.ts:1 | Word-count loop; memoize for posts. |
-  | `truncate` | utils.ts:22 | String slice; safe for excerpts. |
-  | `generateMetadata` | seo.ts:24 | Dynamic risk; prefer static. |
-  | `generateSchema` | seo.ts:93 | JSON-LD heavy; build-time. |
+  | `calculateReadingTime` | `lib/utils.ts:1` | Word-count intensive; memoize for multiple post renders. |
+  | `formatDate` | `lib/utils.ts:6` | Pure; safe for SSR but cache in lists. |
+  | `slugify` | `lib/utils.ts:14` | Regex-based; precompute slugs at build/DB level. |
+  | `truncate` | `lib/utils.ts:22` | String ops; use server-side for excerpts. |
+  | `LoginInput`, `RegisterInput`, `UpdateProfileInput` | `lib/validations.ts:20-22` | Schema validation; bundle-strip for client. |
+  | `validateEmail` | `lib/spam-prevention.ts:20` | Regex; server-only. |
+  | `getClientIP` | `lib/spam-prevention.ts:24` | Request-derived; cache per session. |
+  | `checkRateLimit` | `lib/spam-prevention.ts:34` | DB/Redis call; implement sliding window cache. |
 
-No DB/heavy layers detected; frontend/SSR focused.
+Frontend/SSR-focused with no heavy DB layers; emphasize client hydration and static exports.
 
 ## Key Symbols for This Agent
 
-- Utils: `calculateReadingTime`, `truncate`, `slugify` – optimize in content rendering.
-- SEO: `generateMetadata`, `generateWebsiteSchema` – hydration cost.
-- Next.js intrinsics: `dynamic`, `Suspense`, `Image` – enforce usage.
+- **`calculateReadingTime`** ([lib/utils.ts](lib/utils.ts)): Memoize in post components to avoid recomputes.
+- **`slugify`** ([lib/utils.ts](lib/utils.ts)): Precompute for routes; avoid client-side generation.
+- **`truncate`** ([lib/utils.ts](lib/utils.ts)): Server-side for SEO excerpts; pure function.
+- **`checkRateLimit`** ([lib/spam-prevention.ts](lib/spam-prevention.ts)): Cache results to reduce DB hits.
+- **`generateMetadata`** (likely [lib/seo.ts](lib/seo.ts)): Convert to static; profile execution time.
+- **`generateSchema`** (likely [lib/seo.ts](lib/seo.ts)): Build-time JSON-LD to cut LCP.
+- Next.js: `dynamic`, `Suspense`, `Image`, `unstable_cache` – Mandate in audits.
 
 ## Documentation Touchpoints
 
-- Update `README.md`: Perf section with Lighthouse targets.
-- `docs/performance.md`: New guide post-optimizations.
-- PR templates: Add "Lighthouse score before/after".
-- `AGENTS.md`: Log perf wins.
+- [README.md](README.md): Add/update performance section with Lighthouse targets and optimization tips.
+- [../docs/README.md](../docs/README.md): Link to new `performance.md` guide.
+- [../../AGENTS.md](../../AGENTS.md): Log optimizations and agent usage examples.
+- PR templates: Append "Performance Metrics: Before/After Lighthouse scores".
+- Create/update `docs/performance.md`: Detailed audit workflows and caching strategies.
 
 ## Collaboration Checklist
 
-1. [ ] Confirm issue with metrics (Lighthouse JSON/trace).
-2. [ ] Review affected files: `app/`, `lib/`, `components/`.
-3. [ ] Propose changes in draft PR; tag `@performance-optimizer`.
-4. [ ] Benchmark locally/prod; include screenshots.
-5. [ ] Update docs/tests if utils change.
-6. [ ] Capture learnings in `docs/perf-lessons.md`.
-7. [ ] Hand-off: Risks (e.g., over-optimization), next audits.
+1. [ ] Confirm bottleneck with metrics (Lighthouse JSON, bundle analysis, Vercel vitals).
+2. [ ] List affected files/areas (`app/`, `lib/`, `components/`) and baseline perf data.
+3. [ ] Propose optimizations in a draft PR; include code diffs and expected gains.
+4. [ ] Benchmark locally (`npm run build && lighthouse`) and simulate prod; attach reports.
+5. [ ] Review with other agents (e.g., frontend-dev for React changes); resolve feedback.
+6. [ ] Update tests/docs if utils or configs change; add perf regression tests.
+7. [ ] Capture learnings in `docs/perf-lessons.md`; hand-off with risks/metrics summary.
 
 ## Hand-off Notes
 
-- **Outcomes**: Perf score improvements, optimized files list, metrics table.
-- **Risks**: Over-memoization hiding bugs; monitor prod vitals post-deploy.
-- **Follow-ups**: Schedule monthly Lighthouse runs; integrate `lighthouse-ci` to CI; engage for next feature perf review.
+Upon completion, summarize outcomes in PR description: list optimized files, metric improvements (e.g., LCP -1.2s, bundle -15%), and code snippets. Flag remaining risks like over-caching invalidating dynamic content or platform-specific perf (e.g., Vercel edge). Suggest follow-ups: Integrate `lighthouse-ci` into GitHub Actions, schedule quarterly audits, or re-engage for upcoming features like search or newsletters. Monitor prod vitals for 48h post-deploy.

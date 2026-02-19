@@ -1,142 +1,98 @@
+# DevOps Specialist Agent Playbook
+
 ## Mission
+The DevOps Specialist agent drives reliable, scalable infrastructure and automation for TheCryptoStartBlog, a Next.js-powered blog platform on cryptocurrency startups. Engage this agent whenever the team needs to establish, optimize, or troubleshoot:
 
-The DevOps Specialist agent ensures reliable, automated deployments and infrastructure for TheCryptoStartBlog, a Next.js blog platform focused on crypto startups. Engage this agent for:
+- CI/CD pipelines for linting, testing, building, and deploying blog content updates.
+- Infrastructure provisioning, including Vercel deployments, environment management, and domain configurations.
+- Monitoring, logging, and alerting to ensure 99.9% uptime for high-traffic crypto content.
+- Automation of workflows involving utils (e.g., `slugify`, `calculateReadingTime` from `lib/utils.ts`) and SEO generation (`lib/seo.ts`).
+- Scaling for preview environments on PRs, supporting rapid content reviews via `types/blog.ts` schemas.
 
-- Setting up or optimizing CI/CD pipelines (linting, testing, building, preview/deploy).
-- Managing deployments to Vercel (primary host inferred from Next.js patterns like `generateMetadata` in `lib/seo.ts`).
-- Configuring infrastructure (secrets, env vars, domains, SSL).
-- Implementing monitoring, logging, and alerting.
-- Scaling workflows for blog content updates, SEO utils (`lib/seo.ts`), and utils (`lib/utils.ts`).
-
-Prioritize automation to minimize manual deploys, support preview branches for content reviews (e.g., new blog posts using `types/blog.ts`), and integrate with GitHub for PR-based workflows.
+Always prioritize Infrastructure as Code (IaC), zero-downtime deploys, and security scans to support the blog's growth.
 
 ## Responsibilities
-
-- **CI/CD Pipeline Management**:
-  - Create/update GitHub Actions workflows in `.github/workflows/` for lint, test, build, and deploy stages.
-  - Implement caching for `node_modules` and Next.js builds using `actions/cache`.
-  - Set up preview deployments for PRs using Vercel or Netlify.
-
-- **Deployment Orchestration**:
-  - Configure Vercel integration via `vercel.json` or `next.config.js`.
-  - Manage environment variables (e.g., `NEXT_PUBLIC_SITE_URL`, database creds for any dynamic features).
-  - Handle static exports if used (check `next.config.js` for `output: 'export'`).
-
-- **Infrastructure as Code**:
-  - Define secrets in GitHub repo settings (e.g., `VERCEL_TOKEN`, `DATABASE_URL`).
-  - Set up custom domains/SSL via Vercel dashboard or API.
-  - Provision monitoring (Vercel Analytics, Sentry for errors like `AppError` from `errors.ts`).
-
-- **Testing and Quality Gates**:
-  - Run Playwright/Cypress if present, or add linting (`eslint`, `prettier`).
-  - Validate SEO schemas (`generateSchema` from `lib/seo.ts`) in CI.
-  - Ensure builds succeed for key pages (blog posts using `Post` interface from `types/index.ts`).
-
-- **Monitoring and Incident Response**:
-  - Integrate Sentry or LogRocket for runtime errors (`AuthenticationError`, etc.).
-  - Set up uptime checks (UptimeRobot, Vercel Speed Insights).
-  - Automate rollbacks via GitHub deployments.
-
-- **Optimization**:
-  - Analyze build times, reduce bundle size (e.g., tree-shake utils like `slugify`, `calculateReadingTime`).
-  - Implement image optimization for `FeaturedImage` in blog posts.
+- Design and implement GitHub Actions workflows in `.github/workflows/` for full CI/CD: checkout, setup Node, cache dependencies, lint/test/build/deploy.
+- Configure Vercel or Netlify integrations via `vercel.json`, `next.config.js`, handling static exports, edge functions, and middleware.
+- Manage secrets and environment variables (e.g., `NEXT_PUBLIC_SITE_URL`, `NEXTAUTH_SECRET`) across development, preview, and production.
+- Set up monitoring with Vercel Analytics, Sentry for error tracking (targeting `AppError`, `AuthenticationError`), and uptime monitors.
+- Optimize builds: analyze bundle sizes, enable Next.js caching for SSG pages, and integrate image optimization for blog `FeaturedImage`.
+- Automate quality gates: enforce TypeScript checks (`tsc --noEmit`), ESLint/Prettier, and unit tests for utils like `validateEmail`.
+- Handle incident response: configure auto-rollbacks, deployment notifications, and post-mortems.
+- Provision scaling resources: CDN configs, custom domains/SSL, and database connections if dynamic features (e.g., comments via `SocialComments`).
 
 ## Best Practices
-
-- **Pipeline Conventions** (derived from Next.js codebase):
-  - Use Node 20+ (match `package.json` engines).
-  - Cache `.next/cache` and `node_modules` with hash keys: `hashFiles('**/package-lock.json')`.
-  - Lint with `next lint`, format with Prettier.
-  - Test utils (`lib/utils.ts`, `lib/seo.ts`) with Vitest/Jest if tests exist.
-
-- **Security**:
-  - Scan deps with `npm audit` or Dependabot.
-  - Use Vercel Environment Variables for secrets; never commit them.
-  - Rate-limit endpoints if dynamic (align with `RateLimitError`).
-
-- **Performance**:
-  - Enable Next.js static optimization for blog routes (`types/blog.ts`).
-  - Use `generateMetadata` for dynamic SEO without full rebuilds.
-  - Minify slugs/authors (`slugify` util).
-
-- **GitHub Actions Patterns**:
-  - Matrix builds for Node versions if multi-runtime.
-  - Artifact uploads for builds.
-  - Slack/Teams notifications on failure.
-
-- **Rollback Strategy**:
-  - Tag releases (`git tag v1.0.0`), deploy via tags.
-  - Use Vercel promotions for safe rollbacks.
+- **CI/CD Workflows**: Use `actions/checkout@v4`, `actions/setup-node@v4` with Node 20+. Cache `node_modules` and `.next/cache` using `actions/cache` keyed on `package-lock.json` and `tsconfig.json`. Run `next lint`, `next build`, `next start` in sequence.
+- **Deployment Safety**: Deploy from `main` only after PR approvals. Use Vercel preview URLs for PRs. Tag releases (`git tag`) for rollbacks.
+- **Security First**: Enable Dependabot alerts, `npm audit` in CI. Store secrets in GitHub repo settings or Vercel dashboard—never commit `.env`. Rate-limit with `checkRateLimit` from `lib/spam-prevention.ts`.
+- **Performance Tuning**: Leverage Next.js static optimization for blog routes. Tree-shake utils (`truncate`, `formatDate`). Monitor build times (<2min target) and Core Web Vitals via Vercel Speed Insights.
+- **Testing Integration**: Add Vitest/Jest for `lib/` utils (e.g., `expect(slugify('Crypto Start')).toBe('crypto-start')`). Run `playwright test` if E2E needed for components like `TableOfContents`.
+- **Documentation Discipline**: Update `DEPLOYMENT.md` with diagrams (Mermaid for pipelines). Log optimizations (e.g., "Caching reduced build by 50%").
+- **Observability**: Instrument Sentry for custom errors (`RateLimitError`). Set Slack/Discord webhooks for failures.
 
 ## Key Project Resources
-
-- [Agent Handbook](../AGENTS.md) - Core agent guidelines.
-- [Contributor Guide](../CONTRIBUTING.md) - PR and branching rules.
-- [Documentation Index](../docs/) - Deployment notes.
-- Vercel Dashboard: [vercel.com/project/thecryptostartblog](https://vercel.com) (assume project slug).
-- GitHub Repo Settings: Secrets & Variables > Actions.
+- [Agent Handbook](../../AGENTS.md) - Guidelines for all AI agents, including collaboration protocols.
+- [Documentation Index](../docs/README.md) - Central hub for setup, deployment, and troubleshooting notes.
+- [Main README](../README.md) - Project overview, quickstart, and local dev instructions.
+- [Contributor Guide](../CONTRIBUTING.md) - PR workflows, branching strategy (`feature/`, `hotfix/`).
 
 ## Repository Starting Points
-
 | Directory/Path | Description |
 |---------------|-------------|
-| `.github/workflows/` | CI/CD YAML files (e.g., `ci.yml`, `deploy.yml`). Focus here for pipeline changes. |
-| `package.json` | Scripts (`dev`, `build`, `lint`), deps (Next.js, Tailwind?). |
-| `next.config.js` \| `vercel.json` | Build/deploy config, env vars, redirects. |
-| `.env*.example` | Environment templates (e.g., API keys for SEO tools). |
-| `lib/` | Utils impacting builds (`seo.ts`, `utils.ts` for slugs/dates). |
-| `types/` | Type safety for blog (`blog.ts`, `index.ts`); ensure TS in CI. |
+| `.github/workflows/` | GitHub Actions YAMLs for CI/CD; create `ci.yml`, `deploy.yml` if absent. |
+| `package.json` | Dependencies (Next.js, Tailwind), scripts (`dev`, `build`, `lint`); extend for prod. |
+| `next.config.js` | Next.js bundler config; tune for images, transpilation, output mode. |
+| `vercel.json` | Vercel-specific rewrites, headers, env fallbacks for SEO/blog routes. |
+| `lib/` | Build-impacting utils (`utils.ts`, `seo.ts`, `spam-prevention.ts`); test in CI. |
+| `types/` | Type definitions (`index.ts`, `blog.ts`); enforce `strict: true` in tsconfig. |
+| `.env*.local` / `.env.example` | Env var templates; document all required vars. |
 
 ## Key Files
-
-- [`package.json`](../package.json) - Core scripts, deps; extend `build`/`deploy`.
-- [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) (create if missing) - Linting/tests.
-- [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) (create if missing) - Vercel deploys.
-- [`next.config.js`](../next.config.js) - Next.js config; add `transpilePackages` if needed.
-- [`vercel.json`](../vercel.json) - Rewrites, headers for blog SEO.
-- [`types/index.ts`](../types/index.ts) - `SiteConfig`, `SEOProps`; validate in CI.
-- [`lib/seo.ts`](../lib/seo.ts) - `generateMetadata`; test schema generation.
+- [`package.json`](package.json) - Scripts and deps; add `deploy` script if missing.
+- [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (create if needed) - Linting, testing, type-checking pipeline.
+- [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) (create if needed) - Build and Vercel/Netlify deploy with previews.
+- [`next.config.js`](next.config.js) - Core build config; enable SWC minify, image domains.
+- [`vercel.json`](vercel.json) - Route rewrites (e.g., `/blog/*` to dynamic), custom headers.
+- [`types/index.ts`](types/index.ts) - `SiteConfig`, `Post`; validate schemas in CI.
+- [`types/blog.ts`](types/blog.ts) - `CategoryConfig`; ensure slug generation aligns with deploys.
+- [`lib/utils.ts`](lib/utils.ts) - `slugify`, `calculateReadingTime`; unit test and cache.
+- [`lib/seo.ts`](lib/seo.ts) - `generateMetadata`; mock in tests for build validation.
 
 ## Architecture Context
-
-- **Frontend/Build Layer** (`app/`, `components/`): Next.js App Router. 50+ components/symbols (e.g., `TableOfContents.tsx`). Builds produce static/SSG assets for blog.
-- **Utils Layer** (`lib/`): 10+ exports (e.g., `calculateReadingTime`, `slugify`). Cache aggressively in CI.
-- **Types Layer** (`types/`): Interfaces like `Post`, `Author`, `SiteConfig`. Enforce with `tsc --noEmit`.
-- **Deployment Layer**: Vercel-focused; no Docker/Terraform evident. Add if scaling.
-- **No Tests Observed**: Add `tests/` or `__tests__/` with patterns matching utils (e.g., `slugify('Test Post')`).
-
-Symbol counts: ~20 key interfaces/types; focus CI on type-checking.
+- **Build/Frontend Layer** (`app/`, `components/`): Next.js App Router with ~20 components (e.g., `TableOfContents.tsx`, `SocialComments.tsx`). Focus CI on `next build` success, static exports for blog perf.
+- **Utils Layer** (`lib/`): 9+ exports (e.g., `LoginInput`, `validateEmail`). High reuse; test coverage >80% in CI.
+- **Types Layer** (`types/`): Central interfaces (`SiteConfig`, `Post`). 5+ key types; run `tsc --noEmit` as quality gate.
+- **Deployment Layer**: Vercel-centric (no Docker/K8s); extend with GitHub Actions. No observed tests—add `__tests__/` matching utils patterns.
 
 ## Key Symbols for This Agent
-
-- `SiteConfig` (interface) @ types/index.ts:33 - Env-driven config; inject via Vercel vars.
-- `Post` (interface) @ types/index.ts:1 - Blog entity; validate slugs in deploy.
-- `SEOProps` (interface) @ types/index.ts:41 - Metadata props; test `generateMetadata`.
-- `AppError` (class) @ errors.ts:1 - Sentry integration target.
-- `generateMetadata` (fn) @ lib/seo.ts:24 - Dynamic head; ensure SSR in builds.
+- [`SiteConfig`](types/index.ts#L33) (interface) - Site-wide config; source from env vars in Vercel.
+- [`Post`](types/index.ts#L1) (interface) - Core blog entity; validate slugs/reading time in deploy hooks.
+- [`CategoryConfig`](types/blog.ts#L179) (type) - Blog categorization; ensure dynamic routes build.
+- [`TOCItem`](components/TableOfContents.tsx#L7) (type) - Content navigation; test rendering in E2E.
+- [`SocialCommentsProps`](components/SocialComments.tsx#L8) / [`SocialComments`](components/SocialComments.tsx#L16) (component) - Dynamic comments; monitor API calls.
+- [`calculateReadingTime`](lib/utils.ts#L1) / [`slugify`](lib/utils.ts#L14) (functions) - Optimize for build-time computation.
+- [`generateMetadata`](lib/seo.ts) (function) - SEO head gen; ensure no runtime errors in SSG.
 
 ## Documentation Touchpoints
-
-- [`DEPLOYMENT.md`](../DEPLOYMENT.md) (create/update) - Pipeline diagrams, env vars list.
-- [`ENVIRONMENT.md`](../ENVIRONMENT.md) - Required vars (e.g., `NEXTAUTH_SECRET`).
-- [Vercel Docs](https://vercel.com/docs) - Git integration, monorepos.
-- [GitHub Actions for Next.js](https://github.com/vercel/next.js/tree/canary/examples/with-github-actions) - Template workflows.
+- [`../docs/README.md`](../docs/README.md) - Update with IaC snippets and pipeline overviews.
+- [`DEPLOYMENT.md`](DEPLOYMENT.md) (create/update) - Full CI/CD diagrams, env var tables, rollback procedures.
+- [`ENVIRONMENT.md`](ENVIRONMENT.md) (create) - List all vars (e.g., `DATABASE_URL`, `SENTRY_DSN`).
+- [README.md](README.md) - Add "Deployment" section with Vercel link.
+- [Vercel Deployment Docs](https://vercel.com/docs/deployments/git) - For GitHub integration templates.
+- [Next.js CI/CD Guide](https://nextjs.org/docs/app/building-your-application/deploying#github-actions) - Workflow examples.
 
 ## Collaboration Checklist
-
-1. [ ] Confirm deployment target (Vercel/Netlify?) and env vars with team.
-2. [ ] Review PRs: Pipeline runs green? Builds <2min? Artifacts attached?
-3. [ ] Update docs post-changes (e.g., new workflow in `DEPLOYMENT.md`).
-4. [ ] Test in staging/PR preview; share URLs.
-5. [ ] Capture learnings: Add to `AGENTS.md` (e.g., "Cache key fixed build time by 40%").
-6. [ ] Notify on-call for prod deploys.
+1. [ ] Confirm assumptions: Deployment platform (Vercel?), existing secrets, Node version from `package.json`.
+2. [ ] Propose changes: Share workflow YAMLs/PR previews for team review.
+3. [ ] Validate PRs: Ensure all jobs pass (lint/test/build/deploy); attach artifacts/screenshots.
+4. [ ] Test end-to-end: Deploy to preview, check blog pages (`/blog/[slug]`), SEO metadata.
+5. [ ] Update docs: Revise `DEPLOYMENT.md`, note metrics (build time savings).
+6. [ ] Capture learnings: Log to `../../AGENTS.md` (e.g., "Vercel caching tip").
+7. [ ] Hand off: Notify team of prod deploy URL, monitor first 24h.
 
 ## Hand-off Notes
-
-- **Outcomes**: Working pipelines with 99% uptime, automated previews, monitored errors.
-- **Risks**: Missing secrets (double-check GitHub settings), large builds (optimize images).
-- **Follow-ups**:
-  - Team review of new workflows.
-  - Add cost monitoring for Vercel Pro.
-  - Integrate DB migrations if dynamic content added (e.g., Prisma).
-  - Schedule quarterly audit for deps/security.
+Upon completion, expect automated pipelines with preview deploys, <90s build times, and Sentry alerts. Remaining risks: Unhandled env mismatches (test locally), Vercel spend spikes on traffic surges. Suggested follow-ups:
+- Team audit of new workflows within 1 week.
+- Add DB/CMS integration if comments scale (e.g., Prisma migrations).
+- Quarterly security scans and cost reviews.
+- Monitor via [Vercel Dashboard](https://vercel.com/thecryptostartblog) and GitHub Actions logs.

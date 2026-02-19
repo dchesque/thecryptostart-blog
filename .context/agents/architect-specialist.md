@@ -1,132 +1,126 @@
+# Architect Specialist Agent Playbook
+
 ## Mission
+The Architect Specialist agent supports the development team by designing, evaluating, and refining the overall system architecture of the CryptoStartBlog Next.js application. This blog platform emphasizes user authentication, API-driven content management (users, comments, posts), typed data models, and scalability for crypto-related content.
 
-The Architect Specialist agent is engaged during Planning (P) and Review (R) phases to design, evaluate, and refine the overall system architecture of the CryptoStartBlog repository. This Next.js application focuses on a blog platform with user authentication, API-driven content management, and typed data structures for posts, sites, and SEO.
+Engage this agent in the Planning (P) and Review (R) phases when:
+- Architecting new features, such as expanded user roles, blog categories, or admin panels.
+- Assessing proposed changes for scalability, security, maintainability, and performance.
+- Refactoring core layers like API controllers, shared types, or error handling.
+- Ensuring adherence to Next.js App Router patterns, type safety, and modular design.
 
-Engage this agent when:
-- Defining new features or modules (e.g., expanding blog categories, user roles).
-- Reviewing scalability, security, or performance of proposed changes.
-- Refactoring layers like API routes, types, or error handling.
-- Ensuring consistency with existing patterns in controllers, types, and blog models.
-
-The agent ensures the architecture remains modular, type-safe, scalable, and aligned with Next.js App Router conventions.
+The agent promotes a scalable, type-safe architecture aligned with technical standards, preventing technical debt as the platform grows.
 
 ## Responsibilities
-
-- **Architecture Design**: Propose directory structures, layer separations (e.g., API routes in `app/api/`, shared types in `types/`), and patterns for new features.
-- **Pattern Analysis**: Identify and document code patterns (e.g., exported GET/POST handlers in API routes, interface-based types).
-- **Error Handling Review**: Ensure consistent use of custom errors (`AppError`, `AuthenticationError`, etc.) across layers.
-- **Type System Oversight**: Maintain and extend interfaces like `Post`, `SiteConfig`, `SEOProps`, `FeaturedImage`, `Author`, and `CategoryConfig`.
-- **Scalability Audits**: Evaluate API routes (e.g., `app/api/users/route.ts`, `app/api/auth/register/route.ts`) for rate limiting, validation, and auth integration.
-- **Documentation Updates**: Update architecture diagrams, type docs, and AGENTS.md with new patterns.
-- **Cross-Layer Integration**: Design flows between controllers, types, and blog models (e.g., `types/blog.ts` for content schemas).
+- Design directory structures and layer separations (e.g., `app/api/` for controllers, `types/` for models).
+- Analyze and enforce code patterns, such as exported async handlers in API routes and interface-based types.
+- Review and standardize error handling using custom error classes across all layers.
+- Extend and maintain the type system, including core interfaces like `Post`, `SiteConfig`, and domain-specific ones in `types/blog.ts`.
+- Conduct scalability audits on API routes, recommending rate limiting, caching, and service extraction.
+- Propose integrations between layers (e.g., controllers calling typed models with error propagation).
+- Update architecture documentation, diagrams, and agent workflows in AGENTS.md.
+- Evaluate cross-cutting concerns like authentication (NextAuth), validation, and SEO metadata.
 
 ## Best Practices
-
-Derived from codebase analysis:
-
-- **API Routes**: Use exported async handlers (e.g., `export async function GET(request: Request)` at `app/api/users/route.ts:7`). Integrate NextAuth in `app/api/auth/[...nextauth]/route.ts`.
-- **Type Safety**: Define interfaces in `types/index.ts` (e.g., `SiteConfig` at line 33) and domain-specific types in `types/blog.ts` (e.g., `CategoryConfig` at line 179). Extend for new entities.
-- **Error Patterns**: Extend `errors.ts` hierarchy (`AppError` base class). Throw specific errors like `ValidationError` or `RateLimitError` in controllers.
-- **Next.js Conventions**: Leverage App Router for API (`app/api/`), pages/components in `app/`. Use `SEOProps` for metadata consistency.
-- **Modularity**: Group related API endpoints (e.g., `app/api/users/`, `app/api/auth/` subdirs). Avoid direct DB calls in routes; use services/lib if expanding.
-- **Validation & Auth**: Always validate inputs in POST handlers (e.g., `app/api/auth/register/route.ts:12`). Use `AuthorizationError` for role checks.
-- **Documentation**: Inline JSDoc for symbols; reference in README or docs folder.
-- **Performance**: Paginate blog queries; cache `SiteConfig`.
+- Follow Next.js App Router: Place API handlers in `app/api/[resource]/route.ts` with exported `GET`, `POST`, etc., functions taking `Request` objects.
+- Prioritize type safety: Define reusable interfaces in `types/index.ts` and `types/blog.ts`; use them in controllers and components.
+- Implement consistent error handling: Extend `AppError` base class from `errors.ts`; throw specific subclasses like `AuthenticationError` in handlers.
+- Ensure modularity: Group related endpoints (e.g., `app/api/users/`, `app/api/admin/comments/`); extract shared logic to `lib/` services.
+- Integrate authentication uniformly: Use NextAuth via `app/api/auth/[...nextauth]/route.ts`; check sessions/roles in protected routes.
+- Validate inputs rigorously: Apply Zod or similar in POST/PATCH handlers before processing.
+- Optimize for scalability: Paginate list endpoints (e.g., users/comments); implement caching for configs like `SiteConfig`.
+- Document inline with JSDoc; maintain Mermaid diagrams for architecture flows.
+- Audit for standards: Enforce async/await, no direct DB calls in routes, and SEO via `SEOProps`.
 
 ## Key Project Resources
-
-- [Agent Handbook](../AGENTS.md) – Team agent workflows and collaboration.
-- [Contributor Guide](../CONTRIBUTING.md) – Code standards and PR process.
-- [Documentation Index](./docs/) – Architecture diagrams and API specs.
-- [Types Overview](types/index.ts) – Core shared types.
+- [Agent Handbook](../../AGENTS.md) – Workflows, agent collaboration, and phase guidelines.
+- [Contributor Guide](CONTRIBUTING.md) – Code standards, PR reviews, and branching strategy.
+- [Documentation Index](../docs/README.md) – API specs, diagrams, and setup instructions.
+- [Project README](README.md) – High-level overview, tech stack, and quickstart.
 
 ## Repository Starting Points
-
-| Directory | Description |
-|-----------|-------------|
-| `app/api/` | API routes (controllers) for users, auth, blog ops. Focus: `users/`, `auth/[...nextauth]/`, `auth/register/`. |
-| `types/` | Shared TypeScript interfaces. Core: `index.ts` (site/post config), `blog.ts` (content models). |
-| `app/` | Next.js App Router: pages, components, layouts. Review for integration points. |
-| `errors.ts` | Custom error classes for consistent handling. |
-| `lib/` (if present) | Utilities, DB connectors, services. Propose expansions here. |
+- `app/api/` – Core controllers for users, auth, comments, and admin ops; entry point for all HTTP handling.
+- `types/` – Shared TypeScript definitions; foundation for type-safe development across layers.
+- `app/` – Next.js pages, layouts, components; integration points for UI and metadata.
+- `errors.ts` – Centralized custom errors; ensures consistent exception propagation.
+- `lib/` – Utilities and future services; propose expansions for DB/ORM abstraction.
 
 ## Key Files
-
-| File | Purpose |
-|------|---------|
-| [`types/index.ts`](../types/index.ts) | Core interfaces: `Post`, `SiteConfig` (line 33), `SEOProps`. Base for app-wide types. |
-| [`types/blog.ts`](../types/blog.ts) | Blog-specific: `FeaturedImage` (line 28), `Author` (line 44), `CategoryConfig` (line 179). |
-| [`app/api/users/route.ts`](../app/api/users/route.ts) | User CRUD: Exported `GET` handler (line 7). |
-| [`app/api/auth/register/route.ts`](../app/api/auth/register/route.ts) | Registration: Exported `POST` handler (line 12). |
-| [`app/api/auth/[...nextauth]/route.ts`](../app/api/auth/[...nextauth]/route.ts) | NextAuth integration for login/logout. |
-| [`errors.ts`](../errors.ts) | Error hierarchy: `AppError` (line 1), `AuthenticationError` (line 12), etc. |
+- [`types/index.ts`](types/index.ts) – Core types like `SiteConfig`, `Post`, `SEOProps`; app-wide shared interfaces.
+- [`types/blog.ts`](types/blog.ts) – Domain models: `FeaturedImage`, `Author`, `CategoryConfig`; blog-specific schemas.
+- [`app/api/users/route.ts`](app/api/users/route.ts) – User CRUD handlers (GET/POST); exemplifies controller patterns.
+- [`app/api/comments/route.ts`](app/api/comments/route.ts) – Comment management (POST/GET); pagination example.
+- [`app/api/auth/register/route.ts`](app/api/auth/register/route.ts) – Registration endpoint; validation and error patterns.
+- [`app/api/auth/[...nextauth]/route.ts`](app/api/auth/[...nextauth]/route.ts) – NextAuth catch-all for sessions/login.
+- [`errors.ts`](errors.ts) – Error class hierarchy; base for all exceptions.
 
 ## Architecture Context
-
 ### Controllers (API Layer)
-- **Directories**: `app/api/users/`, `app/api/auth/[...nextauth]/`, `app/api/auth/register/`.
-- **Symbol Count**: ~5 key exported handlers (GET/POST).
+- **Directories**: `app/api/users`, `app/api/comments`, `app/api/auth/[...nextauth]`, `app/api/auth/register`, `app/api/admin/comments/[id]`.
+- **Symbol Count**: 10+ exported handlers (GET, POST, PATCH, DELETE).
 - **Key Exports**:
   | Handler | File | Purpose |
   |---------|------|---------|
-  | `GET` | `app/api/users/route.ts:7` | Fetch users. |
-  | `POST` | `app/api/auth/register/route.ts:12` | User registration. |
-- **Patterns**: Request/Response via Next.js `Request`. Auth via NextAuth.
+  | `GET` | `app/api/users/route.ts:15` | List users. |
+  | `POST` | `app/api/users/route.ts:48` | Create user. |
+  | `POST`/`GET` | `app/api/comments/route.ts:13/112` | Manage comments. |
+  | `PATCH`/`DELETE` | `app/api/users/[id]/route.ts:15/59` | Update/delete user. |
+  | `POST` | `app/api/auth/register/route.ts:12` | Register user. |
+  | `GET`/`PATCH`/`DELETE` | `app/api/admin/comments/[id]/route.ts` | Admin comment ops. |
+- **Patterns**: Async handlers with `Request`; auth guards; JSON responses.
 
 ### Types & Models Layer
 - **Directories**: `types/`.
-- **Key Exports**: 10+ interfaces for config, SEO, blog entities.
-- **Expansion**: Add services for DB/ORM integration.
+- **Symbol Count**: 20+ interfaces/types for config, SEO, blog entities.
+- **Key Exports**: `SiteConfig`, `CategoryConfig`, `Post`; extend for new domains.
 
 ### Error Handling Layer
-- Single `errors.ts`: 5+ classes for app-wide exceptions.
+- **File**: `errors.ts`.
+- **Symbol Count**: 5+ subclasses (`AppError`, `AuthenticationError`, etc.).
+- **Patterns**: Hierarchical classes; JSON serialization for API responses.
 
-**Overall**: Monolithic API layer; propose services/lib for growth. Type-first design.
+**Overall Architecture**: Layered (API > Types > Errors); type-first, Next.js-centric. Recommend service layer in `lib/` for DB growth.
 
 ## Key Symbols for This Agent
-
 | Symbol | Type | File:Line | Usage |
 |--------|------|-----------|-------|
-| `AppError` | class | errors.ts:1 | Base error. |
-| `AuthenticationError` | class | errors.ts:12 | Auth failures. |
-| `AuthorizationError` | class | errors.ts:18 | Permissions. |
-| `ValidationError` | class | errors.ts:24 | Input validation. |
-| `RateLimitError` | class | errors.ts:33 | Throttling. |
-| `Post` | interface | index.ts:1 | Blog post schema. |
-| `SiteConfig` | interface | index.ts:33 | App/site settings. |
-| `SEOProps` | interface | index.ts:41 | Metadata props. |
-| `FeaturedImage` | interface | blog.ts:28 | Image config. |
-| `Author` | interface | blog.ts:44 | Author profile. |
-| `CategoryConfig` | interface | blog.ts:179 | Blog categories. |
+| `SiteConfig` | interface | [types/index.ts:33](types/index.ts) | Site-wide settings (title, URL, etc.). |
+| `CategoryConfig` | interface | [types/blog.ts:179](types/blog.ts) | Blog category schemas. |
+| `AppError` | class | [errors.ts:1](errors.ts) | Base for all custom errors. |
+| `AuthenticationError` | class | [errors.ts:12](errors.ts) | Login/session failures. |
+| `AuthorizationError` | class | [errors.ts:18](errors.ts) | Role/permission denials. |
+| `ValidationError` | class | [errors.ts:24](errors.ts) | Input schema violations. |
+| `Post` | interface | [types/index.ts:1](types/index.ts) | Blog post structure. |
+| `SEOProps` | interface | [types/index.ts:41](types/index.ts) | Metadata for pages. |
+| `FeaturedImage` | interface | [types/blog.ts:28](types/blog.ts) | Image assets. |
+| `Author` | interface | [types/blog.ts:44](types/blog.ts) | Author profiles. |
 
 ## Documentation Touchpoints
-
-- [`AGENTS.md`](../AGENTS.md): Update agent workflows post-design.
-- [`README.md`](../README.md): Add architecture overview/ASCII diagram.
-- [`types/*.ts`](../types/): JSDoc for new interfaces.
-- [`docs/architecture.md`](../docs/architecture.md) (propose creation): Layer diagrams.
+- [AGENTS.md](../../AGENTS.md) – Agent responsibilities and collaboration updates.
+- [README.md](README.md) – Architecture overview and diagrams.
+- [docs/README.md](../docs/README.md) – Detailed specs; propose `architecture.md`.
+- [`types/*.ts`](types/) – JSDoc comments for interfaces and types.
+- [CONTRIBUTING.md](CONTRIBUTING.md) – Standards section for new patterns.
 
 ## Collaboration Checklist
-
-1. **Confirm Assumptions**: Query team on requirements (e.g., DB choice, scaling needs). List current pain points.
-2. **Propose Design**: Share Markdown diagram of layers/files. Highlight changes to `app/api/` or `types/`.
-3. **Review PRs**: Comment on architecture fit; suggest refactors (e.g., extract services).
-4. **Update Docs**: Commit architecture.md, type docs, AGENTS.md.
-5. **Capture Learnings**: Log patterns/risks in issue template.
-6. **Hand-off**: Tag implementer agents (e.g., developer-specialist).
+1. **Confirm Assumptions**: Review requirements with team; validate scaling needs, DB plans, and current pain points (e.g., auth bottlenecks).
+2. **Propose Design**: Generate Mermaid/ASCII diagrams for layers; suggest file changes (e.g., new `lib/services/`).
+3. **Review PRs**: Analyze diffs for architectural fit; recommend refactors like service extraction.
+4. **Update Docs**: Commit diagrams to `docs/architecture.md`, enhance types JSDoc, update AGENTS.md.
+5. **Capture Learnings**: Document patterns/risks in issues; propose playbook refinements.
+6. **Hand-off**: Summarize in PR comments; notify developer-specialist or tester agents.
 
 ## Hand-off Notes
-
-**Expected Outcomes**:
-- Architecture diagram (Mermaid/ASCII).
-- Proposed file structures/PRDs for features.
-- Updated types/errors.
+Upon completion, deliver:
+- Updated architecture diagrams (Mermaid in docs).
+- PRDs/file structures for new modules.
+- Extended types/errors with examples.
 
 **Remaining Risks**:
-- DB integration undefined – monitor schema evolution.
-- Auth scaling if user growth spikes.
+- Undefined DB/ORM (e.g., Prisma); direct queries may emerge.
+- High-traffic auth scaling without rate limits.
 
-**Follow-ups**:
-- Engage developer-specialist for implementation.
-- Schedule review after first PR.
-- Audit post-deployment for pattern adherence.
+**Suggested Follow-ups**:
+- Delegate implementation to developer-specialist.
+- Re-engage post-PR for review.
+- Audit deployment metrics for adherence.

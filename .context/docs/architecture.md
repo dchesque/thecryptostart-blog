@@ -1,130 +1,148 @@
-## Architecture Notes
+# Architecture
 
-This system is a monolithic Next.js application (version 14+) utilizing the App Router for a crypto-focused blog platform. It integrates Contentful as a headless CMS for dynamic blog content, Prisma for user authentication and management with a PostgreSQL backend, and NextAuth.js for session handling. The design prioritizes static site generation (SSG) for blog posts to optimize performance and SEO, while server-side rendering (SSR) and API routes handle dynamic admin features and user interactions. The current architecture evolved from a static blog to include user auth and admin panels to support community growth, balancing developer velocity with scalability. Content is decoupled via Contentful to enable non-technical content updates, with TypeScript enforcing contracts across layers.
+This is a monolithic Next.js (v14+) application for a crypto-focused blog platform. It uses the App Router, Contentful as a headless CMS for blog content, Prisma ORM with PostgreSQL for user data and authentication, and NextAuth.js for session management. The architecture emphasizes static site generation (SSG) for blog posts to boost SEO and performance, with server-side rendering (SSR) and API routes for dynamic features like admin panels and user interactions.
 
-## System Architecture Overview
+Deployment targets Vercel for edge caching, global CDN, and serverless scaling. All layers are co-located for simplicity, with TypeScript contracts ensuring type safety across boundaries.
 
-The application is a **monolithic Next.js deployment**, typically hosted on Vercel for edge caching and global CDN distribution. It follows a layered topology:
+## High-Level Data Flow
 
-- **Client requests** enter via pages in `app/` (e.g., `/blog/[slug]`), triggering SSG/SSR.
-- Control pivots to `lib/` for data fetching (Contentful queries) and utils (SEO, permissions).
-- API routes in `app/api/` handle mutations (e.g., user registration).
-- Persistence flows through Prisma to a Postgres DB.
-- External pivots to Contentful for reads and NextAuth providers for login.
-
-No microservices; all concerns are co-located for simplicity. Deployment uses `next build && next start`, with Docker support for local dev.
+```
+Client Request → app/ Pages (SSG/SSR) → lib/ Fetchers & Utils → External Services (Contentful/Prisma)
+                    ↓
+               app/api/ Routes (Mutations) → Prisma/DB
+                    ↓
+               Components (UI Rendering) + Auth/Session Checks
+```
 
 ## Architectural Layers
 
-- **Presentation Layer**: UI rendering and components (`app/`, `components/`)
-- **API Layer**: Route handlers for auth and admin (`app/api/`)
-- **Business Logic Layer**: Data fetching, utils, and domain functions (`lib/`, `types/`)
-- **Persistence Layer**: ORM and schema (`prisma/`)
-- **Infrastructure Layer**: Config, constants, and integrations (`lib/contentful.ts`, `lib/prisma.ts`)
+| Layer                  | Directory/Path                  | Responsibilities                          | Key Files/Exports                          |
+|------------------------|---------------------------------|-------------------------------------------|--------------------------------------------|
+| **Presentation**      | `app/`, `components/`           | UI rendering, pages, reusable components | `app/blog/[slug]/page.tsx`, `components/TableOfContents.tsx` |
+| **API**               | `app/api/`                      | Route handlers for auth, users, comments | `app/api/auth/register/route.ts`, `app/api/admin/comments/route.ts` |
+| **Business Logic**    | `lib/`, `types/`                | Data fetching, utils, validation, SEO    | `lib/contentful.ts` (`getPostBySlug`), `lib/seo.ts` (`generateMetadata`) |
+| **Persistence**       | `prisma/`                       | DB schema, migrations, queries           | `prisma/schema.prisma`, `lib/prisma.ts` (singleton) |
+| **Infrastructure**    | `lib/` (integrations), `public/`| Config, constants, static assets         | `lib/constants.ts` (`getCategoryBySlug`), `public/` |
 
-> See [`codebase-map.json`](./codebase-map.json) for complete symbol counts and dependency graphs.
+## Design Patterns
 
-## Detected Design Patterns
-
-| Pattern       | Confidence | Locations                          | Description |
-|---------------|------------|------------------------------------|-------------|
-| Singleton    | 95%       | `lib/prisma.ts` (PrismaClientSingleton) | Ensures single Prisma instance across requests |
-| Factory      | 85%       | `lib/contentful.ts` (getClient)    | Lazy-creates Contentful client with env config |
-| Adapter      | 80%       | `lib/contentful.ts` (transformPost)| Maps Contentful entries to internal BlogPost types |
-| Decorator    | 75%       | `lib/seo.ts` (generateMetadata)   | Wraps page metadata with structured schemas |
-| Strategy     | 70%       | `lib/permissions.ts` (hasRole/hasPermission) | Role-based access via configurable mappings |
+| Pattern     | Locations                          | Purpose                                      |
+|-------------|------------------------------------|----------------------------------------------|
+| **Singleton** | `lib/prisma.ts` (PrismaClientSingleton) | Single DB client instance per request        |
+| **Factory**  | `lib/contentful.ts` (getClient)    | Lazy Contentful client creation              |
+| **Adapter**  | `lib/contentful.ts` (transformPost)| Contentful data → internal `BlogPost` type   |
+| **Decorator**| `lib/seo.ts` (generateMetadata)   | Enhance page metadata with JSON-LD schemas   |
+| **Strategy** | `lib/permissions.ts` (hasRole/hasPermission) | Pluggable RBAC checks                |
 
 ## Entry Points
 
-- [`app/layout.tsx`](../app/layout.tsx) — Root layout with AuthProvider and metadata
-- [`app/page.tsx`](../app/page.tsx) — Homepage (likely redirects or landing)
-- [`app/blog/page.tsx`](../app/blog/page.tsx) — Blog index with pagination/search
-- [`app/blog/[slug]/page.tsx`](../app/blog/[slug]/page.tsx) — Individual post with SSG
-- [`app/admin/page.tsx`](../app/admin/page.tsx) — Admin dashboard
-- [`app/api/auth/register/route.ts`](../app/api/auth/register/route.ts) — User registration API
-- [`app/api/users/route.ts`](../app/api/users/route.ts) — User listing API
-- [`prisma/seed.ts`](../prisma/seed.ts) — Database seeding script
+- **`app/layout.tsx`** — Root layout with `AuthProvider`, providers, and global metadata.
+- **`app/page.tsx`** — Landing/homepage.
+- **`app/blog/page.tsx`** — Blog index with `getAllPosts`, pagination, search.
+- **`app/blog/[slug]/page.tsx`** — Post viewer (SSG via `generateStaticParams`/`getPostBySlug`).
+- **`app/admin/page.tsx`** — Admin dashboard (`AdminDashboard`).
+- **`app/api/auth/register/route.ts`** — POST user registration.
+- **`app/api/users/route.ts`** — GET/POST users list.
+- **`prisma/seed.ts`** — DB seeding.
 
-## Public API
+Example SSG setup in `app/blog/[slug]/page.tsx`:
 
-| Symbol                  | Type      | Location                  |
-|-------------------------|-----------|---------------------------|
-| `AboutPage`             | function | `app/about/page.tsx`     |
-| `AdminDashboard`        | function | `app/admin/page.tsx`     |
-| `AppError`              | class    | `lib/errors.ts`          |
-| `AuthenticationError`   | class    | `lib/errors.ts`          |
-| `AuthorizationError`    | class    | `lib/errors.ts`          |
-| `AuthProvider`          | function | `components/AuthProvider.tsx` |
-| `BlogCategory`          | type     | `types/blog.ts`          |
-| `BlogMetadata`          | interface| `types/blog.ts`          |
-| `BlogPost`              | interface| `types/blog.ts`          |
-| `calculateReadingTime`  | function | `lib/utils.ts`           |
-| `checkRateLimit`        | function | `lib/rate-limit.ts`      |
-| `ContentfulBlogPost`    | interface| `types/blog.ts`          |
-| `Footer`                | function | `components/Footer.tsx`  |
-| `generateMetadata`      | function | `lib/seo.ts`             |
-| `getAllPosts`           | function | `lib/contentful.ts`      |
-| `getPostBySlug`         | function | `lib/contentful.ts`      |
-| `hasPermission`         | function | `lib/permissions.ts`     |
-| `RolePermissions`       | type     | `types/roles.ts`         |
-| `SignOutButton`         | function | `components/SignOutButton.tsx` |
+```tsx
+export async function generateStaticParams() {
+  const slugs = await getAllPostSlugs();
+  return slugs.map((slug) => ({ slug }));
+}
 
-## Internal System Boundaries
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  const post = await getPostBySlug(params.slug);
+  // Render with SEO, comments, etc.
+}
+```
 
-Domains are separated by bounded contexts:
-- **Blog Domain** (`lib/contentful.ts`, `types/blog.ts`): Owns Contentful data; synchronous queries via factory client. No direct DB access.
-- **Auth Domain** (`app/api/auth/`, `lib/permissions.ts`): Owns user data via Prisma; RBAC enforced by `hasRole/hasPermission`. Sessions via NextAuth.
-- **Admin Domain** (`app/admin/`): Reads from auth DB, lists via `fetchUsers`; permissions gate UI.
+## Key Domains & Boundaries
 
-Contracts enforced via exported types (e.g., `BlogPost`, `UserWithRoles`). No shared mutable state; data sync via API fetches.
+- **Blog Domain** (`lib/contentful.ts`, `types/blog.ts`): Read-only Contentful access. Types: `BlogPost`, `BlogCategory`, `ContentfulBlogPost`.
+- **Auth Domain** (`app/api/auth/`, `types/auth.ts`): Prisma-backed users/sessions. Exports: `UserWithRoles`, `hasPermission`.
+- **Admin Domain** (`app/admin/`): Gated by roles; fetches via API routes.
 
-## External Service Dependencies
+No shared mutable state; data flows via props/fetch.
 
-- **Contentful**: Headless CMS for blog posts/categories. API key auth via env vars; rate-limited (query costs tracked via `getTotalPostsCount`). Fallback: Cache SSG outputs.
-- **Prisma/PostgreSQL**: User persistence. Connection pooled singleton; failures retried via Prisma middleware.
-- **NextAuth.js Providers** (e.g., Credentials): Implicit via `[...nextauth]`. Rate-limited logins.
-- **Google AdSense**: Client-side ads (`components/AdSense.tsx`). No auth; CSP compliant.
+## Public API Surface
 
-## Key Decisions & Trade-offs
+| Symbol                  | Type      | File                          | Usage Example |
+|-------------------------|-----------|-------------------------------|---------------|
+| `BlogPost`             | Interface | `types/blog.ts`              | Data model for posts |
+| `getPostBySlug(slug)`  | Function  | `lib/contentful.ts`          | `const post = await getPostBySlug('my-post');` |
+| `generateMetadata()`   | Function  | `lib/seo.ts`                 | Page `<head>` enhancement |
+| `calculateReadingTime(text)` | Function | `lib/utils.ts`            | `const time = calculateReadingTime(post.body);` |
+| `checkRateLimit(ip)`   | Function  | `lib/rate-limit.ts`          | API guard: `if (await checkRateLimit(ip)) return NextResponse.json(...);` |
+| `AuthProvider`         | Component | `components/AuthProvider.tsx`| `<AuthProvider>{children}</AuthProvider>` |
+| `hasPermission(user, perm)` | Function | `lib/permissions.ts`     | Admin gates |
 
-- **Contentful over self-hosted CMS**: Decouples content team; traded query latency (200-500ms) for zero-downtime updates. Alternative: Direct Markdown files (rejected for dynamic search/pagination).
-- **SSG for posts**: SEO/performance win; static params via `generateStaticParams`. Dynamic admin SSR for freshness.
-- **Prisma + NextAuth**: Rapid auth setup; traded schema flexibility for type-safety. Experimented with Drizzle (slower migration).
-- **Monolith**: Simplicity over microservices; scales to 10k users via Vercel.
+Full list in [codebase-map.json](../codebase-map.json).
 
-## Diagrams
+## External Dependencies
+
+| Service       | Integration File       | Config                  | Fallback/Notes |
+|---------------|-----------------------|-------------------------|----------------|
+| **Contentful**| `lib/contentful.ts`  | `CONTENTFUL_SPACE_ID`, `CONTENTFUL_TOKEN` | SSG cache; query limits tracked |
+| **Prisma/PG**| `lib/prisma.ts`      | `DATABASE_URL`         | Singleton; auto-migrations |
+| **NextAuth** | `app/api/auth/[...nextauth]/route.ts` | `NEXTAUTH_SECRET`, providers | Credentials + sessions |
+| **AdSense**  | `components/AdSense.tsx` | Client-side script   | CSP headers required |
+
+## Deployment & Scaling
+
+- **Build**: `pnpm build` → SSG outputs in `.next/static`.
+- **Runtime**: Vercel Edge for APIs; ISR revalidation for dynamic pages.
+- **Scaling**: Monolith to 10k DAU; add Upstash Redis for rate limits if needed.
+- **Local Dev**: `pnpm dev`; Docker for Postgres/Contentful mocks.
+
+## Trade-offs
+
+| Decision                  | Pro                          | Con                          | Alternative |
+|---------------------------|------------------------------|------------------------------|-------------|
+| Contentful CMS            | Non-dev content edits       | Vendor cost/latency (~300ms)| Markdown files |
+| SSG + API SSR             | SEO + perf                  | Build times for 100+ posts  | Full ISR    |
+| Prisma + NextAuth         | Type-safe auth              | Schema lock-in              | Custom JWT  |
+| Monolith                  | Fast iteration              | No independent scaling      | Turborepo   |
+
+## Architecture Diagram
 
 ```mermaid
 graph TD
-    Client --> Pages[app/ Pages]
-    Pages --> Lib[lib/ Utils & Fetchers]
-    Lib --> Contentful[Contentful CMS]
-    Lib --> Prisma[Prisma / Postgres]
-    Pages --> API[app/api/ Routes]
+    Client[Browser/Client] -->|GET /blog/[slug]| Pages[app/ Pages<br/>SSG/SSR]
+    Pages -->|fetch| Lib[lib/<br/>contentful.ts, seo.ts]
+    Lib -->|Query| Contentful[Contentful CMS]
+    Lib -->|Query| Prisma[Prisma<br/>Postgres DB]
+    Pages -->|Mutations| API[app/api/ Routes]
     API --> Prisma
-    Auth[NextAuth] -.->|Sessions| Pages
-    Pages --> Components[components/ UI]
+    Pages -->|Sessions| Auth[NextAuth.js]
+    Pages --> Components[components/<br/>UI + Ads]
+    Auth -.->|RBAC| Lib
 ```
 
-## Risks & Constraints
+## Risks & Mitigations
 
-- **Contentful Vendor Lock**: Migration path via export APIs; assume 1M entries max.
-- **Cold Starts**: Serverless functions (API routes) latency <1s target; mitigated by edge runtime.
-- **Rate Limits**: Enforced via `checkRateLimit`; DB-backed Upstash if scaled.
-- **SEO Dependency**: Structured data via `lib/seo.ts`; Core Web Vitals monitored.
+- **Vendor Lock (Contentful)**: Export scripts; cap at 1k posts.
+- **Cold Starts**: Edge runtime; <500ms p95 target.
+- **Spam/Rate Limits**: `lib/rate-limit.ts`, `lib/spam-prevention.ts` (IP-based).
+- **SEO**: `lib/seo.ts` schemas; monitor Core Web Vitals.
 
-## Top Directories Snapshot
+## Directory Structure
 
-- `app/` (~25 files) — Next.js App Router pages, layouts, and API routes
-- `components/` (~15 files) — Reusable React components (e.g., TableOfContents, BlogPost)
-- `lib/` (~20 files) — Core utilities, data access (contentful.ts, seo.ts, prisma.ts)
-- `types/` (~5 files) — TypeScript definitions for blog, auth, roles
-- `prisma/` (~5 files) — Database schema, migrations, seed
-- `docs/` (~10 files) — Documentation and guides
-- `public/` (~5 files) — Static assets (images, favicon)
+```
+.
+├── app/              # Pages, layouts, API routes (~25 files)
+├── components/       # UI (~15 files: Sidebar, CommentsList)
+├── lib/              # Utils, fetchers (~20 files: contentful.ts, utils.ts)
+├── types/            # TS defs (~5 files: blog.ts, auth.ts)
+├── prisma/           # DB (~5 files: schema.prisma)
+├── docs/             # This docs/
+└── public/           # Assets
+```
 
-## Related Resources
+## Related Docs
 
-- [project-overview.md](./project-overview.md)
-- [data-flow.md](./data-flow.md)
-- [`codebase-map.json`](./codebase-map.json)
+- [project-overview.md](./project-overview.md) — High-level project goals.
+- [data-flow.md](./data-flow.md) — Detailed request/response traces.
+- [codebase-map.json](./codebase-map.json) — Symbols, deps, graphs.

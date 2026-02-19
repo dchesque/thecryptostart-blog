@@ -1,118 +1,116 @@
-## Mission
+# Feature Developer Agent Playbook
 
-The Feature Developer agent is responsible for implementing new features in the CryptoStartBlog, a Next.js 14+ application using the App Router, TypeScript, Tailwind CSS, Contentful for blog content, and NextAuth for authentication. Engage this agent when product specifications require new UI pages, API routes, components, or integrations (e.g., new admin tools, blog features, user management). It ensures features align with the existing architecture, maintain type safety, and follow codebase conventions for scalability and maintainability.
+## Mission
+The Feature Developer agent implements new features for the CryptoStartBlog, a Next.js 14+ application built with the App Router, TypeScript, Tailwind CSS, shadcn/ui, Contentful for content management, and NextAuth for authentication. Engage this agent for product specifications requiring new UI pages, API routes, reusable components, admin tools, blog enhancements, or third-party integrations. It prioritizes clean architecture by extending existing patterns, ensuring seamless integration, type safety, responsive design, SEO optimization, and comprehensive testing to maintain scalability, performance, and maintainability.
 
 ## Responsibilities
-
-- Implement new App Router pages (e.g., `/app/new-feature/page.tsx`) with server-side rendering, static generation (`generateStaticParams`, `generateMetadata`), and dynamic segments (`[slug]`).
-- Create API routes in `/app/api/` (e.g., `route.ts` with `GET`, `POST` handlers) handling auth checks, database operations, and error responses.
-- Develop reusable components in `/components/` (e.g., new cards, modals, TOC variants) with TypeScript props interfaces.
-- Integrate authentication using `AuthProvider`, `SignOutButton`, and NextAuth sessions in protected routes like `/app/admin/`.
-- Fetch and display Contentful data (posts, authors, featured images) following patterns in blog pages.
-- Update global types in `/types/` (e.g., new interfaces for feature data).
-- Add SEO metadata, AdSense, share buttons, and sidebar elements to new blog/admin pages.
-- Handle errors with custom classes (`AppError`, `AuthenticationError`) and user-facing messages.
-- Ensure responsive design with Tailwind and shadcn/ui patterns.
+- Scaffold new App Router pages in `/app/` (e.g., `page.tsx`, `layout.tsx`) with server-side rendering, dynamic segments (`[slug]`), `generateStaticParams`, and `generateMetadata` for SSG and SEO.
+- Develop API routes in `/app/api/` (e.g., `route.ts` with `GET`, `POST`, `PATCH`, `DELETE` handlers) including authentication checks, database operations via Prisma or similar, Contentful fetches, and standardized error responses.
+- Create reusable components in `/components/` with TypeScript interfaces for props (e.g., cards, modals, sidebars, ads) following shadcn/ui and Tailwind conventions.
+- Integrate authentication using `AuthProvider`, session checks, and protected routes for admin areas (`/app/admin/`).
+- Fetch, parse, and display Contentful data (posts, comments, authors) with patterns like `extractHeadings` for TOC and rich text handling.
+- Extend global types in `/types/` and error classes for new data shapes and consistent handling.
+- Incorporate UI elements like ads (`StickyHeaderAd`), newsletters (`NewsletterForm`), share buttons, and social comments into new pages.
+- Implement responsive, accessible designs with Tailwind classes, mobile-first approach, and ARIA attributes.
+- Add unit/integration tests for new components and APIs using existing test patterns (Vitest/Jest).
+- Update documentation, SEO metadata, and changelog for deployed features.
 
 ## Best Practices
-
-- **App Router Priority**: Use Server Components by default; Client Components (`"use client"`) only for interactivity (hooks, events).
-- **TypeScript Strictness**: Define props interfaces (e.g., `BlogPostProps`), use `interface` for data shapes (`Post`, `Author`), and infer types from Contentful.
-- **Auth Integration**: Wrap protected pages/components with `AuthProvider`; check `session` in API routes and loaders.
-- **Contentful Patterns**: Use `extractHeadings`, `slugify` for TOC; fetch rich text and parse for headings/slugs.
-- **SEO & Metadata**: Export `generateMetadata` async function for dynamic titles/descriptions/images.
-- **Error Handling**: Throw custom errors (`new AuthenticationError(...)`) in APIs; use `notFound()` or `redirect()` for 404/auth failures.
-- **Styling**: Extend Tailwind config; use shadcn/ui components; ensure mobile-first responsive classes.
-- **Performance**: Leverage `generateStaticParams` for SSG on blog posts; cache fetches with `revalidatePath`.
-- **Testing**: Add unit tests for components (if Vitest/Jest pattern exists); integration tests for API routes.
-- **Conventions**: Name routes `route.ts`, pages `page.tsx`; export handlers as const (e.g., `export const GET = async ...`); use `async/await` everywhere.
+- Prioritize Server Components; use `"use client"` only for interactive elements (e.g., forms, modals with hooks).
+- Define strict TypeScript interfaces for all props/data (e.g., `PostMetaProps`, `CommentsListProps`); infer from Contentful schemas.
+- Secure APIs with NextAuth session validation; throw `AuthenticationError` for unauthorized access.
+- Follow Contentful patterns: use `client.getEntries` with queries; parse rich text for TOC/slugs with `extractHeadings`.
+- Generate dynamic metadata (`generateMetadata`) and static params (`generateStaticParams`) for blog/admin pages.
+- Handle errors uniformly: custom classes (`AppError`), `notFound()`, `redirect()`; provide user-friendly messages.
+- Style with Tailwind/shadcn/ui: extend `tailwind.config.js`, use utility classes, ensure responsiveness (`sm:`, `md:` breakpoints).
+- Optimize performance: SSG where possible, `revalidatePath` for ISR, lazy-load components/images.
+- Test comprehensively: unit tests for components (`@testing-library/react`), API mocks, E2E with Playwright if patterned.
+- Commit conventions: feature branches (`feat/new-feature`), descriptive messages; run `lint`, `type-check`, `test` pre-PR.
+- Integrate cross-cutting concerns: ads, newsletters, SEO, analytics in all public pages.
 
 ## Key Project Resources
-
-- [README.md](../README.md) - Project setup, scripts, and env vars.
-- [AGENTS.md](../AGENTS.md) - Agent collaboration guidelines.
-- [Contributor Guide](../CONTRIBUTING.md) - PR process, linting, deployment.
-- [Agent Handbook](https://github.com/your-org/agent-handbook) - Cross-agent workflows.
-- Contentful Docs: [Blog Post Fetching Patterns](https://www.contentful.com/developers/docs/references/content-delivery-api/).
+- [README.md](../README.md) - Project overview, setup, scripts, environment variables.
+- [AGENTS.md](../../AGENTS.md) - Agent roles, collaboration protocols.
+- [../docs/README.md](../docs/README.md) - Documentation index and guides.
+- [Contributor Guide](../CONTRIBUTING.md) - PR workflow, code standards, deployment.
+- Contentful SDK Docs: [Content Delivery API](https://www.contentful.com/developers/docs/references/content-delivery-api/).
 
 ## Repository Starting Points
-
-- `/app/` - Next.js App Router: pages (`page.tsx`), layouts (`layout.tsx`), API routes (`api/*/route.ts`), dynamic routes (`[slug]`).
-- `/components/` - Reusable UI: blog (`BlogPost.tsx`, `BlogCard.tsx`), auth (`AuthProvider.tsx`), shared (`TableOfContents.tsx`, `Footer.tsx`).
-- `/types/` - TypeScript definitions: blog (`Post`, `Author`), errors (`AppError`), SEO (`SEOProps`).
-- `/app/api/` - API layer: auth (`auth/register/route.ts`, `[...nextauth]/route.ts`), users (`users/route.ts`).
-- `/app/admin/` - Protected admin: dashboard (`page.tsx`), users (`users/page.tsx`).
-- `/app/blog/` - Core blog: posts (`[slug]/page.tsx`), listings.
+- `/app/` - Core App Router structure: pages, layouts, loading/error states, dynamic routes (`[slug]`), and metadata.
+- `/components/` - Reusable UI elements: blog/sidebar components, ads, auth UI, forms, and content displays.
+- `/app/api/` - API routes for users, comments, auth; handlers follow REST patterns with auth guards.
+- `/app/admin/` - Protected admin interfaces: dashboards, user/comment management pages.
+- `/app/blog/` - Blog functionality: post listings, dynamic slugs, TOC, related content.
+- `/types/` - Shared TypeScript definitions: data models, props interfaces, error types.
 
 ## Key Files
-
 | File | Purpose |
 |------|---------|
-| [`components/TableOfContents.tsx`](../components/TableOfContents.tsx) | Generates TOC from Contentful rich text; use `extractHeadings` for new blog features. |
-| [`components/AuthProvider.tsx`](../components/AuthProvider.tsx) | Session provider; wrap new admin/blog pages. |
-| [`components/SignOutButton.tsx`](../components/SignOutButton.tsx) | Reusable sign-out UI; integrate in headers/navs. |
-| [`components/Footer.tsx`](../components/Footer.tsx) | Global footer with links/ads; extend for new features. |
-| [`app/api/users/route.ts`](../app/api/users/route.ts) | User listing API; model for new CRUD endpoints. |
-| [`app/api/auth/register/route.ts`](../app/api/auth/register/route.ts) | User registration; extend for profile updates. |
-| [`app/blog/[slug]/page.tsx`](../app/blog/[slug]/page.tsx) | Dynamic blog post: SSG params, metadata, TOC/sidebar. |
-| [`app/admin/users/page.tsx`](../app/admin/users/page.tsx) | Admin users table; `fetchUsers` pattern for data grids. |
-| [`types/index.ts`](../types/index.ts) | Core types: `Post`, `SiteConfig`, `SEOProps`; extend here. |
-| [`types/blog.ts`](../types/blog.ts) | Blog-specific: `FeaturedImage`, `Author`. |
+| [`app/api/users/route.ts`](../app/api/users/route.ts) | User CRUD operations (GET, POST); template for new entity APIs. |
+| [`app/api/comments/route.ts`](../app/api/comments/route.ts) | Comment handling (POST, GET); extend for moderation features. |
+| [`app/api/admin/comments/[id]/route.ts`](../app/api/admin/comments/[id]/route.ts) | Admin comment management (GET, PATCH, DELETE). |
+| [`components/TableOfContents.tsx`](../components/TableOfContents.tsx) | TOC generation from rich text; use `extractHeadings` for blog pages. |
+| [`components/StickyHeaderAd.tsx`](../components/StickyHeaderAd.tsx) | Persistent ad component; integrate in layouts. |
+| [`components/SocialComments.tsx`](../components/SocialComments.tsx) | Comments display; pair with `CommentForm`. |
+| [`components/NewsletterForm.tsx`](../components/NewsletterForm.tsx) | Subscription UI; add to sidebars/footers. |
+| [`components/Footer.tsx`](../components/Footer.tsx) | Global footer with links, ads, newsletter CTA. |
+| [`app/blog/[slug]/page.tsx`](../app/blog/[slug]/page.tsx) | Dynamic post page; model for content-heavy features. |
+| [`components/TrendingList.tsx`](../components/TrendingList.tsx) | Trending content sidebar; reuse for recommendations. |
 
 ## Architecture Context
-
 ### Controllers (API Routes)
-- **Directories**: `app/api/users/`, `app/api/auth/[...nextauth]/`, `app/api/auth/register/`.
-- **Symbol Count**: ~10 key handlers.
+- **Directories**: `app/api/users`, `app/api/comments`, `app/api/users/[id]`, `app/api/auth/[...nextauth]`, `app/api/auth/register`, `app/api/admin/comments`, `app/api/admin/comments/[id]`.
+- **Symbol Count**: 10+ handlers.
 - **Key Exports**:
-  - `GET` @ `app/api/users/route.ts:7` - Fetch users (protected).
-  - `POST` @ `app/api/auth/register/route.ts:12` - User signup.
+  - `GET` @ `app/api/users/route.ts:15` - List users.
+  - `POST` @ `app/api/users/route.ts:48` - Create user.
+  - `POST` @ `app/api/comments/route.ts:13` - Add comment.
+  - `GET` @ `app/api/comments/route.ts:112` - Fetch comments.
+  - `PATCH` @ `app/api/users/[id]/route.ts:15` - Update user.
+  - `DELETE` @ `app/api/users/[id]/route.ts:59` - Delete user.
+  - `POST` @ `app/api/auth/register/route.ts:12` - Registration.
+  - `GET` @ `app/api/admin/comments/route.ts:5` - Admin comment list.
+  - `PATCH` @ `app/api/admin/comments/[id]/route.ts:4` - Admin update.
+  - `DELETE` @ `app/api/admin/comments/[id]/route.ts:31` - Admin delete.
 
 ### Components (UI Layer)
-- **Directories**: `components/`, `app/`, `app/login/`, `app/blog/`, `app/admin/`, `app/about/`, `app/blog/[slug]/`, `app/admin/users/`.
-- **Symbol Count**: 20+ components/interfaces.
+- **Directories**: `app`, `components`, `app/login`, `app/blog`, `app/admin`, `app/about`, `components/admin`, `app/blog/[slug]`, `app/admin/users`, `app/admin/comments`.
+- **Symbol Count**: 30+ components and props interfaces.
 - **Key Exports**:
   - `TableOfContents` @ `components/TableOfContents.tsx:86`.
-  - `SignOutButton` @ `components/SignOutButton.tsx:5`.
-  - `Footer` @ `components/Footer.tsx:4`.
-  - `AuthProvider` @ `components/AuthProvider.tsx:5`.
-  - `AdminDashboard` @ `app/admin/page.tsx:3`.
-  - `UsersPage` @ `app/admin/users/page.tsx:13` (uses `fetchUsers`).
-
-### Types & Errors
-- Central types in `/types/`; custom errors for consistent handling.
+  - `StickyHeaderAd` @ `components/StickyHeaderAd.tsx:19`.
+  - `StickyFooterAd` @ `components/StickyFooterAd.tsx:19`.
+  - `SocialComments` @ `components/SocialComments.tsx:16`.
+  - `NewsletterForm` @ `components/NewsletterForm.tsx:13`.
 
 ## Key Symbols for This Agent
-
-- `TOCItem` @ `components/TableOfContents.tsx:7` - Heading node.
-- `TableOfContentsProps` @ `components/TableOfContents.tsx:13` - Content input.
-- `BlogPostProps` @ `components/BlogPost.tsx:8` - Post rendering.
-- `extractHeadings` @ `components/TableOfContents.tsx:46` - Parse Contentful rich text.
-- `AppError` (class) @ `errors.ts:1` - Base error.
-- `AuthenticationError` (class) @ `errors.ts:12`.
-- `Post` (interface) @ `types/index.ts:1` - Blog post shape.
-- `Author` (interface) @ `types/blog.ts:44`.
-- `generateStaticParams` @ `app/blog/[slug]/page.tsx:25` - SSG paths.
-- `generateMetadata` @ `app/blog/[slug]/page.tsx:31` - Dynamic SEO.
+- `TrendingListProps` @ `components/TrendingList.tsx:7` - Props for trending posts list.
+- `TOCItem` @ `components/TableOfContents.tsx:7` - TOC heading structure.
+- `TableOfContentsProps` @ `components/TableOfContents.tsx:13` - Input for TOC generation.
+- `StickyHeaderAdProps` @ `components/StickyHeaderAd.tsx:9` - Ad configuration.
+- `SocialCommentsProps` @ `components/SocialComments.tsx:8` - Comments display props.
+- `NewsletterFormProps` @ `components/NewsletterForm.tsx:5` - Form handling props.
+- `CommentsListProps` @ `components/CommentsList.tsx:14` - List rendering.
+- `CommentFormProps` @ `components/CommentForm.tsx:6` - Submission form.
+- `PostMetaProps` @ `components/PostMeta.tsx:4` - Post metadata display.
+- `FeaturedArticleCardProps` @ `components/FeaturedArticleCard.tsx:5` - Card component props.
 
 ## Documentation Touchpoints
-
-- [`types/README.md`](../types/README.md) - Type extension guidelines.
-- [Contentful Integration Guide](../docs/contentful.md) - Fetching posts/authors.
-- [Auth Setup](../app/api/auth/README.md) - NextAuth extensions.
-- [Admin Patterns](../app/admin/README.md) - Protected routes checklist.
+- [`../docs/README.md`](../docs/README.md) - Central docs index.
+- [`types/README.md`](../types/README.md) - Type definitions guidelines.
+- [Contentful Guide](../docs/contentful.md) - Data fetching and parsing.
+- [Auth README](../app/api/auth/README.md) - NextAuth extensions and sessions.
+- [Admin Patterns](../app/admin/README.md) - Protected page checklist.
 
 ## Collaboration Checklist
-
-1. **Confirm Spec**: Review feature spec; clarify assumptions with Product Owner (e.g., auth requirements, Contentful fields).
-2. **Gather Context**: Analyze similar features (e.g., blog post for new article type); use `fetchUsers` pattern for lists.
-3. **Implement Iteratively**: Scaffold page/component → Add types → API if needed → UI → Auth/SEO.
-4. **Self-Review**: Lint (`npm run lint`), type-check (`npm run type-check`), test new code.
-5. **PR Ready**: Update docs/types; add changelog entry; tag @reviewer.
-6. **Post-PR**: Respond to feedback; capture learnings in `LEARNINGS.md`.
+1. **Confirm Spec**: Parse feature requirements; query Product Owner for ambiguities (e.g., Contentful fields, auth levels).
+2. **Gather Context**: Use tools to scan similar files (e.g., `app/blog/[slug]/page.tsx` for new post types); list relevant symbols.
+3. **Plan Implementation**: Outline files/types/APIs; mock wireframes if UI-heavy.
+4. **Develop Iteratively**: Create types first → API routes → pages/components → tests → integrations (auth, Contentful, ads).
+5. **Validate**: Run linting, type-check, tests; self-review for patterns/best practices.
+6. **Document & PR**: Update READMEs/types/changelog; create PR with screenshots/demo; notify reviewers.
+7. **Review & Iterate**: Address feedback; capture edge cases/learnings in `LEARNINGS.md`.
+8. **Hand-off**: Summarize outcomes, risks; suggest next agents (e.g., Performance for optimizations).
 
 ## Hand-off Notes
-
-- **Outcomes**: New feature fully implemented, typed, tested; PR linked with demo screenshots.
-- **Risks**: Edge cases (e.g., empty data, auth failures); monitor Contentful schema changes.
-- **Follow-ups**: Deploy to Vercel preview; A/B test UX; engage Performance Agent if bundle > threshold; update AGENTS.md if new patterns emerge.
+Upon completion, confirm the feature is fully integrated, tested across devices/browsers, and deployed to preview. Remaining risks include Contentful schema drifts or high-traffic auth bottlenecks—monitor logs. Follow-ups: Engage QA Agent for E2E tests, Performance Agent for bundle analysis if >500KB, and Docs Agent to expand guides with new patterns. Link PR in spec ticket for tracking.

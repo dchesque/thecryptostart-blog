@@ -1,90 +1,164 @@
-## Glossary & Domain Concepts
+# Glossary
 
-This glossary defines key terminology, domain entities, and concepts central to the CryptoStart Blog project, a Next.js-based blogging platform integrated with Contentful for content management, Prisma for database operations, and NextAuth for authentication. 
+This glossary defines key terminology, domain entities, concepts, and acronyms for the CryptoStart Blog project—a Next.js 14 App Router application with Contentful CMS integration, Prisma ORM, NextAuth authentication, and features like SEO optimization, rate limiting, and admin dashboards.
 
-**Domain Entities:**
-- **BlogPost**: Represents a single blog article, including metadata, content, author, categories, and related posts. Fetched and transformed from Contentful entries.
-- **Author**: Metadata for post authors, including name, bio, and avatar.
-- **BlogCategory**: Predefined categories for organizing posts (e.g., "Blockchain", "DeFi").
-- **User**: Authenticated site visitor or admin, with roles for permissions.
-- **Session/JWT**: Authentication state managed via NextAuth, storing user roles and permissions.
+## Domain Entities
 
-**Key Concepts:**
-- **Contentful Integration**: Headless CMS providing rich text content, images, and SEO fields for blog posts.
-- **Rate Limiting**: Protects API endpoints from abuse using IP-based throttling.
-- **Role-Based Access Control (RBAC)**: Permissions checked via roles (e.g., admin) for admin dashboard and user management.
-- **SEO Optimization**: Structured data (Schema.org) and metadata generation for search engines.
-- **Static Generation**: Uses `generateStaticParams` for blog post slugs to pre-render pages at build time.
+Core data models shaping the application's business logic:
 
-**User Personas:**
-- **Blog Reader**: Casual visitor seeking crypto education; goals include browsing posts, searching, and reading articles.
-- **Registered User**: Authenticated reader; can register/login for personalized features.
-- **Site Admin**: Manages users and monitors activity via admin dashboard.
+- **BlogPost**: Full representation of a blog article after transformation from Contentful. Includes `title`, `slug`, `content`, `excerpt`, `author` (`Author`), `featuredImage` (`FeaturedImage`), `categories` (`BlogCategory[]`), `tags`, `readingTime`, and `relatedPosts`.
+  
+  **Usage Example**:
+  ```typescript
+  // lib/contentful.ts
+  export async function getPostBySlug(slug: string): Promise<BlogPost> {
+    const entry = await getClient().getEntries<ContentfulBlogPost>({ /* ... */ });
+    return transformPost(entry.items[0]);
+  }
+  ```
+  Used in `app/blog/[slug]/page.tsx` for rendering posts with TOC, comments, and related content. See [types/blog.ts#L61](../types/blog.ts#L61).
 
-See [project-overview.md](./project-overview.md) for high-level architecture.
+- **Author**: Post author metadata with `name`, `avatar` (URL), `bio`, and `socialLinks`.
+  
+  **Usage**: Attached to `BlogPost`; rendered in `components/PostMeta.tsx`.
+  See [types/blog.ts#L44](../types/blog.ts#L44).
+
+- **BlogCategory**: Union type of predefined categories (e.g., `"Blockchain" | "DeFi" | "NFTs"`). Used for filtering and UI cards.
+  
+  **Usage**:
+  ```typescript
+  // components/CategoryCard.tsx
+  <CategoryCard category={post.categories[0] as BlogCategory} />
+  ```
+  Fetched via `getPostsByCategory`. See [types/blog.ts#L15](../types/blog.ts#L15), [lib/constants.ts](../lib/constants.ts).
+
+- **User**: Authenticated user with `id`, `email`, `name`, `roles` (`string[]`), managed via Prisma and NextAuth.
+  
+  Extended as `UserWithRoles`. See [types/auth.ts](../types/auth.ts), `app/api/users/route.ts`.
+
+- **Comment**: Individual comment with `id`, `content`, `author` (`User`), `postSlug`, `createdAt`, `approved`.
+  
+  Managed via API routes (`app/api/comments/route.ts`). Rendered in `components/CommentsList.tsx`.
+
+## Key Concepts
+
+- **Contentful Integration**: Headless CMS for blog content. Raw responses (`ContentfulBlogPost`) transformed to `BlogPost` via `transformPost`. Key functions: `getPostBySlug`, `getAllPosts`, `getPostsByCategory`.
+  
+  **Example**:
+  ```typescript
+  // app/blog/page.tsx
+  const posts = await getAllPosts({ limit: 10 });
+  ```
+  Configured in [lib/contentful.ts](../lib/contentful.ts).
+
+- **Rate Limiting**: IP-based throttling using Upstash Redis. `checkRateLimit` throws `RateLimitError` on excess.
+  
+  **Example**:
+  ```typescript
+  // app/api/auth/register/route.ts
+  if (!(await checkRateLimit(request.ipAddress))) {
+    throw new RateLimitError('Too many requests');
+  }
+  ```
+  See [lib/rate-limit.ts](../lib/rate-limit.ts), [lib/spam-prevention.ts](../lib/spam-prevention.ts).
+
+- **Role-Based Access Control (RBAC)**: Permission checks via `hasRole`/`hasPermission` against `RolePermissions`.
+  
+  **Example**:
+  ```typescript
+  // lib/permissions.ts
+  if (!hasRole(session.user.roles, 'admin')) {
+    throw new AuthorizationError('Access denied');
+  }
+  ```
+  Protects admin routes like `app/admin/comments/page.tsx`. See [types/roles.ts](../types/roles.ts).
+
+- **SEO Optimization**: Generates metadata and Schema.org JSON-LD (`generateMetadata`, `generateSchema`, `generateBreadcrumbSchema`).
+  
+  **Example**:
+  ```typescript
+  // app/blog/[slug]/page.tsx
+  export async function generateMetadata({ params }: { params: { slug: string } }) {
+    const post = await getPostBySlug(params.slug);
+    return generateMetadata({ title: post.title, description: post.excerpt });
+  }
+  ```
+  See [lib/seo.ts](../lib/seo.ts).
+
+- **Static Generation**: Pre-renders blog pages using `generateStaticParams` for slugs from `getAllPostSlugs`.
+  
+  See `app/blog/[slug]/page.tsx`.
+
+- **CSRF Protection**: Tokens via `generateCSRFToken`/`validateCSRFToken` for forms.
+  See [lib/csrf.ts](../lib/csrf.ts).
+
+- **Spam Prevention**: `detectSpam` + `validateEmail` + logging.
+  See [lib/spam-prevention.ts](../lib/spam-prevention.ts).
+
+## Custom Errors
+
+- **AppError**: Base error for app-wide issues.
+- **AuthenticationError**: Missing/invalid session.
+- **AuthorizationError**: Insufficient permissions.
+- **ValidationError**: Zod schema failures.
+- **RateLimitError**: Exceeded API limits.
+
+Defined in [lib/errors.ts](../lib/errors.ts). Caught in API handlers (e.g., `handleError` in `app/api/users/[id]/route.ts`).
+
+## Utilities
+
+- **calculateReadingTime(text: string)**: Estimates minutes from word count (~250/min).
+  
+  ```typescript
+  const readingTime = calculateReadingTime(post.content);
+  ```
+  See [lib/utils.ts](../lib/utils.ts).
+
+- **formatDate(date: string | Date)**: Formats to "MMM DD, YYYY".
+  See [lib/utils.ts](../lib/utils.ts).
 
 ## Type Definitions
 
-Exported interfaces and type aliases define the core data shapes. Links point to source locations:
+| Type/Interface | Description | Source |
+|---------------|-------------|--------|
+| [`Post`](../types/index.ts) | Base post for lists/pages. | [types/index.ts](../types/index.ts#L1) |
+| [`SiteConfig`](../types/index.ts#L33) | Site-wide config (title, URLs). | [types/index.ts](../types/index.ts#L33) |
+| [`SEOProps`](../types/index.ts#L41) | Metadata inputs. | [types/index.ts](../types/index.ts#L41) |
+| [`BlogPost`](../types/blog.ts#L61) | Transformed post. | [types/blog.ts](../types/blog.ts#L61) |
+| [`ContentfulBlogPost`](../types/blog.ts#L171) | Raw CMS entry. | [types/blog.ts](../types/blog.ts#L171) |
+| [`RolePermissions`](../types/roles.ts) | Role → permissions map. | [types/roles.ts](../types/roles.ts#L31) |
+| [`LoginInput`](../lib/validations.ts) | Zod login schema. | [lib/validations.ts](../lib/validations.ts#L20) |
 
-- [`Post`](../types/index.ts) - Base post interface for internal use.
-- [`SiteConfig`](../types/index.ts#L33) - Global site configuration (e.g., title, description, social links).
-- [`SEOProps`](../types/index.ts#L41) - Props for SEO metadata generation.
-- [`FeaturedImage`](../types/blog.ts#L28) - Image metadata with URL, alt text, and dimensions.
-- [`Author`](../types/blog.ts#L44) - Author details (name, avatar, bio).
-- [`BlogPost`](../types/blog.ts#L61) - Full blog post structure post-transformation from Contentful.
-- [`BlogMetadata`](../types/blog.ts#L91) - Post metadata (title, slug, date, excerpt).
-- [`PaginationOptions`](../types/blog.ts#L109) - Options for paginated queries (limit, skip).
-- [`SearchOptions`](../types/blog.ts#L121) - Search parameters (query, category, tags).
-- [`ContentfulBlogPostFields`](../types/blog.ts#L130) - Raw fields from Contentful API response.
-- [`ContentfulSys`](../types/blog.ts#L162) - System metadata from Contentful (ID, type, timestamps).
-- [`ContentfulBlogPost`](../types/blog.ts#L171) - Complete Contentful entry type.
-- [`CategoryConfig`](../types/blog.ts#L179) - Category display config (slug, name, color).
-- [`TagOptions`](../types/blog.ts#L188) - Options for post tags.
-- [`RolePermissions`](../types/roles.ts#L31) - Maps roles to allowed permissions.
-- [`UserWithRoles`](../types/auth.ts#L24) - Extended user type including roles array.
-- [`LoginInput`](../lib/validations.ts#L20) - Zod schema for login form validation.
-- [`RegisterInput`](../lib/validations.ts#L21) - Zod schema for registration form.
-- [`UpdateProfileInput`](../lib/validations.ts#L22) - Zod schema for profile updates.
-
-## Enumerations
-
-No exported enums are defined in the codebase. Categories and roles are handled via `type` aliases or `const` assertions (e.g., `BlogCategory` as a union type in [types/blog.ts](../types/blog.ts#L15)).
-
-## Core Terms
-
-- **BlogPost**: Central domain entity representing an article. Transformed via `transformPost` in [lib/contentful.ts](../lib/contentful.ts#L74). Used in pages like `app/blog/[slug]/page.tsx` and components like `BlogPost.tsx`.
-- **ContentfulBlogPost**: Raw API response from Contentful. Fetched by functions like `getPostBySlug` ([lib/contentful.ts](../lib/contentful.ts#L179)). Surfaces in data fetching layers.
-- **RolePermissions**: Defines admin capabilities (e.g., "user:manage"). Checked via `hasRole` and `hasPermission` in [lib/permissions.ts](../lib/permissions.ts). Critical for admin routes like `app/admin/users/page.tsx`.
-- **RateLimitError**: Custom error thrown by `checkRateLimit` ([lib/rate-limit.ts](../lib/rate-limit.ts#L14)). Prevents API abuse in endpoints like user registration.
-- **CSRF Token**: Security token generated by `generateCSRFToken` ([lib/csrf.ts](../lib/csrf.ts#L8)). Validates form submissions to mitigate cross-site request forgery.
-- **Reading Time**: Estimated via `calculateReadingTime` ([lib/utils.ts](../lib/utils.ts#L1) or [lib/contentful.ts](../lib/contentful.ts#L51)). Displays on post pages for user convenience.
+Full list in Symbol Index.
 
 ## Acronyms & Abbreviations
 
-- **CMS**: Content Management System – Contentful provides this for blog content.
-- **RBAC**: Role-Based Access Control – Implemented via `RolePermissions` and permission checks.
-- **SEO**: Search Engine Optimization – Handled by [lib/seo.ts](../lib/seo.ts) functions like `generateMetadata`.
-- **JWT**: JSON Web Token – Used in NextAuth sessions for auth state.
-- **API**: Application Programming Interface – Routes in `app/api/` (e.g., `/api/users`, `/api/auth/register`).
-- **Prisma**: ORM for database operations, used in auth and user management.
+| Acronym | Expansion | Context |
+|---------|-----------|---------|
+| CMS | Content Management System | Contentful |
+| RBAC | Role-Based Access Control | Permissions via roles |
+| SEO | Search Engine Optimization | [lib/seo.ts](../lib/seo.ts) |
+| JWT | JSON Web Token | NextAuth sessions |
+| API | Application Programming Interface | `app/api/` routes |
+| ORM | Object-Relational Mapping | Prisma |
+| TOC | Table of Contents | `components/TableOfContents.tsx` |
 
-## Personas / Actors
+## User Personas
 
-- **Blog Reader**: Goal: Discover and read crypto/blockchain content. Workflow: Browse categories (`getPostsByCategory`), search (`searchPosts`), read posts with TOC, related posts, and share buttons. Pain points addressed: Fast loading via static generation, mobile-friendly UI, reading time estimates.
-- **Registered User**: Goal: Personalized access. Workflow: Login/register, manage profile. Pain points: Secure auth with rate limiting and CSRF protection.
-- **Site Admin**: Goal: Oversee users and site health. Workflow: Access dashboard (`app/admin/page.tsx`), view users (`fetchUsers` in `app/admin/users/page.tsx`). Requires "admin" role; pain points: Permission checks prevent unauthorized access.
+- **Blog Reader**: Browses categories (`CategoryCard`), reads posts (with reading time, related posts), shares (`ShareButtons`).
+- **Registered User**: Logs in/registers (`app/login/page.tsx`), comments (`CommentForm`).
+- **Site Admin**: Manages users/comments via dashboard (`app/admin/page.tsx`), requires "admin" role.
 
 ## Domain Rules & Invariants
 
-- **Authentication**: All admin routes require valid session with roles; throws `AuthenticationError` ([lib/errors.ts](../lib/errors.ts#L12)) if missing.
-- **Authorization**: Uses `hasRole`/`hasPermission` for granular checks (e.g., user management requires "admin:user").
-- **Rate Limiting**: API calls (e.g., register) limited by IP via Upstash Redis; exceeds throw `RateLimitError`.
-- **Validation**: Zod schemas (`LoginInput`, etc.) enforce inputs; invalid throws `ValidationError`.
-- **Content Fetching**: Posts must have unique slugs; pagination limits prevent overload (default via `PaginationOptions`).
-- **CSRF Protection**: Required for state-changing forms; invalid tokens rejected.
-- **SEO Compliance**: All pages generate Schema.org markup (e.g., `generateBreadcrumbSchema`); no localization nuances noted (English-only).
+- Admin access: Valid session + "admin" role.
+- API writes: Rate limited, CSRF validated, spam checked.
+- Posts: Unique slugs, paginated fetches (≤20 default).
+- Errors: JSON responses with `message` for clients.
 
-## Related Resources
+## Related Files
 
-- [project-overview.md](./project-overview.md)
+- [project-overview.md](./project-overview.md): Architecture overview.
+- [types/blog.ts](../types/blog.ts): Blog types.
+- [lib/contentful.ts](../lib/contentful.ts): Data fetching.
+- [lib/permissions.ts](../lib/permissions.ts): RBAC utils.

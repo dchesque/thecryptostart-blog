@@ -1,113 +1,105 @@
-## Mission
+# Bug Fixer Agent Playbook
 
-The Bug Fixer agent is engaged whenever a bug report, error log, stack trace, or failing test is identified. Its primary role is to systematically diagnose issues across the codebase, reproduce errors, pinpoint root causes, implement targeted fixes, and verify resolutions. This agent supports the development team by minimizing downtime in the crypto blog platform, ensuring robust authentication, user management, content rendering, and SEO functionality. Engage this agent early in the triage process for production errors, CI/CD failures, or user-reported issues to restore stability quickly.
+**Type:** agent  
+**Tone:** instructional  
+**Audience:** ai-agents  
+**Description:** Analyzes bug reports and implements targeted fixes  
+**Additional Context:** Focus on root cause analysis, minimal side effects, and regression prevention.
+
+## Mission
+The Bug Fixer agent is engaged whenever a bug report, error log, stack trace, or failing test is identified. Its primary role is to systematically diagnose issues across the codebase, reproduce errors, pinpoint root causes, implement targeted fixes, and verify resolutions. This agent supports the development team by minimizing downtime in the crypto blog platform, ensuring robust authentication, user management, content rendering, and SEO functionality. Engage this agent early in the triage process for production errors, CI/CD failures, or user-reported issues to restore stability quickly. Prioritize fixes that prevent recurrence, such as adding guards for common edge cases in auth flows or API validations.
 
 ## Responsibilities
-
-- **Triage Bug Reports**: Parse error messages, stack traces, and logs to classify issues (e.g., authentication, validation, API routing).
-- **Reproduce Errors**: Use development environment to replicate bugs, leveraging tools like `readFile`, `searchCode`, and local server runs.
-- **Root Cause Analysis**: Inspect relevant files (e.g., controllers in `app/api/`, utils in `lib/`), trace symbol usage with `analyzeSymbols`, and identify patterns via `searchCode`.
-- **Implement Fixes**: Apply patches using existing conventions (e.g., throw `AppError` subclasses), update validations, and enhance error handling.
-- **Add/Improve Tests**: Create or update test cases in matching test directories (e.g., `app/api/__tests__`), ensuring 100% coverage for fixed paths.
-- **Validate Fixes**: Run tests, simulate edge cases, and confirm no regressions using `listFiles` for test discovery.
-- **Document Changes**: Update inline comments, README sections, or `lib/errors.ts` docs for new error patterns.
-- **PR Preparation**: Generate pull requests with clear descriptions, linking to bug reports.
+- **Triage Bug Reports**: Parse error messages, stack traces, and logs to classify issues (e.g., authentication failures in `app/api/auth/`, validation errors in user routes, or SEO metadata bugs).
+- **Reproduce Errors**: Use development environment tools like `readFile` for file inspection, `searchCode` for pattern matching, and local server runs (`npm run dev`) to replicate bugs precisely.
+- **Root Cause Analysis**: Trace execution paths using `analyzeSymbols` on controllers (e.g., `app/api/users/route.ts`), inspect utils in `lib/`, and cross-reference types in `types/`.
+- **Implement Fixes**: Apply minimal, targeted patches adhering to conventions—extend `AppError` subclasses, enhance Zod schemas, and update route handlers without refactoring unrelated code.
+- **Add/Improve Tests**: Locate or create tests via `listFiles('**/__tests__/**')`, add cases covering the bug and regressions, aiming for 100% branch coverage on fixed paths.
+- **Validate Fixes**: Execute test suites (`npm test`), simulate load/edge cases, and use `getFileStructure` to confirm no unintended changes; lint and type-check (`npm run lint`, `tsc`).
+- **Document Changes**: Add inline JSDoc to new/updated symbols, update error handling examples in `lib/errors.ts`, and note fixes in relevant README sections.
+- **PR Preparation**: Commit changes with semantic messages (e.g., "fix: resolve validation crash in user registration"), create PRs linking to issues, and include reproduction steps.
 
 ## Best Practices
-
-- **Error Handling**: Always use custom error classes from `lib/errors.ts` (e.g., `ValidationError` for input issues, `AuthenticationError` for auth failures). Catch and rethrow with context:
+- **Error Handling**: Consistently throw custom errors from `lib/errors.ts`. Wrap risky operations:
   ```ts
   try {
-    // risky code
+    const user = await getUserById(id);
   } catch (error) {
-    throw new ValidationError('Invalid input', { field: 'email' });
+    throw new AuthenticationError('User not found or unauthorized', { id });
   }
   ```
-- **Validation**: Leverage Zod schemas like `LoginInput`, `RegisterInput` from `lib/validations.ts` before processing requests.
+  Use `handleError` patterns from controllers like `app/api/users/route.ts`.
+- **Validation**: Parse inputs with Zod schemas (`LoginInput`, `RegisterInput`) before business logic; refine schemas in `lib/validations.ts` for new constraints.
 - **Code Conventions**: 
-  - Use `slugify`, `truncate`, `calculateReadingTime` from `lib/utils.ts` for content processing.
-  - Apply `generateMetadata` and `generateSchema` from `lib/seo.ts` consistently for SEO-related bugs.
-  - Follow Next.js App Router patterns in `app/api/` routes (e.g., async `GET`/`POST` handlers).
-- **Testing**: Mirror file structure in `__tests__` dirs; use Jest patterns matching existing tests.
-- **Logging**: Add structured logs with error details before throwing (e.g., `console.error({ error, context })`).
-- **Performance**: Scan for rate-limiting issues with `RateLimitError`; avoid N+1 queries in controllers.
-- **Security**: Prioritize auth/authorization bugs; validate inputs server-side only.
-- **Idempotency**: Ensure fixes don't introduce new bugs (e.g., check `searchCode` for similar patterns).
+  - Format dates/content with `lib/utils.ts` helpers (`formatDate`, `slugify`, `truncate`, `calculateReadingTime`).
+  - Ensure SEO functions (`generateMetadata` from `lib/seo.ts`) handle dynamic props correctly.
+  - Follow async Next.js route patterns: export named handlers (`GET`, `POST`) returning `NextResponse`.
+- **Testing**: Structure tests parallel to source (e.g., `app/api/users/__tests__/route.test.ts`); mock dependencies (Prisma, NextAuth) and assert error throws.
+- **Logging**: Prefix errors with context: `console.error('Validation failed', { input, error: error.message })`.
+- **Performance/Security**: Check for rate limits (`checkRateLimit` in `lib/spam-prevention.ts`); validate emails (`validateEmail`); scan for injection vectors.
+- **Minimal Impact**: Use `searchCode` to find similar usages before/after fixes; avoid global changes.
+- **Regression Prevention**: Add negative tests for fixed scenarios and monitor with `AppError` logging.
 
 ## Key Project Resources
-
-- [AGENTS.md](../AGENTS.md) - Full agent directory and collaboration guidelines.
-- [Contributor Guide](../CONTRIBUTING.md) - PR standards, branching strategy.
-- [Agent Handbook](../docs/agents-handbook.md) - Phase-specific workflows (E: Explore codebase; V: Validate fixes).
-- [Documentation Index](../docs/) - API docs, deployment guides.
+- [Documentation Index](../docs/) - Central hub for API specs, deployment, and troubleshooting.
+- [AGENTS.md](../../AGENTS.md) - Agent roles, invocation protocols, and collaboration rules.
+- [README.md](README.md) - Project overview, setup, common pitfalls.
+- [../docs/README.md](../docs/README.md) - Detailed docs navigation and update guidelines.
+- [Contributor Guide](../CONTRIBUTING.md) - Bug report templates, PR workflows.
 
 ## Repository Starting Points
-
-- **`lib/`**: Core utilities, validations (`lib/validations.ts`), errors (`lib/errors.ts`), SEO (`lib/seo.ts`), utils (`lib/utils.ts`).
-- **`app/api/`**: API routes for users (`app/api/users/`), auth (`app/api/auth/` including `[...nextauth]` and `register`).
-- **`types/`**: Shared interfaces (`types/index.ts` for `Post`, `SiteConfig`; `types/blog.ts` for `FeaturedImage`, `Author`).
-- **`app/`**: Frontend pages/components affected by backend bugs (e.g., blog posts, user profiles).
-- **`tests/` or `__tests__/`**: Unit/integration tests mirroring `app/` structure.
+- **`lib/`**: Utilities, validations (`validations.ts`), errors (`errors.ts`), spam prevention (`spam-prevention.ts`), SEO (`seo.ts`), and utils (`utils.ts`)—focus for logic/handling bugs.
+- **`app/api/`**: API controllers for users (`users/`, `users/[id]/`), auth (`auth/[...nextauth]/`, `auth/register/`), comments (`comments/`, `admin/comments/`), and admin ops.
+- **`types/`**: Type definitions (`index.ts` for `Post`, `SiteConfig`; `blog.ts` for `Author`, `FeaturedImage`)—check for type-related crashes.
+- **`app/`**: Pages and components (`blog/`, profiles)—frontend symptoms of backend bugs.
+- **`__tests__/` or `tests/`**: Test suites mirroring `app/` and `lib/`—extend for verification.
 
 ## Key Files
-
-- [`lib/errors.ts`](../lib/errors.ts) - Custom error classes (`AppError`, `AuthenticationError`, etc.); extend for new error types.
-- [`lib/validations.ts`](../lib/validations.ts) - Zod schemas (`LoginInput`, `RegisterInput`, `UpdateProfileInput`); fix validation bugs here.
-- [`lib/utils.ts`](../lib/utils.ts) - Helpers (`calculateReadingTime`, `slugify`, `truncate`, `formatDate`); common sources of logic bugs.
-- [`lib/seo.ts`](../lib/seo.ts) - Metadata generators (`generateMetadata`, `generateSchema`); SEO/rendering issues.
-- [`app/api/users/route.ts`](../app/api/users/route.ts) - User CRUD handlers (`GET`, `POST`).
-- [`app/api/auth/register/route.ts`](../app/api/auth/register/route.ts) - Registration endpoint (`POST`).
-- [`types/index.ts`](../types/index.ts) - Core types (`Post`, `SiteConfig`, `SEOProps`).
+- [`lib/errors.ts`](../lib/errors.ts) - Custom error hierarchy (`AppError`, subclasses); extend and document new types here.
+- [`lib/validations.ts`](../lib/validations.ts) - Zod inputs (`LoginInput`, `RegisterInput`, `UpdateProfileInput`); tune for bug-specific fields.
+- [`lib/utils.ts`](../lib/utils.ts) - Core helpers (`calculateReadingTime`, `slugify`, `formatDate`, `truncate`); debug content processing issues.
+- [`lib/spam-prevention.ts`](../lib/spam-prevention.ts) - Rate limiting (`checkRateLimit`, `validateEmail`); fix abuse vectors.
+- [`app/api/users/route.ts`](../app/api/users/route.ts) - User list/create (`GET`, `POST`); common data access bugs.
+- [`app/api/users/[id]/route.ts`](../app/api/users/[id]/route.ts) - User update/delete (`PATCH`, `DELETE`); auth/permission errors.
+- [`app/api/auth/register/route.ts`](../app/api/auth/register/route.ts) - Registration (`POST`); validation/auth flow bugs.
+- [`app/api/comments/route.ts`](../app/api/comments/route.ts) - Comment CRUD; spam/content bugs.
 
 ## Architecture Context
-
 ### Utils (lib/)
 - **Directories**: `lib/`
-- **Purpose**: Shared logic for validation, utilities, SEO.
-- **Symbol Count**: ~10 key exports.
-- **Key Exports**: `LoginInput`, `RegisterInput`, `UpdateProfileInput` (`lib/validations.ts`); `calculateReadingTime`, `formatDate`, `slugify`, `truncate` (`lib/utils.ts`); `generateMetadata`, `generateSchema`, `generateWebsiteSchema` (`lib/seo.ts`).
+- **Symbol Count**: ~25 key exports across validations, utils, errors, SEO, spam-prevention.
+- **Key Exports**: `LoginInput`, `RegisterInput`, `UpdateProfileInput` (`validations.ts`); `calculateReadingTime`, `formatDate`, `slugify`, `truncate` (`utils.ts`); `validateEmail`, `getClientIP`, `checkRateLimit` (`spam-prevention.ts`); `generateMetadata`, `generateSchema` (`seo.ts`).
 
 ### Controllers (app/api/)
-- **Directories**: `app/api/users/`, `app/api/auth/[...nextauth]/`, `app/api/auth/register/`
-- **Purpose**: HTTP request handling, auth flows, user ops.
-- **Symbol Count**: Route handlers per file.
-- **Key Exports**: `GET` (`app/api/users/route.ts`); `POST` (`app/api/auth/register/route.ts`).
+- **Directories**: `app/api/users`, `app/api/comments`, `app/api/users/[id]`, `app/api/auth/[...nextauth]`, `app/api/auth/register`, `app/api/admin/comments`, `app/api/admin/comments/[id]`
+- **Symbol Count**: 10+ route handlers (GET/POST/PATCH/DELETE per file).
+- **Key Exports**: `GET`, `POST` (`app/api/users/route.ts`); `POST` (`app/api/comments/route.ts`, `app/api/auth/register/route.ts`); `PATCH`, `DELETE` (`app/api/users/[id]/route.ts`, admin comments).
 
 ## Key Symbols for This Agent
-
-- `AppError` (class) - errors.ts:1 - Base for all custom errors.
-- `AuthenticationError` (class) - errors.ts:12 - Auth failures (e.g., invalid tokens).
-- `AuthorizationError` (class) - errors.ts:18 - Permission issues.
-- `ValidationError` (class) - errors.ts:24 - Input/schema violations.
-- `RateLimitError` (class) - errors.ts:33 - Throttling exceeded.
-- `Post` (interface) - index.ts:1 - Blog post structure.
-- `SiteConfig` (interface) - index.ts:33 - Global site settings.
-- `SEOProps` (interface) - index.ts:41 - Metadata props.
-- `FeaturedImage` (interface) - blog.ts:28 - Image data.
-- `Author` (interface) - blog.ts:44 - Author profile.
+- [`AppError` (class)](../lib/errors.ts#L1) - Base error; extend for all fixes.
+- [`AuthenticationError` (class)](../lib/errors.ts#L12) - Token/session issues in auth routes.
+- [`AuthorizationError` (class)](../lib/errors.ts#L18) - Role/permission denials.
+- [`ValidationError` (class)](../lib/errors.ts#L24) - Zod/input failures.
+- [`RateLimitError` (class)](../lib/errors.ts#L33) - Throttling in spam-heavy endpoints.
+- [`LoginInput` (type)](../lib/validations.ts#L20), [`RegisterInput` (type)](../lib/validations.ts#L21), [`UpdateProfileInput` (type)](../lib/validations.ts#L22) - Schema fixes.
+- [`Post` (interface)](../types/index.ts), [`Author` (interface)](../types/blog.ts#L44), [`FeaturedImage` (interface)](../types/blog.ts#L28) - Content bugs.
+- [`handleError` (function)](../app/api/users/route.ts#L80) - Controller error middleware pattern.
 
 ## Documentation Touchpoints
-
-- [`lib/errors.ts`](../lib/errors.ts) - Inline JSDoc for error usage.
-- [`README.md`](../README.md) - Setup, common issues, error codes.
-- [`docs/api.md`](../docs/api.md) - Endpoint specs, error responses.
-- [`CONTRIBUTING.md`](../CONTRIBUTING.md) - Bug reporting template.
+- [`lib/errors.ts`](../lib/errors.ts) - JSDoc on error constructors and usage examples.
+- [`README.md`](README.md) - Error codes, debugging tips, local reproduction.
+- [`../docs/api.md`](../docs/api.md) - API error responses, status codes.
+- [`../CONTRIBUTING.md`](../CONTRIBUTING.md) - Bug report format, triage process.
+- [`../docs/README.md`](../docs/README.md) - Full docs tree, update protocols.
 
 ## Collaboration Checklist
-
-1. [ ] Confirm bug reproduction steps with reporter/team.
-2. [ ] Use tools (`readFile`, `analyzeSymbols`, `searchCode`) to share codebase insights.
-3. [ ] Propose fix in draft PR; tag reviewers.
-4. [ ] Run full test suite; share coverage report.
-5. [ ] Update docs/tests if new patterns emerge.
-6. [ ] Capture learnings in `AGENTS.md` or issue thread.
-7. [ ] Hand off with verification script if complex.
+1. [ ] Confirm bug reproduction steps with reporter/team via shared logs or minimal repro repo.
+2. [ ] Use tools (`readFile`, `listFiles`, `analyzeSymbols`, `searchCode`, `getFileStructure`) to document findings and share snippets.
+3. [ ] Propose fix in draft PR with before/after diffs; tag @reviewers and link issue.
+4. [ ] Run full test suite (`npm test -- --coverage`); attach report showing fixed branches.
+5. [ ] Update docs/tests/README for new patterns; run lint/type checks.
+6. [ ] Capture learnings in issue comments or `AGENTS.md` (e.g., "Common pitfall: missing Zod safeParse").
+7. [ ] Hand off with verification script (e.g., curl commands for API repro) and monitoring query.
 
 ## Hand-off Notes
-
-- **Outcomes**: Bug fixed, tests added (coverage >95%), no regressions.
-- **Risks**: Monitor for related issues (e.g., `searchCode` similar patterns); edge cases in prod traffic.
-- **Follow-ups**: 
-  - Deploy to staging; monitor logs.
-  - Update monitoring for new `AppError` subclasses.
-  - Schedule code review for preventive measures.
+Upon completion, summarize: bug resolved with tests passing at >95% coverage, no new warnings. Remaining risks: prod traffic edge cases (e.g., high-concurrency rate limits)—monitor via logs for `RateLimitError`. Suggested follow-ups: deploy to staging, add Sentry rules for fixed error types, review similar patterns via `searchCode('/throw new ValidationError/')` for proactive fixes. If complex, flag for human audit.

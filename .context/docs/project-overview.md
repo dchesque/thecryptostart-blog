@@ -1,78 +1,151 @@
-## Project Overview
+# The Crypto Start Blog - Project Overview
 
-Hey there! The Crypto Start Blog is a modern, SEO-optimized blog platform built for sharing deep dives into crypto startups, trading tips, and industry news. It tackles the pain of content management by hooking into Contentful as a headless CMS, letting writers focus on stories while devs handle a slick Next.js frontend with search, categories, and related posts. Readers win with fast loads and discoverability, admins get user management and auth goodies, and everyone enjoys a scalable, monetizable setup ready for growth.
+A modern, SEO-optimized Next.js blog platform focused on crypto startups, trading tips, and industry insights. Built with Contentful for headless CMS, Prisma for user management, and NextAuth for secure authentication. Emphasizes performance (Core Web Vitals), monetization (AdSense), and developer-friendly extensibility.
 
-## Codebase Reference
-
-> **Detailed Analysis**: For complete symbol counts, architecture layers, and dependency graphs, see [`codebase-map.json`](./codebase-map.json).
+[![Architecture Overview](codebase-map.json#architecture)](codebase-map.json)  
+*Detailed symbol counts, layers, and graphs in [`codebase-map.json`](./codebase-map.json).*
 
 ## Quick Facts
 
-- Root: `C:\Workspace\thecryptostartblog`
-- Languages: TypeScript (42 files), JavaScript (8 files)
-- Total Files: 50
-- Total Symbols: 92
-- Entry: `app/layout.tsx`
-- Full analysis: [`codebase-map.json`](./codebase-map.json)
+| Metric | Details |
+|--------|---------|
+| **Root** | `C:\Workspace\thecryptostartblog` |
+| **Languages** | TypeScript (42 files), JavaScript (8 files) |
+| **Total Files** | 50 |
+| **Total Symbols** | 92 exports + interfaces/types |
+| **Entry Point** | [`app/layout.tsx`](../app/layout.tsx) – Root layout with `AuthProvider` |
+| **Build Tooling** | npm scripts, Docker Compose, Prisma CLI |
+| **Key Pages** | `/` (home), `/blog`, `/blog/[slug]`, `/admin` |
 
-## Entry Points
+## Architecture Layers
 
-- [`app/layout.tsx`](../app/layout.tsx) — Root layout with auth provider and global structure (line ~1)
-- [`app/page.tsx`](../app/page.tsx) — Home/landing page (inferred entry)
-- [`app/blog/page.tsx`](../app/blog/page.tsx#L17) — Blog index with pagination and search
-- [`app/blog/[slug]/page.tsx`](../app/blog/[slug]/page.tsx#L25) — Dynamic post viewer with `generateStaticParams`
-- [`app/admin/page.tsx`](../app/admin/page.tsx#L3) — Admin dashboard entry
+```
+app/          # Next.js App Router: Pages, layouts, API routes
+├── api/      # API handlers: users, comments, auth, admin
+├── blog/     # Blog index + dynamic posts (SSG + ISR)
+├── admin/    # Dashboard, users, comments management
+components/   # UI: PostMeta, RelatedPosts, AdSense, TableOfContents
+lib/          # Utils: contentful.ts (CMS), seo.ts, rate-limit.ts, permissions.ts
+types/        # TS defs: BlogPost, UserWithRoles, SEOProps
+prisma/       # DB: schema.prisma, seed.ts
+public/       # Assets: images, favicons
+docs/         # Guides: CONTENTFUL_SETUP.md, tooling.md
+```
 
-## Key Exports
+- **Data Flow**: Contentful → `lib/contentful.ts` → Pages (e.g., `getPostBySlug`)
+- **Auth Flow**: NextAuth → `lib/permissions.ts` → Admin APIs
+- **Spam/Rate Limiting**: `lib/spam-prevention.ts` + `lib/rate-limit.ts`
+- **SEO**: Dynamic `generateMetadata` + JSON-LD schemas in `lib/seo.ts`
 
-- `BlogPost` (interface) @ types\blog.ts:61 — Core type for blog content
-- `getPostBySlug` (function) @ lib\contentful.ts:179 — Fetch individual posts from Contentful
-- `generateMetadata` (function) @ lib\seo.ts:24 — SEO metadata generator
-- `AuthProvider` (component) @ components\AuthProvider.tsx:5 — Authentication wrapper
-- `AdminDashboard` (page) @ app\admin\page.tsx:3 — Admin panel entry
+**Cross-References**:
+- [Auth Architecture → `AUTH_ARCHITECTURE.md`](../AUTH_ARCHITECTURE.md)
+- [Core Web Vitals → `CORE_WEB_VITALS.md`](../CORE_WEB_VITALS.md)
 
-> See [`codebase-map.json`](./codebase-map.json) for the complete list.
+## Core Technology Stack
 
-## File Structure & Code Organization
+| Layer | Tech | Purpose |
+|-------|------|---------|
+| **Framework** | Next.js 14+ (App Router) | SSR/SSG, API routes, RSC |
+| **CMS** | Contentful | Headless content for posts/categories |
+| **Database** | Prisma + PostgreSQL | Users, comments, roles |
+| **Auth** | NextAuth.js | Sessions, OAuth, custom providers |
+| **Styling** | Tailwind CSS | Responsive, utility-first |
+| **Analytics** | Google Analytics 4 | Web Vitals (`lib/analytics.ts`), ad tracking |
+| **Monetization** | Google AdSense | Sticky ads, recommended content |
+| **DevOps** | Docker, npm | Local/prod deployment |
 
-- `app/` — Next.js App Router pages, layouts, and API routes (blog, admin, auth, users).
-- `components/` — Reusable React components (e.g., `Footer`, `TableOfContents`, `BlogPost`, `AdSense`).
-- `lib/` — Utilities for Contentful integration, SEO, rate limiting, permissions, CSRF, and validations.
-- `types/` — TypeScript definitions for blog posts, auth sessions, roles, and SEO props.
-- `prisma/` — Database schema, migrations, and seed script (`seed.ts`).
-- `docs/` — Project docs including setup guides like `CONTENTFUL_SETUP.md`.
-- `public/` — Static assets (images, favicons).
-- `scripts/` — Misc utilities like query tests.
-- Root MDs (e.g., `AUTH_ARCHITECTURE.md`, `CORE_WEB_VITALS.md`) — Guides for auth and performance.
+**Example Usage** (Contentful Fetch):
+```tsx
+// app/blog/[slug]/page.tsx
+import { getPostBySlug } from '@/lib/contentful';
 
-## Technology Stack Summary
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  const post = await getPostBySlug(params.slug); // Transforms Contentful entry to BlogPost
+  return <article>{/* Render post */}</article>;
+}
+```
 
-This Next.js project runs on Node.js, blending TypeScript for type safety with JavaScript for scripts. It's a fullstack web app using server-side rendering (SSR), static generation (SSG), and API routes. Build tooling includes Docker/Docker Compose for containerization, npm for dependencies, and likely ESLint/Prettier for linting/formatting (standard Next.js setup). Prisma handles the DB layer, with Contentful for content delivery.
+## Key Exports & Symbols
 
-## Core Framework Stack
+### Top Functions (lib/)
+- **`getPostBySlug(slug: string)`** [`lib/contentful.ts:189`](../lib/contentful.ts#L189) – Fetches/transforms single post.
+- **`generateMetadata(props: MetadataInput)`** [`lib/seo.ts:24`](../lib/seo.ts#L24) – Dynamic page titles/descriptions.
+- **`checkRateLimit(ip: string)`** [`lib/rate-limit.ts:14`](../lib/rate-limit.ts#L14) – Prevents API abuse.
+- **`detectSpam(content: string)`** [`lib/spam-prevention.ts:57`](../lib/spam-prevention.ts#L57) – AI-free spam filter.
 
-- **Backend/Data**: Next.js App Router for APIs/server logic; Prisma ORM for user/role data; Contentful for blog CMS—enforces clean separation with typed queries and caching.
-- **Frontend**: React Server Components (RSC) pattern for efficient rendering; SEO-first with dynamic metadata.
-- **Auth/Messaging**: NextAuth.js (inferred from routes) for sessions/OAuth; custom permissions/roles system.
+### Core Types/Interfaces (types/)
+- **`BlogPost`** [`types/blog.ts:61`](../types/blog.ts#L61) – `{ slug, title, content, author: Author, category: BlogCategory }`
+- **`UserWithRoles`** [`types/auth.ts:26`](../types/auth.ts#L26) – Extends NextAuth `User`.
+- **`SEOProps`** [`types/index.ts:41`](../types/index.ts#L41) – For metadata generation.
 
-## UI & Interaction Libraries
+### Pages/Components
+- **`BlogPage`** [`app/blog/page.tsx:39`](../app/blog/page.tsx) – Paginated list + search.
+- **`AdminDashboard`** [`app/admin/page.tsx:5`](../app/admin/page.tsx) – User/comment CRUD.
+- **`AuthProvider`** [`components/AuthProvider.tsx:5`](../components/AuthProvider.tsx) – Wraps app for sessions.
 
-Custom React components handle UI (e.g., `ShareButtons`, `RelatedPosts`, `FAQ`), paired with Tailwind CSS (inferred from structure). AdSense integration for monetization (`AdSense.tsx`). Focus on accessibility via semantic HTML in pages; no heavy UI kit, keeping it lightweight with responsive design and TOC for long posts.
+*Full list (92+ symbols): [`codebase-map.json`](#symbol-index).*
 
-## Development Tools Overview
+## Entry Points & Navigation
 
-Core CLIs: `npm run dev` for hot-reload server, `npm run build` for production, `docker-compose up` for containerized setup (DB + app). Prisma tools like `npx prisma db push` and `npx prisma studio`. Check [`tooling.md`](./tooling.md) for full setup, env vars, and scripts.
+- **`app/layout.tsx`** – Global providers (Auth, SEO), Navbar/Footer.
+- **`app/page.tsx`** – Landing with featured posts, newsletter CTA.
+- **`app/blog/page.tsx`** – `getAllPosts()`, categories, pagination.
+- **`app/blog/[slug]/page.tsx`** – `generateStaticParams()` for SSG, `getPostBySlug()`.
+- **APIs**: `app/api/comments/route.ts` (POST/GET), `app/api/admin/comments/[id]/route.ts` (CRUD).
 
-## Getting Started Checklist
+**Example Static Params**:
+```tsx
+// app/blog/[slug]/page.tsx
+export async function generateStaticParams() {
+  const slugs = await getAllPostSlugs();
+  return slugs.map((slug) => ({ slug }));
+}
+```
 
-1. Clone or navigate to `C:\Workspace\thecryptostartblog`.
-2. Install dependencies: `npm install`.
-3. Copy `.env.example` to `.env.local`; add keys for Contentful, Prisma DB, NextAuth (see `CONTENTFUL_SETUP.md`).
-4. Run DB setup: `npx prisma generate && npx prisma db push && npx prisma db seed`.
-5. Start dev server: `npm run dev`.
-6. Verify: Open http://localhost:3000—check home/blog page loads posts, try /admin (login if seeded).
-7. Explore: Read [`development-workflow.md`](./development-workflow.md) for testing/CI.
+## Getting Started
 
-## Next Steps
+1. **Setup Env**:
+   ```
+   cp .env.example .env.local
+   # Add: CONTENTFUL_SPACE_ID, NEXTAUTH_SECRET, DATABASE_URL (see CONTENTFUL_SETUP.md)
+   ```
 
-Positioned as a production-ready crypto blog, prioritize Contentful setup and custom domain deployment. Key stakeholders: content team (CMS), devs (extending APIs), readers (feedback on UX). Dive into [`architecture.md`](./architecture.md) for layers, or external specs in root MDs like `AUTH_ARCHITECTURE.md`. Contribute via PRs after reviewing [`codebase-map.json`](./codebase-map.json).
+2. **Install & DB**:
+   ```
+   npm install
+   npx prisma generate
+   npx prisma db push
+   npx prisma db seed  # Creates admin user
+   ```
+
+3. **Run**:
+   ```
+   npm run dev  # http://localhost:3000
+   docker-compose up  # Prod-like (optional)
+   ```
+
+4. **Verify**:
+   - Blog loads posts from Contentful.
+   - `/admin` → Login → Manage users/comments.
+   - Check console for rate limits/spam logs.
+
+**Troubleshooting**: See [`tooling.md`](./tooling.md), [`development-workflow.md`](./development-workflow.md).
+
+## Development Workflow
+
+- **Content**: Update in Contentful → Revalidate paths (`revalidatePath('/blog')`).
+- **Testing**: API routes have `handleError`; unit tests inferred via Prisma seed.
+- **Performance**: `sendWebVital()` auto-tracks LCP/FCP; AdSense slots in components.
+- **Extend**: Add categories in `lib/constants.ts`; new APIs mirror `app/api/comments/route.ts`.
+- **Deploy**: Vercel/Netlify (Next.js optimized); Docker for self-host.
+
+## Next Steps for Contributors
+
+- **Priorities**: Contentful integration, custom domain/SSL.
+- **Stakeholders**: Writers (CMS), Devs (APIs), Readers (UX feedback).
+- **Dive Deeper**:
+  - [File Structure → `#file-structure--code-organization`](#file-structure--code-organization)
+  - [Permissions → `lib/permissions.ts`](../lib/permissions.ts)
+  - Full codebase: [`codebase-map.json`](./codebase-map.json)
+
+Welcome aboard! 🚀 Questions? Check docs or open an issue.
