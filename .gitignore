@@ -40,4 +40,4 @@ tmp/
 # Other
 .data/
 .cache/
-keys/
+thecryptostart-*.json
