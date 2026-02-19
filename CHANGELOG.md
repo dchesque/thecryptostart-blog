@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.10.0] - 2026-02-19
+### Added
+- **Comentários**: Sistema robusto de discussão integrado com Prisma (PostgreSQL).
+- **Anti-Spam**: Camada "Vanguard" com 5 níveis de proteção (Honeypot, Rate Limiting, Keyword Detection, IP Tracking, Email Validation).
+- **Moderador**: Dashboard administrativo premium para gestão de engajamento e combate a spam.
+- **UI**: Componentes `CommentForm` e `CommentsList` com design AAA e micro-animações.
+
+
 ## [0.9.0] - 2026-02-19
 ### Added
 - **i18n**: Padronização completa do blog para Inglês Americano (en-US).

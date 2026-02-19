@@ -62,20 +62,20 @@ model Post {
 }
 
 model Comment {
-  id           String    @id @default(uuid())
-  postSlug     String
-  authorName   String
-  authorEmail  String
-  content      String    @db.Text
-  status       CommentStatus @default(PENDING)
-  spamScore    Float     @default(0)
-  ipAddress    String?
-  userAgent    String?
-  parentId     String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  modifiedAt   DateTime?
-  modifiedBy   String?
+  id            String    @id @default(cuid())
+  postSlug      String
+  authorName    String
+  authorEmail   String
+  content       String    @db.Text
+  status        CommentStatus @default(PENDING)
+  spamScore     Float     @default(0)
+  ipAddress     String?
+  userAgent     String?
+  parentId      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  modifiedAt    DateTime?
+  modifiedBy    String?
   
   post         Post?     @relation(fields: [postSlug], references: [slug])
   parent       Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
@@ -89,11 +89,12 @@ model Comment {
 }
 
 model SpamLog {
-  id          String   @id @default(uuid())
+  id          String   @id @default(cuid())
   authorEmail String
   ipAddress   String
   reason      String
   severity    String
+  content     String?  @db.Text
   createdAt   DateTime @default(now())
 
   @@index([authorEmail])
