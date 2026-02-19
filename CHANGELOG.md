@@ -1,4 +1,13 @@
 # Changelog
+2: 
+3: ## [0.15.5] - 2026-02-19
+4: 
+5: ### Fixed
+6: - **PWA/Security**: Desativado temporariamente o PWA (`next-pwa`) no `next.config.mjs` para resolver o problema de `OpaqueResponseBlocking` em imagens do Contentful. A remoção do service worker garante que os headers de segurança (`Cross-Origin-Resource-Policy`) configurados cheguem corretamente ao browser sem serem interceptados ou sobrescritos pelo cache do Workbox.
+7: 
+8: ### Changed
+9: - **Project**: Incrementada versão para `0.15.5`.
+10: 
 
 ## [0.15.3] - 2026-02-19
 
