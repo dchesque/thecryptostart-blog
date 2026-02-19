@@ -40,7 +40,7 @@ export function transformContentfulImageUrl(
     if (options.width) params.set('w', options.width.toString())
     if (options.height) params.set('h', options.height.toString())
     if (options.quality) params.set('q', options.quality.toString())
-    if (options.format) params.set('f', options.format)
+    if (options.format) params.set('fm', options.format) // Fix: Contentful uses 'fm' for format, 'f' is for focus
     if (options.fit) params.set('fit', options.fit)
 
     // Auto-format: Contentful serve melhor formato
