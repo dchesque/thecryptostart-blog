@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0] - 2026-02-19
+### Added
+- Refatoração da Blog Listing Page (`app/blog/page.tsx`) para layout Triple-Column (Grade + Sidebar).
+- Integração de `BlogCardCompact`, `PopularPosts` e `CategoryLinks` na listagem do blog.
+- Novos espaços de anúncio na sidebar da página de listagem.
+- Largura ultra-wide de 1440px aplicada à página `/blog`.
+
 ## [0.7.0] - 2026-02-19
 ### Added
 - Novo Layout Triple-Column para Post Page (`app/blog/[slug]/page.tsx`).

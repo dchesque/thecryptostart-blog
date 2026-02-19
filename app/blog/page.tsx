@@ -1,8 +1,11 @@
 import Link from 'next/link'
 import { getAllPosts, getTotalPostsCount, searchPosts, getAllCategories } from '@/lib/contentful'
-import BlogCard from '@/components/BlogCard'
+import BlogCardCompact from '@/components/BlogCardCompact'
+import CategoryCard from '@/components/CategoryCard'
+import PopularPosts from '@/components/PopularPosts'
+import CategoryLinks from '@/components/CategoryLinks'
 import AdSense from '@/components/AdSense'
-import { BLOG_CONFIG, CACHE_CONFIG, getCategoryName } from '@/lib/constants'
+import { BLOG_CONFIG, getCategoryName } from '@/lib/constants'
 import type { BlogCategory } from '@/types/blog'
 import type { Metadata } from 'next'
 import { SITE_CONFIG } from '@/lib/constants'
@@ -74,203 +77,149 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-white py-12">
-      <div className="container">
-        {/* Category Header — shown when a category is selected */}
-        {category && (
-          <section className="mb-10 p-8 bg-gray-50 rounded-2xl border border-crypto-light">
-            <div className="flex flex-wrap items-center gap-4">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-widest text-crypto-charcoal/40 mb-1 block">Category</span>
-                <h1 className="text-3xl sm:text-4xl font-extrabold text-crypto-navy">
-                  {getCategoryName(category)}
-                </h1>
-                <p className="text-crypto-charcoal/60 mt-2">
-                  Explore all articles about {getCategoryName(category)} — from beginner guides to advanced strategies.
-                </p>
-              </div>
-              <span className="ml-auto bg-crypto-primary/10 text-crypto-primary font-bold px-4 py-2 rounded-full text-sm border border-crypto-primary/20">
-                {totalCount} {totalCount === 1 ? 'article' : 'articles'}
-              </span>
+    <div className="min-h-screen bg-gray-50/30 py-24">
+      <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
+
+        {/* Header Section */}
+        <div className="mb-12">
+          <nav className="mb-6 text-sm text-gray-400 font-medium" aria-label="Breadcrumb">
+            <Link href="/" className="hover:text-crypto-primary transition-colors">Home</Link>
+            <span className="mx-2">/</span>
+            <span className="text-crypto-darker">Blog</span>
+          </nav>
+
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+              <h1 className="text-4xl md:text-6xl font-black text-crypto-darker tracking-tight mb-4">
+                {searchQuery
+                  ? `Resultados para: "${searchQuery}"`
+                  : category
+                    ? getCategoryName(category)
+                    : 'Library & Insights'
+                }
+              </h1>
+              <p className="text-lg text-gray-500 max-w-2xl font-medium">
+                {category
+                  ? `Explorando os melhores guias e tutoriais sobre ${getCategoryName(category)}.`
+                  : 'Sua enciclopédia definitiva sobre o mercado de criptoativos, segurança e inovação.'
+                }
+              </p>
             </div>
-          </section>
-        )}
-        {/* Featured Section */}
-        {!searchQuery && !category && page === 1 && posts.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-crypto-navy">Featured</h2>
-            <div className="featured-grid">
-              <BlogCard post={posts[0]} variant="large" />
-              <div className="grid grid-cols-1 gap-6">
-                {posts.slice(1, 3).map((post) => (
-                  <BlogCard key={post.id} post={post} />
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
 
-        {/* Categories Section */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 text-crypto-navy">Categories</h2>
-          <div className="grid-categories">
-            {categories.map((cat) => {
-              const bgColors: Record<string, string> = {
-                bitcoin: '#FF7400',
-                ethereum: '#0071C3',
-                defi: '#7B3FF2',
-                'investing-and-strategy': '#FF1493',
-                'crypto-security': '#FF6B6B',
-                'web3-and-innovation': '#1A2A2F',
-                'crypto-opportunities': '#00A86B', // Added emerald for opportunities
-              }
-              return (
-                <Link
-                  key={cat.slug}
-                  href={`/blog?category=${cat.slug}`}
-                  className="p-6 rounded-xl text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg text-white"
-                  style={{ background: bgColors[cat.slug] || '#333' }}
-                >
-                  <div className="text-3xl mb-2">{cat.icon}</div>
-                  <div className="font-bold">{cat.name}</div>
-                </Link>
-              )
-            })}
-          </div>
-        </section>
-
-        {/* Main Feed Header */}
-        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-bold text-crypto-navy mb-2">
-              {searchQuery
-                ? `Search: "${searchQuery}"`
-                : category
-                  ? `Articles about ${getCategoryName(category)}`
-                  : 'Latest Articles'
-              }
-            </h1>
-            <p className="text-crypto-charcoal/60">
-              {totalCount} {totalCount === 1 ? 'article found' : 'articles found'}
-            </p>
-          </div>
-
-          {/* Search Form */}
-          <form action="/blog" method="GET" className="w-full md:max-w-md">
-            <div className="input-search">
+            {/* Sticky/Modern Search Form */}
+            <form action="/blog" method="GET" className="w-full md:max-w-xs relative group">
               <input
                 type="text"
                 name="search"
-                placeholder="Search articles..."
+                placeholder="Search resources..."
                 defaultValue={searchQuery}
-                className="flex-1 bg-transparent border-none outline-none text-sm"
+                className="w-full pl-12 pr-4 py-3 bg-white border border-gray-100 rounded-2xl shadow-sm focus:ring-2 focus:ring-crypto-primary/20 outline-none transition-all font-medium text-sm"
               />
-              <button type="submit" className="uppercase text-xs font-bold">Search</button>
-            </div>
-          </form>
+              <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-crypto-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </form>
+          </div>
         </div>
 
-        {/* Posts Grid */}
-        {/* Ad — Blog Top (topo da listagem) */}
-        <div className="mb-8 rounded-xl overflow-hidden">
-          <AdSense slot="blog-top" />
-        </div>
+        {/* 2-Column Grid Layout */}
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_300px]">
 
-        {posts.length > 0 ? (
-          <div className="grid-posts mb-12">
-            {(searchQuery || category || page > 1 ? posts : posts.slice(3)).map((post) => (
-              <BlogCard key={post.id} post={post} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-20 bg-crypto-light rounded-3xl animate-fade-in">
-            <div className="text-7xl mb-6">🔍</div>
-            <h3 className="text-2xl font-bold text-crypto-navy mb-3">No articles found</h3>
-            <p className="text-crypto-charcoal/60 mb-8 max-w-md mx-auto">
-              {searchQuery
-                ? `We couldn't find results for "${searchQuery}". Try other terms.`
-                : 'There are no articles available in this category yet.'
-              }
-            </p>
-            <Link
-              href="/blog"
-              className="btn-primary"
-            >
-              View all articles
-            </Link>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && !searchQuery && (
-          <nav
-            className="flex items-center justify-center gap-3 py-8"
-            aria-label="Pagination"
-          >
-            {/* Previous */}
-            {page > 1 ? (
-              <Link
-                href={buildPageUrl(page - 1)}
-                className="w-12 h-12 rounded-xl bg-white shadow-2 flex items-center justify-center hover:bg-crypto-primary hover:text-white transition-all"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </Link>
-            ) : (
-              <span className="w-12 h-12 rounded-xl bg-crypto-light text-crypto-charcoal/20 flex items-center justify-center cursor-not-allowed">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </span>
-            )}
-
-            {/* Page numbers */}
-            <div className="flex items-center gap-2">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
-                const isCurrent = pageNum === page
-                const showPage = pageNum === 1 || pageNum === totalPages || Math.abs(pageNum - page) <= 1
-
-                if (!showPage) {
-                  if (pageNum === 2 || pageNum === totalPages - 1) {
-                    return <span key={pageNum} className="px-2 text-crypto-charcoal/30">...</span>
-                  }
-                  return null
-                }
-
-                return (
-                  <Link
-                    key={pageNum}
-                    href={buildPageUrl(pageNum)}
-                    className={`w-12 h-12 rounded-xl font-bold flex items-center justify-center transition-all ${isCurrent
-                      ? 'bg-crypto-primary text-white shadow-lg'
-                      : 'bg-white text-crypto-navy hover:bg-crypto-light shadow-1'
-                      }`}
-                  >
-                    {pageNum}
-                  </Link>
-                )
-              })}
+          {/* Main Content (List) */}
+          <div>
+            {/* Top Ad */}
+            <div className="mb-10 rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 min-h-[120px] flex items-center justify-center">
+              <AdSense slot="blog-top" />
             </div>
 
-            {/* Next */}
-            {page < totalPages ? (
-              <Link
-                href={buildPageUrl(page + 1)}
-                className="w-12 h-12 rounded-xl bg-white shadow-2 flex items-center justify-center hover:bg-crypto-primary hover:text-white transition-all"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
+            {posts.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                  {posts.map((post) => (
+                    <BlogCardCompact key={post.id} post={post} />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && !searchQuery && (
+                  <nav className="flex items-center justify-center gap-2 py-8 border-t border-gray-100" aria-label="Pagination">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                      const isCurrent = pageNum === page
+                      return (
+                        <Link
+                          key={pageNum}
+                          href={buildPageUrl(pageNum)}
+                          className={`w-12 h-12 rounded-xl font-bold flex items-center justify-center transition-all ${isCurrent
+                            ? 'bg-crypto-primary text-white shadow-lg'
+                            : 'bg-white text-crypto-navy hover:bg-gray-100 border border-gray-100'
+                            }`}
+                        >
+                          {pageNum}
+                        </Link>
+                      )
+                    })}
+                  </nav>
+                )}
+              </>
             ) : (
-              <span className="w-12 h-12 rounded-xl bg-crypto-light text-crypto-charcoal/20 flex items-center justify-center cursor-not-allowed">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </span>
+              <div className="text-center py-24 bg-white rounded-[3rem] border border-gray-100">
+                <div className="text-6xl mb-6">🔍</div>
+                <h3 className="text-2xl font-black text-crypto-darker mb-2">Nada encontrado</h3>
+                <p className="text-gray-500 mb-8 max-w-sm mx-auto">Não encontramos artigos para sua busca. Tente palavras-chave diferentes ou explore nossas categorias.</p>
+                <Link href="/blog" className="px-8 py-3 bg-crypto-primary text-white font-bold rounded-xl">Ver Tudo</Link>
+              </div>
             )}
-          </nav>
+          </div>
+
+          {/* Sidebar */}
+          <aside>
+            <div className="sticky top-24 space-y-10">
+              {/* Sidebar Ad 1 */}
+              <div className="rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 aspect-[300/600] flex items-center justify-center">
+                <AdSense slot="blog-sidebar-top" />
+              </div>
+
+              {/* Topics Card */}
+              <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
+                <h4 className="font-bold text-xs uppercase tracking-widest text-crypto-darker mb-6 flex items-center gap-2">
+                  <span className="w-1.5 h-4 bg-crypto-primary rounded-full"></span>
+                  Explorar Tópicos
+                </h4>
+                <CategoryLinks categorySlug={category || ''} limit={8} />
+              </div>
+
+              {/* Sidebar Ad 2 */}
+              <div className="rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 aspect-[300/250] flex items-center justify-center">
+                <AdSense slot="blog-sidebar-middle" />
+              </div>
+
+              {/* Popular Articles */}
+              <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
+                <h4 className="font-bold text-xs uppercase tracking-widest text-crypto-darker mb-6 flex items-center gap-2">
+                  <span className="w-1.5 h-4 bg-crypto-primary rounded-full"></span>
+                  Mais Lidos
+                </h4>
+                <PopularPosts categorySlug={category || ''} limit={4} />
+              </div>
+
+              {/* Sidebar Ad 3 */}
+              <div className="rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 aspect-[300/600] flex items-center justify-center">
+                <AdSense slot="blog-sidebar-bottom" />
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        {/* Categories Section (Secondary Grid) */}
+        {!category && !searchQuery && (
+          <section className="mt-24 pt-24 border-t border-gray-100">
+            <h2 className="text-3xl font-black text-crypto-darker mb-10">Arquivos por Categoria</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {categories.map(cat => (
+                <CategoryCard key={cat.slug} category={cat} />
+              ))}
+            </div>
+          </section>
         )}
       </div>
     </div>
