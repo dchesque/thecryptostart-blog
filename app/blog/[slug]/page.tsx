@@ -9,24 +9,37 @@ import { generateMetadata as generateSeoMetadata, generateSchema, generateBreadc
 import AdSense from '@/components/AdSense'
 import TableOfContents from '@/components/TableOfContents'
 import NewsletterForm from '@/components/NewsletterForm'
-import RelatedPosts from '@/components/RelatedPosts'
 import BlogCard from '@/components/BlogCard'
 import ShareButtons from '@/components/ShareButtons'
 import AuthorCard from '@/components/AuthorCard'
 import RecommendedContent from '@/components/RecommendedContent'
 import InlineNewsletter from '@/components/InlineNewsletter'
-import SocialComments from '@/components/SocialComments'
 import Breadcrumb from '@/components/Breadcrumb'
 import PostMeta from '@/components/PostMeta'
 import FeaturedImage from '@/components/FeaturedImage'
 import CompactTableOfContents from '@/components/CompactTableOfContents'
 import CategoryLinks from '@/components/CategoryLinks'
-import PopularPosts from '@/components/PopularPosts'
+import dynamic from 'next/dynamic'
+import { Suspense } from 'react'
+
+// Dynamic imports for heavy or below-the-fold components
+const SocialComments = dynamic(() => import('@/components/SocialComments'), {
+  loading: () => <div className="py-20 text-center text-gray-400 animate-pulse">Loading discussion...</div>,
+  ssr: false,
+})
+
+const RelatedPosts = dynamic(() => import('@/components/RelatedPosts'), {
+  loading: () => <div className="py-12 bg-gray-50 rounded-xl animate-pulse" />,
+})
+
+const PopularPosts = dynamic(() => import('@/components/PopularPosts'), {
+  loading: () => <div className="h-40 bg-gray-50 rounded-xl animate-pulse" />,
+})
 
 import { BLOG_CONFIG, CACHE_CONFIG, getCategoryName, SITE_CONFIG, getCategoryBySlug } from '@/lib/constants'
 
-// ISR: Revalidate every 5 minutes
-export const revalidate = 300
+// ISR: Dynamic revalidation from config
+export const revalidate = CACHE_CONFIG.postsRevalidate
 
 interface PostPageProps {
   params: Promise<{ slug: string }>
@@ -424,17 +437,14 @@ export default async function PostPage({ params }: PostPageProps) {
                   adSlot="recommended-native"
                 />
 
-                <SocialComments slug={slug} />
+                <Suspense fallback={<div className="h-64 bg-gray-50 rounded-xl animate-pulse" />}>
+                  <SocialComments slug={slug} />
+                </Suspense>
 
                 {relatedPosts.length > 0 && (
-                  <div>
-                    <h3 className="text-2xl font-bold text-crypto-navy mb-8">More Related Articles</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {relatedPosts.map(p => (
-                        <BlogCard key={p.id} post={p} />
-                      ))}
-                    </div>
-                  </div>
+                  <Suspense fallback={<div className="h-96 bg-gray-50 rounded-xl animate-pulse" />}>
+                    <RelatedPosts posts={relatedPosts} />
+                  </Suspense>
                 )}
               </div>
             </div>
@@ -467,7 +477,9 @@ export default async function PostPage({ params }: PostPageProps) {
                 {/* Popular Posts */}
                 <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-4">
                   <h4 className="font-bold text-sm mb-4 uppercase tracking-widest text-crypto-navy">Popular Now</h4>
-                  <PopularPosts categorySlug={post.category} limit={3} />
+                  <Suspense fallback={<div className="h-40 bg-gray-50 rounded-2xl animate-pulse" />}>
+                    <PopularPosts categorySlug={post.category} limit={3} />
+                  </Suspense>
                 </div>
 
                 {/* Final Sidebar Ad */}

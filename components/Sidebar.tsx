@@ -48,6 +48,8 @@ export default function Sidebar({ recentPosts = [], popularPosts = [] }: Sidebar
                       src={post.featuredImage.url}
                       alt={post.featuredImage.title || post.title}
                       fill
+                      loading="lazy"
+                      quality={85}
                       className="object-cover group-hover:scale-110 transition-transform duration-300"
                       sizes="80px"
                     />
@@ -94,12 +96,12 @@ export default function Sidebar({ recentPosts = [], popularPosts = [] }: Sidebar
               >
                 {/* Rank Badge */}
                 <div className={`flex-shrink-0 w-8 h-8 rounded flex items-center justify-center font-bold text-sm ${index === 0
-                    ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white'
-                    : index === 1
-                      ? 'bg-gradient-to-br from-gray-300 to-gray-400 text-gray-800'
-                      : index === 2
-                        ? 'bg-gradient-to-br from-orange-300 to-orange-400 text-white'
-                        : 'bg-crypto-primary/10 text-crypto-primary'
+                  ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white'
+                  : index === 1
+                    ? 'bg-gradient-to-br from-gray-300 to-gray-400 text-gray-800'
+                    : index === 2
+                      ? 'bg-gradient-to-br from-orange-300 to-orange-400 text-white'
+                      : 'bg-crypto-primary/10 text-crypto-primary'
                   }`}>
                   {index + 1}
                 </div>

@@ -18,10 +18,34 @@ interface CommentsListProps {
 
 export default function CommentsList({ postSlug, refreshKey }: CommentsListProps) {
     const [comments, setComments] = useState<Comment[]>([])
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(false)
+    const [hasLoaded, setHasLoaded] = useState(false)
+    const [isNearScreen, setIsNearScreen] = useState(false)
+    const containerRef = React.useRef<HTMLDivElement>(null)
 
     useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    setIsNearScreen(true)
+                    observer.disconnect()
+                }
+            },
+            { rootMargin: '200px' }
+        )
+
+        if (containerRef.current) {
+            observer.observe(containerRef.current)
+        }
+
+        return () => observer.disconnect()
+    }, [])
+
+    useEffect(() => {
+        if (!isNearScreen || hasLoaded) return
+
         const fetchComments = async () => {
+            setLoading(true)
             try {
                 const resp = await fetch(`/api/comments?postSlug=${postSlug}`)
                 if (!resp.ok) throw new Error('Failed to fetch comments')
@@ -38,10 +62,11 @@ export default function CommentsList({ postSlug, refreshKey }: CommentsListProps
                 setComments([])
             } finally {
                 setLoading(false)
+                setHasLoaded(true)
             }
         }
         fetchComments()
-    }, [postSlug, refreshKey])
+    }, [isNearScreen, postSlug, refreshKey, hasLoaded])
 
     if (loading) {
         return (
@@ -72,7 +97,7 @@ export default function CommentsList({ postSlug, refreshKey }: CommentsListProps
 
 
     return (
-        <div className="space-y-8">
+        <div ref={containerRef} className="space-y-8">
             {comments.map((comment) => (
                 <div key={comment.id} className="space-y-4">
                     {/* Main Comment */}

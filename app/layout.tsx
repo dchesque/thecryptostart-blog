@@ -10,17 +10,21 @@ import ReadingProgressBar from '@/components/ReadingProgressBar'
 import ExitIntentPopup from '@/components/ExitIntentPopup'
 import { SITE_CONFIG } from '@/lib/constants'
 import { Montserrat, Open_Sans } from 'next/font/google'
+import { AdSenseScript } from '@/components/AdSense'
+import { WebVitals } from '@/components/WebVitals'
 
 const montserrat = Montserrat({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-montserrat',
+  weight: ['400', '500', '700', '800'],
 })
 
 const openSans = Open_Sans({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-open-sans',
+  weight: ['400', '500', '600', '700'],
 })
 
 export const metadata: Metadata = {
@@ -131,6 +135,7 @@ export default function RootLayout({
             }),
           }}
         />
+        <AdSenseScript />
       </head>
 
       <body className={`${openSans.variable} ${montserrat.variable} font-sans bg-white text-crypto-charcoal antialiased`}>
@@ -143,6 +148,7 @@ export default function RootLayout({
             Skip to main content
           </a>
 
+          <WebVitals />
           <ReadingProgressBar />
           <Header />
 

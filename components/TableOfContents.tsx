@@ -86,11 +86,18 @@ function extractHeadings(document: Document): TOCItem[] {
 export default function TableOfContents({ content }: TableOfContentsProps) {
   const [headings, setHeadings] = useState<TOCItem[]>([])
   const [activeId, setActiveId] = useState<string>('')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const items = extractHeadings(content)
     setHeadings(items)
   }, [content])
+
+  if (!mounted) return null
 
   useEffect(() => {
     if (headings.length === 0) return

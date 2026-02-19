@@ -83,12 +83,12 @@ export const SEO_CONFIG = {
  * Cache configuration (ISR)
  */
 export const CACHE_CONFIG = {
-  /** Revalidation time for posts in seconds (1 hour) */
-  postsRevalidate: 3600,
-  /** Revalidation time for static pages (10 minutes) */
-  staticRevalidate: 600,
-  /** Revalidation time for sitemap (1 hour) */
-  sitemapRevalidate: 3600,
+  /** Revalidation time for posts (1 day - Grade AA strategy) */
+  postsRevalidate: 86400,
+  /** Revalidation time for static pages (1 hour) */
+  staticRevalidate: 3600,
+  /** Revalidation time for sitemap (12 hours) */
+  sitemapRevalidate: 43200,
 } as const
 
 /**

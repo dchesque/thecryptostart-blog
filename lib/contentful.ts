@@ -16,6 +16,7 @@ import type {
   SearchOptions,
   TagOptions
 } from '@/types/blog'
+import { calculateReadingTimeFromRichText } from './utils'
 
 // Singleton client instance
 let client: ContentfulClientApi<undefined> | null = null
@@ -50,29 +51,7 @@ function getClient(): ContentfulClientApi<undefined> {
   return client
 }
 
-/**
- * Calculate reading time based on content length
- * Assumes average reading speed of 200 words per minute
- */
-function calculateReadingTime(content: any): number {
-  if (!content) return 1
 
-  // Extract text from rich text document
-  const extractText = (node: any): string => {
-    if (typeof node === 'string') return node
-    if (node.value) return node.value
-    if (node.content) {
-      return node.content.map(extractText).join(' ')
-    }
-    return ''
-  }
-
-  const text = extractText(content)
-  const wordCount = text.split(/\s+/).filter(Boolean).length
-  const readingTime = Math.ceil(wordCount / 200)
-
-  return Math.max(1, readingTime) // Minimum 1 minute
-}
 
 /**
  * Transform Contentful entry to BlogPost
@@ -140,7 +119,7 @@ function transformPost(entry: ContentfulBlogPost): BlogPost {
     tags: fields.tags || [],
     publishedAt: fields.publishDate || sys.createdAt,
     updatedAt: sys.updatedAt,
-    readingTime: fields.readingTime || calculateReadingTime(fields.content),
+    readingTime: fields.readingTime || calculateReadingTimeFromRichText(fields.content),
   }
 }
 

@@ -13,6 +13,11 @@ interface ShareButtonsProps {
  * Handles social sharing interactivity
  */
 const ShareButtons: React.FC<ShareButtonsProps> = ({ title, url, direction = 'horizontal' }) => {
+    const [mounted, setMounted] = React.useState(false)
+    React.useEffect(() => setMounted(true), [])
+
+    if (!mounted) return <div className="h-12 w-32 flex gap-3 animate-pulse" />
+
     const encodedTitle = encodeURIComponent(title)
     const encodedUrl = encodeURIComponent(url)
 

@@ -9,11 +9,11 @@ import FAQAccordion from '@/components/FAQAccordion'
 import NewsletterCTALarge from '@/components/NewsletterCTALarge'
 import AdSense from '@/components/AdSense'
 
-import { SITE_CONFIG } from '@/lib/constants'
+import { SITE_CONFIG, CACHE_CONFIG } from '@/lib/constants'
 import { generateWebsiteSchema, generateOrganizationSchema } from '@/lib/seo'
 
-// ISR: Revalidate every 5 minutes
-export const revalidate = 300
+// ISR: Dynamic revalidation from config
+export const revalidate = CACHE_CONFIG.staticRevalidate
 
 export const metadata: Metadata = {
   title: `Crypto for Beginners — Bitcoin, Ethereum & DeFi Guides | ${SITE_CONFIG.name}`,

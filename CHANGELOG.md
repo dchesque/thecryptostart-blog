@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.11.0] - 2026-02-19
+### Added
+- **Performance**: Suporte nativo a Progressive Web App (PWA) via `next-pwa`.
+- **Monitoramento**: Componente `WebVitals` integrado ao GA4 para captura de métricas reais (LCP, CLS, INP).
+- **Tooling**: Integração do `@next/bundle-analyzer` para análise de pacotes e otimização de bundle.
+
+### Changed
+- **Imagens**: Configuração avançada no `next.config.mjs` com suporte a `AVIF`, `WebP`, sub-dimensionamento reativo e cache agressivo de 1 ano.
+- **Fontes**: Otimização do Google Fonts com `font-display: swap`, preload e redução seletiva de pesos (Montserrat/Open Sans).
+- **Arquitetura**: Implementação sistemática de `dynamic imports` e `Suspense boundaries` em componentes pesados para melhorar o TTI.
+- **Caching**: Estratégia ISR otimizada com revalidação de 24h para posts e 1h para páginas estáticas (Grade AA Strategy).
+- **Core Web Vitals**: Aplicação de `aspect-ratio` e placeholders no AdSense e imagens para garantir CLS zero.
+
+### Fixed
+- **CLS**: Saltos de layout corrigidos em anúncios e carregamento de imagens dinâmicas.
+- **Hidratação**: Erros de mismatch entre CSR/SSR em componentes interativos.
+
 ## [0.10.0] - 2026-02-19
 ### Added
 - **Comentários**: Sistema robusto de discussão integrado com Prisma (PostgreSQL).

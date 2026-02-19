@@ -21,18 +21,20 @@ export default function RelatedPosts({ posts }: RelatedPostsProps) {
       </h2>
       <div className="grid md:grid-cols-3 gap-6">
         {posts.map((post) => (
-          <article 
+          <article
             key={post.id}
             className="group bg-crypto-darker rounded-xl overflow-hidden border border-crypto-primary/10 hover:border-crypto-primary/30 transition"
           >
             <Link href={`/blog/${post.slug}`} className="block">
               {/* Image */}
               {post.featuredImage ? (
-                <div className="aspect-video relative overflow-hidden">
+                <div className="aspect-video relative overflow-hidden hidden md:block">
                   <Image
                     src={post.featuredImage.url}
                     alt={post.featuredImage.title}
                     fill
+                    loading="lazy"
+                    quality={85}
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                     sizes="(max-width: 768px) 100vw, 33vw"
                   />
@@ -42,7 +44,7 @@ export default function RelatedPosts({ posts }: RelatedPostsProps) {
                   <span className="text-4xl opacity-50">📄</span>
                 </div>
               )}
-              
+
               {/* Content */}
               <div className="p-4">
                 <span className="text-xs text-crypto-primary font-medium uppercase tracking-wide">

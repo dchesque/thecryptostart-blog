@@ -30,8 +30,10 @@ export default function FeaturedImage({
                     alt={alt}
                     fill
                     priority={priority}
+                    loading={priority ? 'eager' : 'lazy'}
+                    quality={85}
                     className="object-cover"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1000px"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1000px"
                 />
             </div>
             {caption && (

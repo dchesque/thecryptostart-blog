@@ -1,6 +1,25 @@
-export function calculateReadingTime(content: string): number {
-  const words = content.trim().split(/\s+/).length
+export function calculateReadingTime(text: string): number {
+  const words = text.trim().split(/\s+/).filter(Boolean).length
   return Math.ceil(words / 200) // 200 words per minute
+}
+
+/**
+ * Calculate reading time from Contentful rich text
+ */
+export function calculateReadingTimeFromRichText(content: any): number {
+  if (!content) return 1
+
+  const extractText = (node: any): string => {
+    if (typeof node === 'string') return node
+    if (node.value) return node.value
+    if (node.content) {
+      return node.content.map(extractText).join(' ')
+    }
+    return ''
+  }
+
+  const text = extractText(content)
+  return calculateReadingTime(text)
 }
 
 export function formatDate(date: string): string {
