@@ -180,6 +180,7 @@ export interface CategoryConfig {
   slug: BlogCategory
   name: string
   icon: string
+  color?: string
 }
 
 /**

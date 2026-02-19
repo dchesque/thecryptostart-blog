@@ -1,11 +1,14 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getAllPosts, getAllCategories } from '@/lib/contentful'
-import BlogCard from '@/components/BlogCard'
-import NewsletterForm from '@/components/NewsletterForm'
-import FAQ from '@/components/FAQ'
+import FeaturedArticleCard from '@/components/FeaturedArticleCard'
+import BlogCardCompact from '@/components/BlogCardCompact'
+import CategoryCard from '@/components/CategoryCard'
+import TrendingList from '@/components/TrendingList'
+import FAQAccordion from '@/components/FAQAccordion'
+import NewsletterCTALarge from '@/components/NewsletterCTALarge'
 import AdSense from '@/components/AdSense'
-import { BLOG_CONFIG, SITE_CONFIG, CACHE_CONFIG } from '@/lib/constants'
+import { SITE_CONFIG } from '@/lib/constants'
 import { generateWebsiteSchema, generateOrganizationSchema } from '@/lib/seo'
 
 // ISR: Revalidate every 5 minutes
@@ -13,28 +16,36 @@ export const revalidate = 300
 
 export const metadata: Metadata = {
   title: `Crypto for Beginners — Bitcoin, Ethereum & DeFi Guides | ${SITE_CONFIG.name}`,
-  description: 'Learn how to invest in Bitcoin and Web3 with practical, educational guides focused on real security. The best starting point for your crypto journey. Start here.',
+  description: 'Learn how to invest in Bitcoin and Web3 with practical, educational guides focused on real security. The best starting point for your crypto journey.',
 }
 
 export default async function Homepage() {
-  // Fetch data for sections
-  const [fundamentalPosts, recentPosts, categories] = await Promise.all([
-    // Picking first 4 as "fundamental" for now (ideally filtered by tag 'fundamental' in the CMS)
-    getAllPosts({ limit: 4 }),
-    // Picking next 6 as "recent" (skipping the first 4 if they overlap)
-    getAllPosts({ limit: 6, skip: 0 }),
+  const [allPosts, categories] = await Promise.all([
+    getAllPosts({ limit: 20 }),
     getAllCategories(),
   ])
 
-  // In a real scenario, we might want specific "fundamental" articles. 
-  // For now, let's use the first 4 for the 'Start Here' section and the top 6 for 'Recent'.
-  const displayRecent = recentPosts.filter(rp => !fundamentalPosts.some(fp => fp.id === rp.id)).slice(0, 6);
-  // Fallback if filter leaves too few posts
-  const finalRecent = displayRecent.length > 0 ? displayRecent : recentPosts;
+  const featuredPost = allPosts[0]
+  const recentPosts = allPosts.slice(1, 4)
+  const trendingPosts = allPosts.slice(4, 9)
+
+  const faqs = [
+    {
+      question: "Is Bitcoin still a good investment in 2026?",
+      answer: "Bitcoin remains the primary store of value in the digital asset space. While volatility persists, its institutional adoption and the 'digital gold' narrative continue to drive long-term structural demand."
+    },
+    {
+      question: "How do I secure my crypto assets properly?",
+      answer: "True security involves using hardware wallets, never sharing your seed phrase, and understanding that 'not your keys, not your coins'. We recommend air-gapped solutions for significant holdings."
+    },
+    {
+      question: "What is the difference between Ethereum and Bitcoin?",
+      answer: "Bitcoin is primarily digital money and a store of value. Ethereum is a global, decentralized computing platform that enables smart contracts and decentralized applications (dApps)."
+    }
+  ]
 
   return (
     <>
-      {/* JSON-LD Schema */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -45,183 +56,61 @@ export default async function Homepage() {
         }}
       />
 
-      {/* HERO SECTION */}
-      <section className="relative overflow-hidden pt-32 pb-24 sm:pt-40 sm:pb-32 bg-white">
-        {/* Background decorations - Subtle and Professional */}
+      {/* 1. HERO SECTION (Compact & High Conversion) */}
+      <section className="pt-32 pb-16 md:pt-40 md:pb-24 bg-gradient-to-r from-crypto-darker to-crypto-navy text-white relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-crypto-primary/3 rounded-full blur-[140px] -mr-64 -mt-64" />
-          <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-crypto-navy/3 rounded-full blur-[120px] -ml-32 -mb-32" />
+          <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-crypto-primary/5 rounded-full blur-[140px] -mr-64 -mt-64" />
         </div>
 
-        <div className="relative container">
-          <div className="max-w-4xl">
-            <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold text-crypto-navy mb-8 leading-[0.95] tracking-tighter">
-              Crypto for <span className="text-crypto-primary">beginners</span>.
+        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8 relative z-10">
+          <div className="max-w-3xl">
+            <h1 className="text-5xl md:text-7xl font-black mb-6 leading-[0.95] tracking-tight">
+              Aprenda Cripto do <span className="text-crypto-primary">Zero ao Profissional</span>.
             </h1>
-
-            <p className="text-xl sm:text-2xl text-crypto-charcoal/70 mb-12 leading-relaxed max-w-2xl font-medium">
-              Learn how to invest in Bitcoin and Web3 with practical, educational guides focused on real security.
+            <p className="text-xl md:text-2xl text-white/70 mb-10 leading-relaxed max-w-2xl font-medium">
+              Guias práticos e educativos focados em segurança real. O melhor ponto de partida para sua jornada no mercado de Bitcoin e Ethereum.
             </p>
-
-            <ul className="grid sm:grid-cols-2 gap-6 mb-12">
-              {[
-                'Step-by-step guides from zero to pro',
-                'Security analysis against scams',
-                '100% free and independent content',
-                'Weekly market updates'
-              ].map((item, i) => (
-                <li key={i} className="flex items-center gap-3 text-lg text-crypto-charcoal font-bold">
-                  <svg className="w-6 h-6 text-crypto-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                  {item}
-                </li>
-              ))}
-            </ul>
-
-            <div className="flex flex-col sm:flex-row gap-5">
-              <Link href="/blog?category=bitcoin" className="btn-primary text-lg px-10 py-5">
-                Start with the Initial Guide
-                <svg className="w-6 h-6 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link href="/blog" className="px-8 py-4 bg-crypto-primary hover:bg-crypto-accent text-white font-bold rounded-2xl transition-all shadow-lg shadow-crypto-primary/20 flex items-center justify-center">
+                Começar Guia Inicial →
               </Link>
-              <Link
-                href="/blog"
-                className="px-10 py-5 rounded-xl text-crypto-navy font-bold hover:bg-gray-50 transition-all border-2 border-gray-100 flex items-center justify-center text-lg"
-              >
-                View recent articles
+              <Link href="/blog" className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl transition-all border border-white/10 flex items-center justify-center backdrop-blur-sm">
+                Ver Todos os Artigos
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* AD — Homepage Banner (após hero) */}
-      <div className="container py-4">
-        <div className="rounded-xl overflow-hidden">
-          <AdSense slot="homepage-banner" />
-        </div>
-      </div>
-
-      {/* START HERE - Fundamental Articles */}
-      <section className="section-spacing bg-gray-50/50">
-        <div className="container">
-          <div className="mb-16">
-            <span className="text-crypto-primary font-extrabold uppercase tracking-widest text-sm mb-4 block">Knowledge Base</span>
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-crypto-navy leading-tight">Start Here</h2>
-            <p className="text-crypto-charcoal/60 mt-4 text-xl max-w-2xl">
-              The pillars every beginner needs to master before putting their capital at risk.
-            </p>
+      {/* 2. HERO BANNER AD */}
+      <section className="bg-gray-50 py-4 border-b border-gray-100">
+        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
+          <div className="rounded-xl overflow-hidden bg-gray-100 min-h-[120px] flex items-center justify-center">
+            <AdSense slot="homepage-hero" />
           </div>
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            {fundamentalPosts.length > 0 ? (
-              fundamentalPosts.map((post) => (
-                <BlogCard key={post.id} post={post} variant="large" />
-              ))
-            ) : (
-              <div className="col-span-full py-20 bg-white rounded-3xl border border-dashed border-gray-200 text-center text-crypto-charcoal/40 font-bold">
-                Loading fundamental guides...
+      {/* 3. FEATURED + SIDEBAR SECTION */}
+      <section className="py-12 md:py-16 bg-white">
+        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            {/* Featured Article - 2/3 width */}
+            <div className="lg:col-span-2">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl md:text-3xl font-black text-crypto-darker tracking-tight">Destaque da Semana</h2>
+                <div className="w-12 h-1 bg-crypto-primary/20 rounded-full" />
               </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* RECENT ARTICLES */}
-      <section className="section-spacing bg-white">
-        <div className="container">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
-            <div>
-              <span className="text-crypto-primary font-extrabold uppercase tracking-widest text-sm mb-4 block">Latest Publications</span>
-              <h2 className="text-4xl sm:text-5xl font-extrabold text-crypto-navy leading-tight">Recent Articles</h2>
-            </div>
-            <Link
-              href="/blog"
-              className="text-crypto-primary font-bold hover:text-crypto-accent transition-colors flex items-center gap-3 group text-lg"
-            >
-              Explore complete library
-              <svg className="w-6 h-6 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {finalRecent.map((post) => (
-              <BlogCard key={post.id} post={post} variant="standard" />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* AD — Homepage Mid (após recent articles) */}
-      <div className="container py-4">
-        <div className="rounded-xl overflow-hidden">
-          <AdSense slot="homepage-mid" />
-        </div>
-      </div>
-      <section className="section-spacing bg-gray-50/50">
-        <div className="container">
-          <div className="text-center mb-16">
-            <span className="text-crypto-primary font-extrabold uppercase tracking-widest text-sm mb-4 block">Strategic Navigation</span>
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-crypto-navy leading-tight">Explore by Topics</h2>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
-            {categories.map((cat) => (
-              <Link
-                key={cat.slug}
-                href={`/blog?category=${cat.slug}`}
-                className="card-topic group"
-              >
-                <div className="icon-wrapper">
-                  {cat.icon}
-                </div>
-                <h3 className="text-crypto-navy font-extrabold text-sm tracking-tight group-hover:text-crypto-primary transition-colors uppercase">
-                  {cat.name}
-                </h3>
-                <span className="text-[10px] text-crypto-charcoal/40 font-bold mt-2 block">+ articles</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* AUTHORITY BLOCK */}
-      <section className="section-spacing bg-crypto-navy text-white overflow-hidden relative">
-        <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5 pointer-events-none" />
-        <div className="container relative z-10">
-          <div className="grid lg:grid-cols-[1fr,1.5fr] gap-20 items-center">
-            <div className="text-center lg:text-left">
-              <span className="text-crypto-primary font-extrabold uppercase tracking-widest text-sm mb-4 block">E-E-A-T Authority</span>
-              <h2 className="text-4xl sm:text-6xl font-extrabold mb-8 leading-[1.1] text-white">Real Crypto Education.</h2>
-
-              <div className="space-y-8">
-                <div className="flex items-center gap-6 justify-center lg:justify-start">
-                  <div className="text-5xl font-extrabold text-white">+120</div>
-                  <div className="text-white/80 font-bold uppercase tracking-wider text-sm">Technical articles <br />published</div>
-                </div>
-                <div className="flex items-center gap-6 justify-center lg:justify-start">
-                  <div className="text-5xl font-extrabold text-white">100%</div>
-                  <div className="text-white/80 font-bold uppercase tracking-wider text-sm">Focused on <br />education and security</div>
-                </div>
-              </div>
+              {featuredPost && <FeaturedArticleCard post={featuredPost} />}
             </div>
 
-            <div className="bg-white/5 backdrop-blur-xl p-10 sm:p-14 rounded-[3rem] border border-white/10 shadow-4">
-              <div className="flex flex-col sm:flex-row gap-10 items-start">
-                <div className="w-24 h-24 rounded-3xl bg-crypto-primary flex-shrink-0 flex items-center justify-center text-4xl shadow-lg shadow-crypto-primary/20">
-                  👨‍🏫
-                </div>
-                <div>
-                  <h3 className="text-3xl font-extrabold mb-4 text-white">Academy Mission</h3>
-                  <p className="text-white/90 text-lg leading-relaxed mb-6 font-medium">
-                    We believe decentralization is the future, but the journey doesn't have to be dangerous. Our team of experts translates "crypto-speak" into plain English, stripping away the <span className="text-white">hype</span> and focusing on what really matters: your knowledge and your security.
-                  </p>
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/60 text-sm font-bold">
-                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    Updated weekly
+            {/* Featured Ad - 1/3 width */}
+            <div className="hidden lg:block">
+              <div className="sticky top-24 space-y-6">
+                <div className="text-center">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 block">Publicidade</span>
+                  <div className="rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 aspect-[300/600] flex items-center justify-center">
+                    <AdSense slot="homepage-featured-ad" />
                   </div>
                 </div>
               </div>
@@ -230,32 +119,91 @@ export default async function Homepage() {
         </div>
       </section>
 
-      {/* FAQ */}
-      <FAQ />
+      {/* 4. RECENT POSTS GRID (3-col) */}
+      <section className="py-12 md:py-16 bg-gray-50/50">
+        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
+          <div className="flex items-center justify-between mb-10">
+            <h2 className="text-3xl md:text-4xl font-black text-crypto-darker tracking-tight">Artigos Recentes</h2>
+            <Link href="/blog" className="text-crypto-primary font-bold hover:underline text-sm uppercase tracking-widest">
+              Ver todos →
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            {recentPosts.map(post => (
+              <BlogCardCompact key={post.id} post={post} />
+            ))}
+          </div>
+        </div>
+      </section>
 
-      {/* NEWSLETTER */}
-      <section className="section-spacing bg-white">
-        <div className="container">
-          <div className="bg-crypto-primary/5 rounded-[3.5rem] p-12 md:p-24 border border-crypto-primary/10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-crypto-primary/5 rounded-full blur-[100px] -mr-40 -mt-40" />
+      {/* 5. NATIVE AD SECTION */}
+      <section className="py-8 bg-white border-y border-gray-50">
+        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
+          <div className="rounded-3xl bg-gray-50 p-8 border border-gray-100 min-h-[300px] flex items-center justify-center overflow-hidden">
+            <AdSense slot="homepage-recommended" />
+          </div>
+        </div>
+      </section>
 
-            <div className="relative z-10 max-w-3xl mx-auto text-center">
-              <h2 className="text-4xl sm:text-5xl font-extrabold mb-8 text-crypto-navy tracking-tight leading-tight">
-                Receive insights you won't find on YouTube.
-              </h2>
-              <p className="text-crypto-charcoal/70 mb-12 text-xl max-w-xl mx-auto font-medium">
-                Join our weekly educational newsletter. No spam, only practical knowledge.
-              </p>
-              <div className="max-w-md mx-auto">
-                <NewsletterForm />
+      {/* 6. CATEGORIES SECTION */}
+      <section className="py-12 md:py-16 bg-white overflow-hidden">
+        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
+          <h2 className="text-3xl md:text-4xl font-black text-crypto-darker tracking-tight mb-10">Explorar Tópicos</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {categories.slice(0, 8).map(cat => (
+              <CategoryCard key={cat.slug} category={cat} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 7. TRENDING SECTION */}
+      <section className="py-12 md:py-16 bg-gray-50/50">
+        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <h2 className="text-3xl md:text-4xl font-black text-crypto-darker tracking-tight mb-10">Trending Now</h2>
+              <TrendingList posts={trendingPosts} limit={5} />
+            </div>
+            <div className="hidden lg:block">
+              <div className="sticky top-24">
+                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 block text-center">Patrocinado</span>
+                <div className="rounded-2xl overflow-hidden bg-white border border-gray-100 aspect-[300/300] shadow-sm flex items-center justify-center">
+                  <AdSense slot="homepage-trending-ad" />
+                </div>
               </div>
-              <p className="mt-8 text-crypto-charcoal/40 text-xs font-bold uppercase tracking-widest">
-                Join +2,000 smart readers
-              </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* 8. FAQ SECTION */}
+      <section className="py-12 md:py-16 bg-white">
+        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <h2 className="text-3xl md:text-4xl font-black text-crypto-darker tracking-tight mb-4">Perguntas Frequentes</h2>
+              <p className="text-gray-500 mb-10">Tudo o que você precisa saber para começar com segurança.</p>
+              <FAQAccordion faqs={faqs} />
+            </div>
+            <div className="hidden lg:block">
+              <div className="sticky top-24">
+                <div className="rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 aspect-[300/250] flex items-center justify-center">
+                  <AdSense slot="homepage-faq-ad" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 9. NEWSLETTER CTA FINAL */}
+      <section className="py-16 md:py-24 bg-white">
+        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
+          <NewsletterCTALarge />
         </div>
       </section>
     </>
   )
 }
+

@@ -100,10 +100,18 @@ export const ADSENSE_SLOTS = {
   'blog-middle': 'xxxxxxxxxxxx',
   'blog-bottom': 'xxxxxxxxxxxx',
   'blog-sidebar': 'xxxxxxxxxxxx',
+  'blog-sidebar-top': 'xxxxxxxxxxxx',
+  'blog-sidebar-middle': 'xxxxxxxxxxxx',
+  'blog-sidebar-bottom': 'xxxxxxxxxxxx',
   // Homepage
+  'homepage-hero': 'xxxxxxxxxxxx',
   'homepage-banner': 'xxxxxxxxxxxx',
   'homepage-mid': 'xxxxxxxxxxxx',
   'homepage-sidebar': 'xxxxxxxxxxxx',
+  'homepage-featured-ad': 'xxxxxxxxxxxx',
+  'homepage-recommended': 'xxxxxxxxxxxx',
+  'homepage-trending-ad': 'xxxxxxxxxxxx',
+  'homepage-faq-ad': 'xxxxxxxxxxxx',
   // Sticky (global layout)
   'header-ad': 'xxxxxxxxxxxx',
   'footer-ad': 'xxxxxxxxxxxx',

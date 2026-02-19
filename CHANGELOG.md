@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.7.0] - 2026-02-19
+### Added
+- Novo Layout Triple-Column para Post Page (`app/blog/[slug]/page.tsx`).
+- Redesenho completo da Homepage com funil de conversão AAA de 7 seções.
+- Componente `CompactTableOfContents` (Variantes minimal e tradicional).
+- Componente `CategoryLinks` para sidebar.
+- Componente `PopularPosts` para sidebar.
+- Componente `TrendingList` com ranking para homepage.
+- Componente `CategoryCard` e `BlogCardCompact` para grade da homepage.
+- Componente `FeaturedArticleCard` para destaque da homepage.
+- Componente `FAQAccordion` para homepage.
+- Componente `NewsletterCTALarge` com gradiente premium.
+- Inclusão de novos slots de anúncio (High CPM): `blog-sidebar-top`, `blog-sidebar-middle`, `blog-sidebar-bottom`, `homepage-hero`, `homepage-featured-ad`, etc.
+
+### Changed
+- Configuração do Tailwind estendida para suportar `maxWidth: 1440px`, `1000px` (post) e novos espaçamentos.
+- Layout da Homepage migrado para estrutura de 1440px de largura máxima.
+- Substituição da TOC lateral grande por versão flutuante/compacta.
+
 ## [0.6.1] - 2026-02-19
 
 ### Fixed

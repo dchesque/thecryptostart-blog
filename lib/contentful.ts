@@ -263,6 +263,7 @@ export async function getAllCategories(): Promise<CategoryConfig[]> {
       name: item.fields.name,
       description: item.fields.description,
       icon: item.fields.icon || '📚', // Default icon if missing
+      color: item.fields.color,
     }))
   } catch (error) {
     console.error('Error fetching categories from Contentful:', error)

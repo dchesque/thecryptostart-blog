@@ -40,6 +40,29 @@ const config: Config = {
         '2xl': '24px',
         '3xl': '32px',
         '5xl': '48px',
+        'gap-tight': '8px',
+        'gap-normal': '16px',
+        'gap-loose': '24px',
+        'gap-huge': '32px',
+      },
+      maxWidth: {
+        'post': '1000px',      // Perfect for post content
+        'sidebar': '300px',    // Ad width
+        '1440': '1440px',      // Ultra-wide max
+      },
+      screens: {
+        '2xl': '1920px',       // Ultra-wide support
+      },
+      container: {
+        center: true,
+        padding: {
+          DEFAULT: '1rem',     // 16px on mobile
+          sm: '1rem',          // 16px on sm
+          md: '1.5rem',        // 24px on md
+          lg: '2rem',          // 32px on lg
+          xl: '2rem',          // 32px on xl
+          '2xl': '2rem',       // 32px on 2xl
+        },
       },
       typography: (theme: (path: string) => string) => ({
         DEFAULT: {
