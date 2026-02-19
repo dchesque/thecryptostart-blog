@@ -25,7 +25,6 @@ import { Suspense } from 'react'
 // Dynamic imports for heavy or below-the-fold components
 const SocialComments = dynamic(() => import('@/components/SocialComments'), {
   loading: () => <div className="py-20 text-center text-gray-400 animate-pulse">Loading discussion...</div>,
-  ssr: false,
 })
 
 const RelatedPosts = dynamic(() => import('@/components/RelatedPosts'), {
@@ -38,8 +37,8 @@ const PopularPosts = dynamic(() => import('@/components/PopularPosts'), {
 
 import { BLOG_CONFIG, CACHE_CONFIG, getCategoryName, SITE_CONFIG, getCategoryBySlug } from '@/lib/constants'
 
-// ISR: Dynamic revalidation from config
-export const revalidate = CACHE_CONFIG.postsRevalidate
+// ISR: Dynamic revalidation from config (Hardcoded for Next.js build optimization)
+export const revalidate = 86400
 
 interface PostPageProps {
   params: Promise<{ slug: string }>

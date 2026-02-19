@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.12.0] - 2026-02-19
+### Added
+- **Imagens**: Contentful Image Transformation API customizada (`lib/contentful-image-transform.ts`) para otimização automática de imagens (redução de ~87% no tamanho).
+
+### Changed
+- **Performance**: Integração nativa em `lib/contentful.ts` para servir automaticamente formatos modernos (`AVIF`/`WebP`) via Contentful Image API.
+
+### Fixed
+- **Build**: Removido `ssr: false` de `next/dynamic` em Server Component (`app/blog/[slug]/page.tsx`) para corrigir erro crítico de compilação.
+- **Build**: Substituídos `revalidate` exports dinâmicos por valores literais em `app/page.tsx` e `app/blog/[slug]/page.tsx` para garantir otimização de build de produção no Next.js.
+
 ## [0.11.0] - 2026-02-19
 ### Added
 - **Performance**: Suporte nativo a Progressive Web App (PWA) via `next-pwa`.

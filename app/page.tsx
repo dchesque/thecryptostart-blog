@@ -12,8 +12,8 @@ import AdSense from '@/components/AdSense'
 import { SITE_CONFIG, CACHE_CONFIG } from '@/lib/constants'
 import { generateWebsiteSchema, generateOrganizationSchema } from '@/lib/seo'
 
-// ISR: Dynamic revalidation from config
-export const revalidate = CACHE_CONFIG.staticRevalidate
+// ISR: Dynamic revalidation from config (Hardcoded for Next.js build optimization)
+export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: `Crypto for Beginners — Bitcoin, Ethereum & DeFi Guides | ${SITE_CONFIG.name}`,
