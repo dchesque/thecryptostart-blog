@@ -10,6 +10,9 @@ const createUserSchema = z.object({
     email: z.string().email(),
     password: z.string().min(6),
     roles: z.array(z.string()).min(1),
+    bio: z.string().optional(),
+    image: z.string().url().optional().or(z.literal("")),
+    emailVerified: z.boolean().optional(),
 });
 
 export async function GET() {
@@ -35,6 +38,8 @@ export async function GET() {
             name: user.name,
             email: user.email,
             image: user.image,
+            bio: user.bio,
+            emailVerified: user.emailVerified,
             roles: user.roles.map((r: any) => r.role),
             createdAt: user.createdAt,
         }));
@@ -51,7 +56,7 @@ export async function POST(req: Request) {
         AuthUtils.requireRole(session, "ADMIN");
 
         const body = await req.json();
-        const { name, email, password, roles } = createUserSchema.parse(body);
+        const { name, email, password, roles, bio, image, emailVerified } = createUserSchema.parse(body);
 
         const exists = await prisma.user.findUnique({ where: { email } });
         if (exists) {
@@ -65,6 +70,9 @@ export async function POST(req: Request) {
                 name,
                 email,
                 passwordHash,
+                bio,
+                image: image || null,
+                emailVerified: emailVerified ? new Date() : null,
                 roles: {
                     create: roles.map((role) => ({ role: role as any })),
                 },

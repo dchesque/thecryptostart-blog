@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.15.2] - 2026-02-19
+
+### Added
+- **Admin Users**: Implementado suporte completo para criação e edição de todos os campos de usuário (`bio`, `image`, `emailVerified`) via modal administrativo.
+
+## [0.15.1] - 2026-02-19
+
+### Fixed
+- **Content-Security-Policy**: Corrigido formato da CSP no `next.config.mjs` para uma única linha, resolvendo o bloqueio de imagens do Contentful (`OpaqueResponseBlocking`).
+
 ## [0.15.0] - 2026-02-19
 
 ### Changed

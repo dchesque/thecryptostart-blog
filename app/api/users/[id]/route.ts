@@ -10,6 +10,9 @@ const updateUserSchema = z.object({
     email: z.string().email().optional(),
     password: z.string().min(6).optional(),
     roles: z.array(z.string()).min(1).optional(),
+    bio: z.string().optional(),
+    image: z.string().url().optional().or(z.literal("")),
+    emailVerified: z.boolean().optional(),
 });
 
 export async function PATCH(
@@ -22,12 +25,15 @@ export async function PATCH(
 
         const { id } = await params;
         const body = await req.json();
-        const { name, email, password, roles } = updateUserSchema.parse(body);
+        const { name, email, password, roles, bio, image, emailVerified } = updateUserSchema.parse(body);
 
         const updateData: any = {};
         if (name) updateData.name = name;
         if (email) updateData.email = email;
         if (password) updateData.passwordHash = await hash(password, 12);
+        if (bio !== undefined) updateData.bio = bio;
+        if (image !== undefined) updateData.image = image || null;
+        if (emailVerified !== undefined) updateData.emailVerified = emailVerified ? new Date() : null;
 
         if (roles) {
             // Transaction to update roles
