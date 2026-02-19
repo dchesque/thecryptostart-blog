@@ -38,10 +38,14 @@ export class GSCClient {
     constructor(siteUrl: string) {
         this.siteUrl = siteUrl
 
-        // Usar credentials do Google Cloud
+        // Usar credentials do Google Cloud via variáveis de ambiente
         const auth = new google.auth.GoogleAuth({
             projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-            keyFilename: process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH,
+            credentials: {
+                client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+                // Tratar quebras de linha na private key que podem ser corrompidas no .env
+                private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+            },
             scopes: ['https://www.googleapis.com/auth/webmasters.readonly'],
         })
 
