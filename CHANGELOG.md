@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.12.1] - 2026-02-19
+
+### Added
+- Google Search Console integration with `GSCClient` using `googleapis`.
+- New API endpoint `/api/gsc/analytics` to fetch search metrics.
+- Admin dashboard at `/admin/gsc-dashboard` with visual stats and recommendations.
+- Detailed setup documentation at `docs/GSC_SETUP.md`.
+
 ## [0.12.0] - 2026-02-19
 ### Added
 - **Imagens**: Contentful Image Transformation API customizada (`lib/contentful-image-transform.ts`) para otimização automática de imagens (redução de ~87% no tamanho).
