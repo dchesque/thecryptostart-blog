@@ -38,6 +38,13 @@ export default async function AdminLayout({
                         </Link>
                     )}
                     <Link
+                        href="/admin/ai-optimization"
+                        className="block px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                    >
+                        AI Optimization
+                        <span className="text-[10px] bg-crypto-primary/10 text-crypto-primary px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter">NEW</span>
+                    </Link>
+                    <Link
                         href="/"
                         className="block px-6 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     >

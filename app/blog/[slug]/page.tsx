@@ -5,7 +5,9 @@ import type { Metadata } from 'next'
 import { documentToReactComponents, Options } from '@contentful/rich-text-react-renderer'
 import { BLOCKS, INLINES, MARKS } from '@contentful/rich-text-types'
 import { getPostBySlug, getRelatedPosts, getAllPostSlugs, getAllCategories } from '@/lib/contentful'
-import { generateMetadata as generateSeoMetadata, generateSchema, generateBreadcrumbSchema } from '@/lib/seo'
+import { generateMetadata as generateSeoMetadata, generateSchema, generateBreadcrumbSchema, generateAIOptimizedArticleSchema } from '@/lib/seo'
+import { extractQuickAnswer, generateFAQFromPost } from '@/lib/ai-optimization'
+import FAQSection from '@/components/FAQSection'
 import AdSense from '@/components/AdSense'
 import TableOfContents from '@/components/TableOfContents'
 import NewsletterForm from '@/components/NewsletterForm'
@@ -240,13 +242,16 @@ export default async function PostPage({ params }: PostPageProps) {
     { name: post.title, url: `/blog/${slug}` },
   ]
 
+  const quickAnswer = extractQuickAnswer(post.content)
+  const faqItems = generateFAQFromPost(post)
+
   return (
     <>
       {/* JSON-LD Schema */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(generateSchema({
+          __html: JSON.stringify(generateAIOptimizedArticleSchema({
             title: post.title,
             description: post.description,
             url: `/blog/${slug}`,
@@ -254,6 +259,9 @@ export default async function PostPage({ params }: PostPageProps) {
             modifiedAt: post.updatedAt,
             author: post.author.name,
             image: post.featuredImage?.url,
+            quickAnswer: quickAnswer || undefined,
+            tags: post.tags,
+            readingTime: post.readingTime,
           }))
         }}
       />
@@ -341,6 +349,22 @@ export default async function PostPage({ params }: PostPageProps) {
               <div className="my-8 rounded-xl overflow-hidden bg-gray-50 min-h-[120px] flex items-center justify-center border border-gray-100">
                 <AdSense slot="blog-top" />
               </div>
+
+              {/* AI Quick Answer Box */}
+              {quickAnswer && (
+                <div className="mb-10 bg-crypto-primary/5 border-l-4 border-crypto-primary p-6 rounded-r-2xl relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-crypto-primary/10 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-crypto-primary/20 transition-all duration-500"></div>
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-xl">💡</span>
+                      <h3 className="font-bold text-crypto-navy uppercase tracking-widest text-sm">Quick Answer</h3>
+                    </div>
+                    <p className="text-crypto-navy font-medium leading-relaxed italic text-lg">
+                      {quickAnswer}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="prose prose-lg max-w-none prose-p:my-4 prose-p:leading-8 prose-h2:mt-12 prose-h2:mb-5 prose-h3:mt-10 prose-h3:mb-4 prose-headings:font-heading prose-headings:text-crypto-navy prose-p:text-crypto-charcoal/80 prose-a:text-crypto-primary prose-a:no-underline hover:prose-a:text-crypto-accent prose-a:font-bold prose-img:rounded-3xl prose-strong:text-crypto-navy prose-strong:font-bold">
                 {(() => {
@@ -435,6 +459,14 @@ export default async function PostPage({ params }: PostPageProps) {
                   }))}
                   adSlot="recommended-native"
                 />
+
+                {/* AI FAQ Section */}
+                {faqItems.length > 0 && (
+                  <FAQSection
+                    items={faqItems}
+                    title={`Questions about ${post.title}`}
+                  />
+                )}
 
                 <Suspense fallback={<div className="h-64 bg-gray-50 rounded-xl animate-pulse" />}>
                   <SocialComments slug={slug} />

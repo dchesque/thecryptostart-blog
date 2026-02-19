@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.13.0] - 2026-02-19
+
+### Added
+- **AI Search Optimization**: Implementação completa de otimizações para ChatGPT, Claude e Perplexity.
+- **Quick Answers**: Bloco visual e técnico de respostas rápidas (40-60 palavras) no topo dos posts.
+- **FAQ Automático**: Geração dinâmica de FAQ (JSON-LD + UI) baseada em categorias e tags.
+- **Admin Dashboard**: Painel administrativo em `/admin/ai-optimization` para monitoramento de AI Scores.
+- **SEO AI**: Novo Schema `Article` estendido com sinais de autoridade (E-E-A-T) e abstratos citáveis.
+- **Documentação**: Guia técnico para editores em `docs/AI_SEARCH_OPTIMIZATION.md`.
+
+### Changed
+- **SEO Utility**: Melhoria no `lib/seo.ts` para suportar `generateAIOptimizedArticleSchema`.
+- **UI Admin**: Menu lateral do painel admin atualizado com acesso rápido ao AI Search Dashboard.
+
 ## [0.12.1] - 2026-02-19
 
 ### Added

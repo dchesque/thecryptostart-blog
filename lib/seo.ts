@@ -129,6 +129,54 @@ export function generateSchema(input: SchemaInput) {
 }
 
 /**
+ * Generate AI-optimized Article JSON-LD schema
+ * Extends the basic schema with signals that AI models (ChatGPT, Claude, Perplexity) search for.
+ */
+export function generateAIOptimizedArticleSchema(input: SchemaInput & {
+  quickAnswer?: string;
+  keywords?: string[];
+  tags?: string[];
+  readingTime?: number;
+}) {
+  const baseSchema = generateSchema(input);
+
+  return {
+    ...baseSchema,
+
+    // AI specific signals
+    abstract: input.quickAnswer || input.description,
+    keywords: input.keywords || input.tags || [],
+    timeRequired: input.readingTime ? `PT${input.readingTime}M` : undefined,
+
+    // Enhanced Person Schema for Authority (E-E-A-T)
+    author: {
+      ...baseSchema.author,
+      jobTitle: 'Crypto Expert',
+      worksFor: {
+        '@type': 'Organization',
+        name: SITE_CONFIG.name,
+      },
+      sameAs: [
+        SITE_CONFIG.social.twitter,
+        SITE_CONFIG.social.github,
+        SITE_CONFIG.social.linkedin,
+      ].filter(Boolean),
+    },
+
+    // Technical signals
+    isAccessibleForFree: true,
+    inLanguage: SITE_CONFIG.locale,
+
+    // Citation and Fact Signal
+    creativeWorkStatus: 'Published',
+    potentialAction: {
+      '@type': 'ReadAction',
+      target: [`${SITE_CONFIG.url}${input.url}`],
+    },
+  };
+}
+
+/**
  * Generate Website JSON-LD schema for homepage
  */
 export function generateWebsiteSchema() {
