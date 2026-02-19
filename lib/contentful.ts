@@ -17,7 +17,6 @@ import type {
   TagOptions
 } from '@/types/blog'
 import { calculateReadingTimeFromRichText } from './utils'
-import { getHeroImageUrl } from '@/lib/contentful-image-transform'
 
 // Singleton client instance
 let client: ContentfulClientApi<undefined> | null = null
@@ -101,11 +100,12 @@ function transformPost(entry: ContentfulBlogPost): BlogPost {
       ? `https:${imgFields.file.url}`
       : imgFields.file.url
 
-    // ✨ Aplicar otimização automática para Hero/Post
-    const optimizedUrl = getHeroImageUrl(rawUrl)
+    // Use raw URL for better responsive handling in components
+    // Components will use contentfulLoader or helpers to optimize as needed
+    const imageUrl = rawUrl
 
     featuredImage = {
-      url: optimizedUrl,  // ← URL JÁ OTIMIZADA!
+      url: imageUrl,
       title: imgFields.title || fields.title,
       description: imgFields.description,
       width: imgFields.file.details?.image?.width || 1200,

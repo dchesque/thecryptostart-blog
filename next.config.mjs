@@ -4,13 +4,15 @@ import withPWA from 'next-pwa';
 const nextConfig = {
   output: 'standalone',
   images: {
+    loader: 'custom',
+    loaderFile: './lib/contentful-loader.ts',
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'images.ctfassets.net',
       },
     ],
-    formats: ['image/avif', 'image/webp'],
+    // formats: ['image/avif', 'image/webp'], // Handled by Contentful loader (fm=auto)
     deviceSizes: [320, 640, 750, 1080, 1280, 1536],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 31536000, // 1 year

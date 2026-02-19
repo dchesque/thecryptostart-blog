@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import contentfulLoader from '@/lib/contentful-loader'
 import type { BlogPost } from '@/types/blog'
 import { getCategoryName } from '@/lib/constants'
 
@@ -30,11 +31,11 @@ export default function RelatedPosts({ posts }: RelatedPostsProps) {
               {post.featuredImage ? (
                 <div className="aspect-video relative overflow-hidden hidden md:block">
                   <Image
+                    loader={contentfulLoader}
                     src={post.featuredImage.url}
                     alt={post.featuredImage.title}
                     fill
                     loading="lazy"
-                    quality={85}
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                     sizes="(max-width: 768px) 100vw, 33vw"
                   />

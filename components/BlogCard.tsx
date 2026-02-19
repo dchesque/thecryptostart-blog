@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import contentfulLoader from '@/lib/contentful-loader'
 import type { BlogPost } from '@/types/blog'
 import { getCategoryName } from '@/lib/constants'
+import { getHeroImageUrl, getCardImageUrl } from '@/lib/contentful-image-transform'
 
 interface BlogCardProps {
   post: BlogPost
@@ -34,6 +36,13 @@ export default function BlogCard({ post, variant = 'standard' }: BlogCardProps) 
   const badgeClass = categoryStyles[post.category] || 'bg-crypto-navy'
   const isLarge = variant === 'large'
 
+  // Optimize background image based on card size
+  const bgImage = post.featuredImage
+    ? isLarge
+      ? getHeroImageUrl(post.featuredImage.url)
+      : getCardImageUrl(post.featuredImage.url)
+    : 'none'
+
   return (
     <article
       className={`
@@ -41,7 +50,7 @@ export default function BlogCard({ post, variant = 'standard' }: BlogCardProps) 
         ${isLarge ? 'md:col-span-2 lg:col-span-2 shadow-4 border-crypto-primary/20 min-h-[450px]' : 'shadow-3 min-h-[400px]'}
       `}
       style={{
-        backgroundImage: post.featuredImage ? `url(${post.featuredImage.url})` : 'none',
+        backgroundImage: bgImage !== 'none' ? `url(${bgImage})` : 'none',
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}
@@ -78,6 +87,7 @@ export default function BlogCard({ post, variant = 'standard' }: BlogCardProps) 
             <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
               {post.author.image ? (
                 <Image
+                  loader={contentfulLoader}
                   src={post.author.image}
                   alt={post.author.name}
                   width={20}

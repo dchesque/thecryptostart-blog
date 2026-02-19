@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.14.1] - 2026-02-19
+
+### Fixed
+- **Images**: Corrigido erro `400` em imagens do Contentful implementando um Loader Customizado (`lib/contentful-loader.ts`) que evita otimização dupla.
+- **Components**: Atualizados componentes (`FeaturedImage`, `BlogCard`, etc.) para usar o loader customizado e remover parâmetros conflitantes.
+
 ## [0.14.0] - 2026-02-19
 
 ### Added

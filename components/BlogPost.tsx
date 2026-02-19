@@ -4,6 +4,7 @@ import { documentToReactComponents } from '@contentful/rich-text-react-renderer'
 import { INLINES, BLOCKS, MARKS } from '@contentful/rich-text-types'
 import Link from 'next/link'
 import Image from 'next/image'
+import contentfulLoader from '@/lib/contentful-loader'
 
 interface BlogPostProps {
   content: any
@@ -100,6 +101,7 @@ const options = {
         <figure className="my-6">
           <div className="relative rounded-lg overflow-hidden">
             <Image
+              loader={contentfulLoader}
               src={imageUrl}
               alt={description || title || 'Image'}
               width={file.details.image?.width || 800}

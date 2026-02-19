@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import contentfulLoader from '@/lib/contentful-loader'
 import AdSense from '@/components/AdSense'
 import { ADSENSE_SLOTS } from '@/lib/constants'
 
@@ -63,6 +64,7 @@ export default function RecommendedContent({
                             <div className="aspect-video relative bg-gray-100 overflow-hidden">
                                 {imageUrl ? (
                                     <Image
+                                        loader={contentfulLoader}
                                         src={imageUrl}
                                         alt={post.title}
                                         fill
