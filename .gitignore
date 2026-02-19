@@ -40,3 +40,4 @@ tmp/
 # Other
 .data/
 .cache/
+keys/
