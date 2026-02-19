@@ -2,6 +2,7 @@
 // NOTA: output: 'standalone' foi removido pois causa conflito com Turbopack no dev.
 // Para build de produção/Docker, adicione novamente via variável de ambiente ou Dockerfile.
 const nextConfig = {
+  output: 'standalone',
   images: {
     domains: ['images.ctfassets.net'],
     formats: ['image/avif', 'image/webp'],

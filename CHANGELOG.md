@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.1] - 2026-02-19
+
+### Fixed
+- **Build Docker**: Ativado `output: 'standalone'` no `next.config.mjs` para corrigir falha no deploy via Docker/EasyPanel.
+
 ## [0.6.0] - 2026-02-18
 
 ### Added
