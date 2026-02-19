@@ -1,60 +1,210 @@
 import { auth } from "@/auth";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import {
+  Users,
+  FileText,
+  MessageSquare,
+  Activity,
+  Plus,
+  ExternalLink,
+  Search,
+  Bot
+} from "lucide-react";
+import { format } from "date-fns";
+
+export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboard() {
   const session = await auth();
 
   // Fetch real stats
-  const [userCount, postCount, commentCount] = await Promise.all([
+  const [userCount, postCount, commentCount, pendingComments] = await Promise.all([
     prisma.user.count(),
     prisma.post.count(),
     prisma.comment.count(),
+    prisma.comment.findMany({
+      where: { status: "PENDING" },
+      take: 5,
+      orderBy: { createdAt: "desc" },
+      include: { post: { select: { title: true, slug: true } } }
+    }),
   ]);
 
+  const pendingCount = await prisma.comment.count({ where: { status: "PENDING" } });
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
+  const stats = [
+    {
+      label: "Total Posts",
+      value: postCount.toLocaleString(),
+      icon: FileText,
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+    },
+    {
+      label: "Total Users",
+      value: userCount.toLocaleString(),
+      icon: Users,
+      color: "text-purple-600",
+      bg: "bg-purple-50",
+    },
+    {
+      label: "Total Comments",
+      value: commentCount.toLocaleString(),
+      icon: MessageSquare,
+      color: "text-emerald-600",
+      bg: "bg-emerald-50",
+    },
+    {
+      label: "Pending Review",
+      value: pendingCount.toLocaleString(),
+      icon: Activity,
+      color: "text-amber-600",
+      bg: "bg-amber-50",
+    },
+  ];
+
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-          <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Users</h3>
-          <p className="text-3xl font-bold text-gray-800 dark:text-white mt-2">{userCount}</p>
+    <div className="space-y-8">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-crypto-darker to-crypto-navy rounded-3xl p-8 text-white relative overflow-hidden shadow-2xl">
+        <div className="relative z-10">
+          <h1 className="text-3xl font-bold mb-2">
+            {getGreeting()}, {session?.user?.name?.split(" ")[0]}!
+          </h1>
+          <p className="text-gray-400">Here's what's happening with your blog today.</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-          <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Posts</h3>
-          <p className="text-3xl font-bold text-gray-800 dark:text-white mt-2">{postCount}</p>
-        </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-          <h3 className="text-gray-500 dark:text-gray-400 text-sm font-medium">Comments</h3>
-          <p className="text-3xl font-bold text-gray-800 dark:text-white mt-2">{commentCount}</p>
-        </div>
+        <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-white/5 to-transparent skew-x-12" />
+        <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-crypto-primary/20 rounded-full blur-3xl" />
       </div>
 
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Quick Actions</h2>
-        <div className="flex gap-4">
-          <a
-            href={`https://app.contentful.com/spaces/${process.env.NEXT_PUBLIC_CONTENTFUL_SPACE_ID}/entries?contentTypeId=blogPost`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition flex items-center gap-2"
-          >
-            Create Post
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-external-link">
-              <path d="M15 3h6v6" /><path d="M10 14 21 3" /><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-            </svg>
-          </a>
-          <Link
-            href="/admin/users"
-            className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition"
-          >
-            Manage Users
-          </Link>
-          <Link
-            href="/admin/seo"
-            className="px-4 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 transition flex items-center gap-2"
-          >
-            SEO Intelligence
-          </Link>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, i) => (
+          <div key={i} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group">
+            <div className="flex justify-between items-start mb-4">
+              <div className={`p-3 rounded-xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
+                <stat.icon size={24} />
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-gray-900">{stat.value}</div>
+            <p className="text-sm text-gray-500 font-medium mt-1">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Quick Actions */}
+        <div className="lg:col-span-2 space-y-6">
+          <h2 className="text-lg font-bold text-gray-900">Quick Actions</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <a
+              href={`https://app.contentful.com/spaces/${process.env.NEXT_PUBLIC_CONTENTFUL_SPACE_ID}/entries?contentTypeId=blogPost`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-6 bg-white border border-gray-100 rounded-2xl hover:border-blue-500 hover:shadow-lg transition-all group text-left"
+            >
+              <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                <Plus size={20} />
+              </div>
+              <h3 className="font-bold text-gray-900 group-hover:text-blue-600">New Post</h3>
+              <p className="text-xs text-gray-500 mt-1">Create content in Contentful</p>
+            </a>
+
+            <Link
+              href="/admin/comments"
+              className="p-6 bg-white border border-gray-100 rounded-2xl hover:border-emerald-500 hover:shadow-lg transition-all group text-left"
+            >
+              <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                <MessageSquare size={20} />
+              </div>
+              <h3 className="font-bold text-gray-900 group-hover:text-emerald-600">Comments</h3>
+              <p className="text-xs text-gray-500 mt-1">Moderate user discussions</p>
+            </Link>
+
+            <Link
+              href="/admin/seo"
+              className="p-6 bg-white border border-gray-100 rounded-2xl hover:border-cyan-500 hover:shadow-lg transition-all group text-left"
+            >
+              <div className="w-10 h-10 bg-cyan-50 text-cyan-600 rounded-lg flex items-center justify-center mb-4 group-hover:bg-cyan-600 group-hover:text-white transition-colors">
+                <Search size={20} />
+              </div>
+              <h3 className="font-bold text-gray-900 group-hover:text-cyan-600">SEO Intelligence</h3>
+              <p className="text-xs text-gray-500 mt-1">Analyze content performance</p>
+            </Link>
+
+            <Link
+              href="/admin/ai-optimization"
+              className="p-6 bg-white border border-gray-100 rounded-2xl hover:border-crypto-primary hover:shadow-lg transition-all group text-left"
+            >
+              <div className="w-10 h-10 bg-orange-50 text-crypto-primary rounded-lg flex items-center justify-center mb-4 group-hover:bg-crypto-primary group-hover:text-white transition-colors">
+                <Bot size={20} />
+              </div>
+              <h3 className="font-bold text-gray-900 group-hover:text-crypto-primary">AI Optimization</h3>
+              <p className="text-xs text-gray-500 mt-1">Prepare for AI Search</p>
+            </Link>
+
+            <Link
+              href="/admin/users"
+              className="p-6 bg-white border border-gray-100 rounded-2xl hover:border-purple-500 hover:shadow-lg transition-all group text-left"
+            >
+              <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                <Users size={20} />
+              </div>
+              <h3 className="font-bold text-gray-900 group-hover:text-purple-600">Users</h3>
+              <p className="text-xs text-gray-500 mt-1">Manage accounts & roles</p>
+            </Link>
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-gray-50 flex justify-between items-center">
+            <h2 className="text-lg font-bold text-gray-900">Recent Comments</h2>
+            <Link href="/admin/comments" className="text-xs font-bold text-blue-600 hover:underline">
+              View All
+            </Link>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {pendingComments.length > 0 ? (
+              <div className="divide-y divide-gray-50">
+                {pendingComments.map((comment) => (
+                  <div key={comment.id} className="p-4 hover:bg-gray-50 transition-colors">
+                    <div className="flex justify-between items-start mb-1">
+                      <span className="font-bold text-sm text-gray-900">{comment.authorName}</span>
+                      <span className="text-[10px] text-gray-400">{format(new Date(comment.createdAt), "MMM d")}</span>
+                    </div>
+                    <p className="text-sm text-gray-600 line-clamp-2 italic">"{comment.content}"</p>
+                    <div className="mt-2 text-xs text-blue-600 font-medium truncate">
+                      on: {comment.post?.title}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-8 text-center text-gray-400">
+                <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <MessageSquare size={20} className="text-gray-300" />
+                </div>
+                <p className="text-sm">No pending comments.</p>
+              </div>
+            )}
+          </div>
+          <div className="p-4 bg-gray-50 border-t border-gray-100">
+            <Link
+              href="/admin/comments"
+              className="block w-full py-2 bg-white border border-gray-200 text-gray-600 text-center rounded-lg text-sm font-bold hover:bg-gray-50 transition-colors"
+            >
+              Manage Comments
+            </Link>
+          </div>
         </div>
       </div>
     </div>

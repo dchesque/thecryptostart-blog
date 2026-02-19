@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.15.0] - 2026-02-19
+
+### Changed
+- **Admin**: Refatoração completa do painel administrativo com novo design system e layout de sidebar fixa.
+- **i18n**: Padronização de todas as páginas administrativas (`/admin/*`) para Inglês (en-US).
+- **UI**: Novos componentes de Dashboard, Stats Cards e Tabelas otimizadas.
+
+### Fixed
+- **Admin**: Correção de inconsistências visuais e de navegação no painel.
+
 ## [0.14.1] - 2026-02-19
 
 ### Fixed

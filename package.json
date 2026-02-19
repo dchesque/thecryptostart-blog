@@ -1,6 +1,6 @@
 {
   "name": "thecryptostart-blog",
-  "version": "0.14.1",
+  "version": "0.15.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -15,7 +15,9 @@
     "@prisma/client": "^6.19.2",
     "@tailwindcss/typography": "^0.5.0",
     "bcryptjs": "^3.0.3",
+    "clsx": "^2.1.1",
     "contentful": "^10.0.0",
+    "date-fns": "^4.1.0",
     "googleapis": "^171.4.0",
     "lucide-react": "^0.564.0",
     "next": "^16.1.6",
@@ -25,6 +27,7 @@
     "prisma": "^6.19.2",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "tailwind-merge": "^3.5.0",
     "web-vitals": "^5.1.0",
     "zod": "^4.3.6"
   },
