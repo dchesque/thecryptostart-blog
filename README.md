@@ -1,11 +1,11 @@
 # Crypto Academy Blog
 
-A modern educational blog about cryptocurrency, blockchain, and Web3 built with Next.js 16, Contentful CMS, and optimized for SEO with Google AdSense integration.
+A modern educational blog about cryptocurrency, blockchain, and Web3 built with Next.js 16, PostgreSQL/Prisma, and optimized for SEO with Google AdSense integration.
 
 ## Features
 
 - 🚀 **Next.js 16** - Latest React framework with App Router
-- 📝 **Contentful CMS** - Headless CMS for content management
+- 📝 **PostgreSQL/Prisma** - Self-hosted Content Management System
 - 🔐 **NextAuth.js** - Secure authentication with JWT sessions
 - 🎨 **Tailwind CSS** - Utility-first CSS framework
 - 📱 **Responsive Design** - Mobile-first approach
@@ -19,7 +19,7 @@ A modern educational blog about cryptocurrency, blockchain, and Web3 built with 
 - **Framework**: Next.js 16
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS + Typography Plugin
-- **CMS**: Contentful
+- **Database**: PostgreSQL (Prisma ORM)
 - **Deployment**: Vercel (recommended)
 
 ## Getting Started
@@ -27,7 +27,7 @@ A modern educational blog about cryptocurrency, blockchain, and Web3 built with 
 ### Prerequisites
 
 - Node.js 18+ installed
-- A Contentful account with a space set up
+- A PostgreSQL database running
 - Google AdSense account (optional)
 
 ### Installation
@@ -54,8 +54,7 @@ cp .env.example .env.local
 
 4. Configure your environment variables in `.env.local`:
 ```env
-CONTENTFUL_SPACE_ID=your_space_id
-CONTENTFUL_ACCESS_TOKEN=your_delivery_token
+DATABASE_URL="postgresql://user:password@localhost:5432/blogdb"
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=G-XXXXXXXX (optional)
 NEXT_PUBLIC_ADSENSE_CLIENT_ID=ca-pub-xxxxxxxxxxxxxxxx (optional)
@@ -82,20 +81,17 @@ Visit `/login` to access the authentication page.
 
 > ⚠️ **Important**: In production, replace the hardcoded demo user with a real database. The current setup is for demonstration purposes only.
 
-### Contentful Setup
+### Database Setup
 
-1. Create a Content Model called `blogPost` with the following fields:
-   - `title` (Text, Short text)
-   - `slug` (Text, Short text, Unique)
-   - `description` (Text, Long text)
-   - `content` (Rich text)
-   - `featuredImage` (Media, One asset)
-   - `author` (Text, Short text)
-   - `category` (Text, Short text, Select: blockchain, bitcoin, defi, security, trading, nft, web3)
-   - `tags` (List, Short text)
-   - `readingTime` (Number, Integer)
+1. Push your Prisma Schema to the database:
+```bash
+npx prisma db push
+```
 
-2. Add API keys to your `.env.local`
+2. Seed your database with a default Admin and initial Categories:
+```bash
+npx prisma db seed
+```
 
 ### Development
 
@@ -121,8 +117,7 @@ docker build -t crypto-academy-blog .
 
 # Run container
 docker run -p 3000:3000 \
-  -e CONTENTFUL_SPACE_ID=seu_space_id \
-  -e CONTENTFUL_ACCESS_TOKEN=seu_token \
+  -e DATABASE_URL=postgresql://user:passwd@db:5432/blogdb \
   -e NEXT_PUBLIC_SITE_URL=https://seu-dominio.com \
   crypto-academy-blog
 ```

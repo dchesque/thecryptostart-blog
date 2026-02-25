@@ -3,7 +3,7 @@
  * Este script seria executado diariamente via GitHub Actions ou Inngest
  */
 
-import { getAllPosts } from '../lib/contentful'
+import { getAllPosts } from '../lib/posts'
 import { analyzeSEO } from '../lib/seo-analyzer'
 import { findBrokenLinks } from '../lib/broken-link-finder'
 

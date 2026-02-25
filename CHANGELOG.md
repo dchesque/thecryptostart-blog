@@ -1,13 +1,36 @@
 # Changelog
-2: 
-3: ## [0.15.5] - 2026-02-19
-4: 
-5: ### Fixed
-6: - **PWA/Security**: Desativado temporariamente o PWA (`next-pwa`) no `next.config.mjs` para resolver o problema de `OpaqueResponseBlocking` em imagens do Contentful. A remoção do service worker garante que os headers de segurança (`Cross-Origin-Resource-Policy`) configurados cheguem corretamente ao browser sem serem interceptados ou sobrescritos pelo cache do Workbox.
-7: 
-8: ### Changed
-9: - **Project**: Incrementada versão para `0.15.5`.
-10: 
+
+## [1.0.0] - 2026-02-25
+
+### Added
+- **Database**: Implementado banco de dados próprio com Prisma/PostgreSQL para gestão de conteúdo.
+- **Admin**: Criadas novas telas e APIs REST para gerenciar Posts, Autores e Categorias dentro da aplicação.
+- **Editor**: Construído novo formulário completo para Criação e Edição de posts usando abas de configuração (SEO, Conteúdo, Monetização).
+
+### Changed
+- **Project**: Incrementada versão para \`1.0.0\` devido à quebra de compatibilidade e substituição completa do Data Layer.
+- **Content**: Todo o fluxo de artigos agora utiliza funções locais baseadas no Prisma ao invés do CMS third-party.
+- **Markdown**: Substituído o renderizador de rich-text do Contentful por \`react-markdown\`.
+
+### Fixed
+- **Vendor Lock-in**: Removida completamente as dependências e amarras ao Contentful.
+
+## [0.15.7] - 2026-02-25
+
+### Fixed
+- **Blog**: Corrigido erro de build causado por erro de sintaxe na função `extractHeadingsFromRichText`.
+- **Contentful**: Corrigido mapeamento de campos do CMS onde o campo `body` não estava sendo reconhecido, causando a ausência de conteúdo nos artigos.
+
+### Changed
+- **Project**: Incrementada versão para `0.15.7`.
+
+## [0.15.6] - 2026-02-25
+
+### Fixed
+- **Blog**: Corrigido erro de runtime `TypeError: Cannot read properties of undefined (reading 'content')` quando um post no Contentful não possuía conteúdo. Adicionadas verificações de segurança.
+
+## [0.15.5] - 2026-02-19
+- **PWA/Security**: Desativado temporariamente o PWA (`next-pwa`) no `next.config.mjs` para resolver o problema de `OpaqueResponseBlocking`.
 
 ## [0.15.3] - 2026-02-19
 
@@ -361,3 +384,4 @@
 - **Blog Typography**: Ajustado o ritmo vertical no container `prose` (prose-p:my-3, prose-h2:mt-10, prose-h3:mt-8).
 - **Layout**: Aumentada a largura máxima do container de `max-w-3xl` para `max-w-4xl` no blog post.
 - **Reading Experience**: Reduzido o `line-height` para `leading-7` para uma leitura mais densa e elegante.
+

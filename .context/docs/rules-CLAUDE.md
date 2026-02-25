@@ -1,157 +1,179 @@
 # Rules for Claude AI - Project Guidelines
 
-Rules and conventions for Claude (Anthropic's AI) when generating code, documentation, or modifications for **The Crypto Start Blog**. These are derived from codebase analysis, ensuring consistency with architecture, symbols, exports, dependencies, and patterns. Follow strictly to maintain quality, security, and compatibility.
+Rules and conventions for Claude (Anthropic's AI) when generating code, documentation, or modifications for **The Crypto Start Blog**. Derived from current codebase analysis (app/, lib/, types/, components/). Ensures consistency with architecture, 100+ public exports, symbol index (classes like `GSCClient`, interfaces like `BlogPost`, functions like `analyzeSEO`), dependencies, and patterns. Follow strictly.
 
 ## Core Principles
 
-- **TypeScript Everywhere**: All code must be fully typed. Use existing types from `types/` (e.g., `BlogPost`, `User`, `RolePermissions`).
-- **Next.js App Router**: Pages in `app/`, API handlers as exported `GET`/`POST`/etc. functions.
-- **Naming & Exports**: Match existing public API (50+ exports). Re-export only what's listed (e.g., `getPostBySlug` from `lib/contentful.ts`).
-- **Styling**: Tailwind CSS + shadcn/ui. No custom CSS unless extending globals.
-- **Validation**: Zod schemas (`lib/validations.ts`: `RegisterInput`, `LoginInput`).
-- **Security First**: Always integrate rate limiting (`lib/rate-limit.ts` or `lib/spam-prevention.ts`), CSRF (`lib/csrf.ts`), permissions (`lib/permissions.ts`).
-- **Performance**: SSG/ISR for blog (`generateStaticParams`), reading time (`calculateReadingTime`).
-- **SEO**: Mandatory metadata/schemas via `lib/seo.ts`.
-- **Error Handling**: Throw subclasses of `AppError` (`lib/errors.ts`).
+- **TypeScript Everywhere**: Fully typed code. Leverage `types/` (e.g., `BlogPost`, `Author`, `UserWithRoles`, `RolePermissions`, `SEOProps`).
+- **Next.js App Router**: Pages in `app/` (e.g., `app/blog/[slug]/page.tsx`). API routes export `GET`/`POST`/`DELETE` handlers (e.g., `app/api/admin/posts/[id]/route.ts`).
+- **Naming & Exports**: Align with public API (e.g., `calculateAIOptimizationScore`, `analyzeSEO`, `getPostBySlug` from `lib/posts.ts`). Export only documented symbols.
+- **Styling**: Tailwind + shadcn/ui (`cn` utility from `lib/utils.ts`). Extend `globals.css` only if needed.
+- **Validation**: Zod schemas (`lib/validations.ts`, `lib/validations/admin.ts`: `RegisterInput`, `PostInput`, `AuthorInput`).
+- **Security**: Integrate `lib/rate-limit.ts`/`lib/spam-prevention.ts` (`checkRateLimit`, `detectSpam`), `lib/permissions.ts` (`hasRole`), CSRF checks.
+- **Performance**: SSG/ISR (`generateStaticParams`), reading time (`calculateReadingTime` from `lib/utils.ts` or `lib/posts.ts`).
+- **SEO**: `lib/seo.ts` (`generateMetadata`, `generateSchema`), analyzers (`lib/seo-analyzer.ts`: `analyzeSEO`).
+- **Errors**: Subclasses from `lib/errors.ts` (`AppError`, `RateLimitError`, `AuthorizationError`).
 
 ```ts
-// Example error usage
-import { RateLimitError } from '@/lib/errors';
+// Error example
+import { RateLimitError, AuthorizationError } from '@/lib/errors';
+import { checkRateLimit } from '@/lib/rate-limit';
 
-if (await checkRateLimit(ip)) {
-  throw new RateLimitError('Too many requests');
-}
+const ip = getClientIP(req);
+if (await checkRateLimit(ip)) throw new RateLimitError('Rate limited');
+if (!hasRole(session?.user, 'admin')) throw new AuthorizationError('Admin only');
 ```
 
 ## Architecture Compliance
 
-Follow the layered structure:
+Layered structure from codebase scan:
 
-| Layer | Rules | Key Files |
-|-------|--------|-----------|
-| **Frontend** | Functional components, Server Components default. Use `AuthProvider` wrapper. | `app/layout.tsx`, `components/` (e.g., `CommentsList`, `TOCItem`) |
-| **Backend/API** | Edge runtime compatible. Handle CORS/JSON. | `app/api/*` (e.g., `POST` for `/api/comments`) |
-| **Data** | Contentful for blog (`lib/contentful.ts`), Prisma for users (`lib/prisma.ts`). | `getAllPosts`, Prisma singleton |
-| **Auth** | NextAuth.js + RBAC. Check `hasRole('admin')`. | `app/api/auth/*`, `types/auth.ts` (`UserWithRoles`) |
-| **Middleware** | Guards for auth/rate limits. | `middleware.ts` |
+| Layer | Rules | Key Files/Exports |
+|-------|--------|-------------------|
+| **Utils** | Helpers, validators. | `lib/utils.ts` (`cn`, `slugify`), `lib/validations/` (`PostInput`) |
+| **Controllers (API)** | Edge runtime, JSON responses, security guards. | `app/api/admin/*` (`DELETE /api/admin/posts/[id]`), `app/api/auth/[...nextauth]` |
+| **Components/UI** | Server Components default, props typed (e.g., `FAQSectionProps`). | `components/` (`CommentsList`, `TableOfContents`), `app/admin/*` pages |
+| **Data Layer** | Prisma (`lib/prisma.ts`), blog queries (`lib/posts.ts`). | `getAllPosts`, `getPostBySlug`, `getRelatedPosts` |
+| **Auth/RBAC** | NextAuth + roles. | `lib/permissions.ts` (`hasPermission`), `types/auth.ts` (`UserWithRoles`) |
+| **Middleware** | Auth/rate limits. | `middleware.ts` |
+| **SEO/AI Tools** | Analyzers, schemas. | `lib/seo-analyzer.ts` (`analyzeSEO`), `lib/ai-optimization.ts` (`AIOptimizationScore`) |
 
-**Dependencies**: Prefer existing imports (e.g., `lib/seo.ts` used in `app/blog/[slug]/page.tsx`). Avoid new deps.
+**Dependencies**: Reuse top imports (e.g., `lib/seo.ts` → 1 file, `components/SocialComments.tsx` → 2 files). Avoid new packages.
 
 **Cross-References**:
-- Blog flow: `app/blog/page.tsx` → `lib/contentful.ts` → `types/blog.ts` (`BlogPost`, `BlogCategory`).
-- Admin: `app/admin/comments` → `lib/permissions.ts`.
+- Blog: `app/blog/page.tsx` (`BlogPage`) → `lib/posts.ts` → `types/blog.ts` (`BlogPost`, `BlogCategory`).
+- Admin: `app/admin/posts` → `app/api/admin/posts/[id]` → `lib/permissions.ts`.
+- GSC: `lib/gsc-client.ts` (`GSCClient`, `createGSCClient`).
 
-## Contentful & Blog Rules
+## Blog & Content Rules (lib/posts.ts)
 
-- **Queries**: Use exported functions only. Paginate with `PaginationOptions`.
-- **Types**: Map to `ContentfulBlogPostFields` → `BlogPost`.
+- **Queries**: Exported functions with `PaginationOptions`/`SearchOptions`.
+- **Transform**: `transformPrismaPost` for Prisma → `BlogPost`.
 - **Patterns**:
-  ```ts
-  // lib/contentful.ts pattern
-  import { getPostBySlug, getRelatedPosts } from '@/lib/contentful';
-  import { generateMetadata } from '@/lib/seo';
+```ts
+// Page example: app/blog/[slug]/page.tsx
+import { getPostBySlug, getRelatedPosts } from '@/lib/posts';
+import { generateMetadata } from '@/lib/seo';
+import { BlogPost } from '@/types/blog';
 
-  export async function generateMetadata({ params }: { params: { slug: string } }) {
-    const post = await getPostBySlug(params.slug);
-    return generateMetadata({ title: post.title, description: post.excerpt });
-  }
-  ```
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const post: BlogPost | null = await getPostBySlug(params.slug);
+  if (!post) return {};
+  return generateMetadata({ title: post.title, description: post.excerpt });
+}
 
-- Categories: `getCategoryBySlug` (`lib/constants.ts`).
-- Related: `getRelatedPosts`.
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  const post = await getPostBySlug(params.slug);
+  const related = await getRelatedPosts(post.slug);
+  return <article>{/* Render post, RelatedPosts(related) */}</article>;
+}
+```
+- Categories: `getPostsByCategory`, `getAllCategories`.
+- Slugs: `getAllPostSlugs`, `generateSlugFromTitle`.
 
 ## Authentication & Permissions
 
-- **Checks**:
-  ```ts
-  import { hasRole, hasPermission } from '@/lib/permissions';
-  import { getServerSession } from 'next-auth';
+```ts
+import { getServerSession } from 'next-auth';
+import { hasRole, hasPermission } from '@/lib/permissions';
+import { AuthorizationError } from '@/lib/errors';
 
+export async function GET(req: Request) {
   const session = await getServerSession();
-  if (!hasRole(session?.user, 'admin')) {
-    throw new AuthorizationError('Admin required');
+  if (!session || !hasRole(session.user as UserWithRoles, 'admin')) {
+    throw new AuthorizationError('Access denied');
   }
-  ```
-- Users: CRUD via `app/api/users/*`. Types: `User` (`types/auth.ts`).
+  // Admin logic
+}
+```
+- Users: `app/api/users/[id]`, types `User` (`types/auth.ts`).
 
 ## Security & Spam Prevention
 
-- **Always Include**:
-  1. IP: `getClientIP` or `getIP`.
-  2. Rate Limit: `checkRateLimit(ip)`.
-  3. Spam: `detectSpam(content)`, `validateEmail(email)`.
-  4. CSRF: `generateCSRFToken` / `validateCSRFToken`.
+Mandatory in all mutable APIs:
+
+1. IP: `getClientIP` (`lib/spam-prevention.ts`).
+2. Rate Limit: `checkRateLimit(ip)`.
+3. Spam: `detectSpam(content)`, `validateEmail`.
+4. Log: `logSpam`.
 
 ```ts
-// app/api/comments/route.ts pattern
-import { checkRateLimit, detectSpam, getClientIP } from '@/lib/spam-prevention';
+// app/api/comments/route.ts
+import { checkRateLimit, detectSpam, getClientIP, logSpam } from '@/lib/spam-prevention';
+import { AppError } from '@/lib/errors';
 
 export async function POST(req: Request) {
   const ip = getClientIP(req);
-  await checkRateLimit(ip);
-  const { content } = await req.json();
-  if (detectSpam(content)) {
-    await logSpam(ip, content);
+  if (await checkRateLimit(ip)) throw new RateLimitError();
+  const data = await req.json();
+  if (detectSpam(data.content)) {
+    await logSpam(ip, data.content);
     throw new AppError('Spam detected');
   }
-  // Proceed
+  // Create comment
 }
 ```
 
-## Components & UI Rules
+## Components & UI
 
-- **Props**: Match interfaces (e.g., `CommentsListProps`, `FAQAccordionProps`).
-- **Common**:
-  | Component | Usage | Props File |
-  |-----------|--------|------------|
-  | `CommentsList` | Post comments | `components/CommentsList.tsx` |
-  | `CategoryLinks` | Sidebar cats | `components/CategoryLinks.tsx` |
-  | `NewsletterForm` | Subscriptions | `components/NewsletterForm.tsx` |
-  | `TableOfContents` | Post TOC | `components/TableOfContents.tsx` |
-- Ads: `AdSlot` prop (`components/AdSense.tsx`).
+Typed props, common patterns:
+
+| Component | Usage | Props/Source |
+|-----------|--------|--------------|
+| `CommentsList` | Post comments | `components/CommentsList.tsx` (`CommentsListProps`) |
+| `CategoryLinks`/`CategoryCard` | Categories | `components/Category*` |
+| `FAQSection`/`FAQAccordion` | AI/SEO FAQs | `FAQItem`, `components/FAQ*.tsx` |
+| `TableOfContents` | Headings TOC | `TOCItem[]` |
+| `RelatedPosts`/`RecommendedContent` | Suggestions | `RelatedPostsProps` |
+| `NewsletterForm`/`InlineNewsletter` | Subs | `Newsletter*Props` |
+| Ads | `StickyHeaderAd`, `AdSense` (`AdSlot`) | `components/*Ad*.tsx` |
 
 Example:
 ```tsx
-<CommentsList comments={comments} postSlug={slug} />
+import { CommentsList } from '@/components/CommentsList';
+import { RelatedPosts } from '@/components/RelatedPosts';
+
+<CommentsList comments={post.comments} postSlug={slug} />
+<RelatedPosts posts={relatedPosts} />
 ```
 
-## Utilities & Helpers
+## Utilities & Analyzers
 
-| Function | Usage | File |
-|----------|--------|------|
-| `calculateReadingTime(text)` | Post reading time | `lib/utils.ts` |
-| `formatDate(date)` | Human dates | `lib/utils.ts` |
-| `slugify(text)` | URLs | `lib/utils.ts` |
-| `generateFAQSchema(items)` | SEO FAQ | `lib/seo.ts` |
+| Function | Purpose | File |
+|----------|---------|------|
+| `cn`, `slugify`, `formatDate` | UI/text utils | `lib/utils.ts` |
+| `calculateReadingTime`, `calculateWordCount` | Metrics | `lib/utils.ts`, `lib/posts.ts` |
+| `analyzeSEO`, `extractHeadings`, `countImages` | SEO audit | `lib/seo-analyzer.ts` |
+| `calculateAIOptimizationScore`, `extractQuickAnswer` | AI scoring | `lib/ai-optimization.ts` |
+| `findLinkingOpportunities` | Internal links | `lib/link-builder.ts` |
+| `analyzeKeywordGap`, `getKeywordSuggestions` | Keywords | `lib/keyword-research.ts` |
+| `createGSCClient` | Google Search Console | `lib/gsc-client.ts` |
 
-## Admin Dashboard Rules
+## Admin Dashboard
 
-- Protected: `/admin/*` requires `admin` role.
-- Endpoints: `GET /api/admin/comments`, `DELETE /api/admin/comments/[id]`.
-- UI: `AdminDashboard` (`app/admin/page.tsx`).
+- Routes: `/admin/*` (e.g., `app/admin/posts/new`, `app/admin/ai-optimization`).
+- APIs: `app/api/admin/{posts,comments,categories,authors}/[id]` (CRUD).
+- Permissions: `hasRole('admin')`.
+- Pages: `AdminLayout` (`app/admin/layout.tsx`).
 
-## Testing & Validation
+## Testing & Scripts
 
-- Unit: Jest for utils (`__tests__/`).
-- E2E: Playwright planned.
-- Validate: `zod` + Prisma.
+- Utils: `__tests__/`.
+- Scripts: `scripts/seo-monitor.ts` (`runDailySEOMonitoring`), `prisma/seed.ts`.
+- Validation: Zod + Prisma transactions.
 
-## Documentation Rules
+## Documentation Standards
 
-- **Format**: Markdown, no YAML frontmatter.
-- **Style**: Headings, tables, code blocks. Cross-ref files (e.g., [`lib/seo.ts`](../lib/seo.ts)).
-- **Examples**: Always include runnable snippets.
-- **Analysis**: Use symbols (classes/interfaces/functions) for refs.
+- Markdown: Headings (# ##), tables, fenced code (```ts, ```tsx).
+- Refs: [`lib/posts.ts`](../lib/posts.ts), symbols (e.g., [`BlogPost`](../types/blog.ts)).
+- Examples: Runnable, context-aware snippets.
 
-## Generation Workflow
+## Workflow
 
-When prompted:
-1. Analyze with tools (`readFile`, `analyzeSymbols`).
-2. Match existing patterns (e.g., 42+ exports).
+1. Use tools (`readFile('lib/posts.ts')`, `analyzeSymbols`, `searchCode`).
+2. Match patterns (e.g., 100+ exports like `ExitIntentPopup`).
 3. Output **only** final Markdown/code.
 
-## Violations
+**Violations**: Prioritize these rules unless overridden.
 
-Deviate only if explicitly instructed, but prioritize these rules.
-
-**Last Updated**: From codebase snapshot (app/, lib/, types/, components/). See [Architecture Overview](../README.md#architecture-overview).
+**Updated**: Codebase snapshot (Public API: 100+ exports; Symbols: 50+ interfaces/types). See [README](../README.md).

@@ -11,7 +11,10 @@ import {
     Search,
     ArrowLeft,
     LogOut,
-    Settings
+    Settings,
+    FileText,
+    FolderTree,
+    UserCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +44,21 @@ export function AdminSidebar({ userRoles, userName, userImage }: SidebarProps) {
             href: "/admin/comments",
             label: "Comments",
             icon: MessageSquare,
+        },
+        {
+            href: "/admin/posts",
+            label: "Posts",
+            icon: FileText,
+        },
+        {
+            href: "/admin/categories",
+            label: "Categories",
+            icon: FolderTree,
+        },
+        {
+            href: "/admin/authors",
+            label: "Authors",
+            icon: UserCircle,
         },
         {
             href: "/admin/gsc-dashboard",

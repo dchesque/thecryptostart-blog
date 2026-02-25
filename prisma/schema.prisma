@@ -21,7 +21,6 @@ model User {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   roles         UserRole[]
-  posts         Post[]
   comments      Comment[]
   following     Follower[]      @relation("Following")
   followers     Follower[]      @relation("Followers")
@@ -44,21 +43,149 @@ enum Role {
   AUTHOR
 }
 
-model Post {
-  id           String    @id @default(uuid())
-  title        String
-  slug         String    @unique
-  content      String    @db.Text
-  authorId     String
-  contentfulId String?
-  published    Boolean   @default(false)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  author       User      @relation(fields: [authorId], references: [id])
-  comments     Comment[]
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+}
 
+enum ContentType {
+  ARTICLE
+  GUIDE
+  TUTORIAL
+  GLOSSARY
+  REVIEW
+  NEWS
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum SchemaType {
+  ARTICLE
+  HOW_TO
+  REVIEW
+  NEWS_ARTICLE
+}
+
+enum AdDensity {
+  LOW
+  NORMAL
+  HIGH
+}
+
+model Author {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  bio         String?  @db.Text
+  avatar      String?
+  socialLinks Json?
+  posts       Post[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  icon        String   @default("📚")
+  color       String?
+  order       Int      @default(0)
+  posts       Post[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Post {
+  id        String     @id @default(cuid())
+  status    PostStatus @default(DRAFT)
+
+  // ═══════════════════════════════════════════
+  // BLOCO: CONTEÚDO CORE
+  // ═══════════════════════════════════════════
+  title     String
+  slug      String     @unique
+  excerpt   String     @db.Text
+  content   String     @db.Text
+  body      String?    @db.Text
+  featuredImageUrl   String?
+  featuredImageAlt   String?
+  featuredImageWidth  Int?
+  featuredImageHeight Int?
+  publishDate DateTime?
+  updatedDate DateTime?
+  readingTime Int        @default(0)
+  wordCount   Int        @default(0)
+  isFeatured  Boolean    @default(false)
+  contentType ContentType @default(ARTICLE)
+  difficulty  Difficulty  @default(BEGINNER)
+
+  // ═══════════════════════════════════════════
+  // BLOCO: SEO
+  // ═══════════════════════════════════════════
+  seoTitle          String?
+  seoDescription    String?
+  seoImageUrl       String?
+  seoNoindex        Boolean    @default(false)
+  targetKeyword     String?
+  secondaryKeywords String[]   @default([])
+  schemaType        SchemaType @default(ARTICLE)
+  canonicalUrl      String?
+  lastReviewedAt    DateTime?
+  tags              String[]   @default([])
+
+  // ═══════════════════════════════════════════
+  // BLOCO: STRUCTURED DATA
+  // ═══════════════════════════════════════════
+  faq               Json?
+  howToSteps        Json?
+  pros              String[]   @default([])
+  cons              String[]   @default([])
+
+  // ═══════════════════════════════════════════
+  // BLOCO: INTERNAL LINKING & STRATEGY
+  // ═══════════════════════════════════════════
+  relatedPostsSlugs String[]   @default([])
+  pillarPageSlug    String?
+  internalLinks     Json?
+
+  // ═══════════════════════════════════════════
+  // BLOCO: MONETIZAÇÃO
+  // ═══════════════════════════════════════════
+  adDensity         AdDensity @default(NORMAL)
+  monetizationDisabled Boolean @default(false)
+  sponsoredBy       String?
+
+  // ═══════════════════════════════════════════
+  // RELAÇÕES
+  // ═══════════════════════════════════════════
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+  author     Author   @relation(fields: [authorId], references: [id])
+  authorId   String
+  comments   Comment[]
+
+  // ═══════════════════════════════════════════
+  // TIMESTAMPS AUTOMÁTICOS
+  // ═══════════════════════════════════════════
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // ═══════════════════════════════════════════
+  // INDEXES
+  // ═══════════════════════════════════════════
+  @@index([status, publishDate])
+  @@index([categoryId])
   @@index([authorId])
-  @@index([slug])
+  @@index([isFeatured])
+  @@index([contentType])
+  @@index([targetKeyword])
+  @@index([pillarPageSlug])
 }
 
 model Comment {

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { getAllPosts } from '@/lib/contentful'
+import { getAllPosts } from '@/lib/posts'
 
 interface PopularPostsProps {
     categorySlug?: string

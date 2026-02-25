@@ -7,8 +7,8 @@ The **Test Generation** skill automates the creation of comprehensive test cases
 **Key Capabilities**:
 - Generates unit tests for utilities, components, API routes, and hooks.
 - Covers edge cases, error handling, and authentication flows.
-- Integrates with codebase conventions (e.g., Contentful data fetching, spam prevention, SEO utils).
-- Supports mocking of external services (Contentful, Prisma, NextAuth).
+- Integrates with codebase conventions (e.g., PostgreSQL data fetching, spam prevention, SEO utils).
+- Supports mocking of external services (Prisma, NextAuth).
 - Outputs tests in idiomatic style matching the repo (e.g., `__tests__` folders or colocated `*.test.tsx`).
 
 **Supported Phases**:
@@ -31,7 +31,7 @@ codex skill testgen <file-or-glob> [options]
 | `--type <unit|integration|e2e>` | Test type | `--type unit` |
 | `--framework <jest|vitest>` | Testing framework (default: Jest) | `--framework jest` |
 | `--coverage <threshold>` | Min coverage % to pass | `--coverage 90` |
-| `--mock-external` | Auto-mock APIs/DB (Contentful, Prisma) | `--mock-external` |
+| `--mock-external` | Auto-mock APIs/DB (Prisma) | `--mock-external` |
 | `--phases <E,V>` | Run specific phases | `--phases E,V` |
 
 ### Examples
@@ -71,7 +71,7 @@ codex skill testgen <file-or-glob> [options]
    ```
    codex skill testgen app/blog/[slug]/page.tsx --type e2e --framework playwright
    ```
-   Simulates navigation, SEO metadata, Contentful fetch, comments form submission.
+   Simulates navigation, SEO metadata, Prisma fetch, comments form submission.
 
 5. **Batch Generation**:
    ```
@@ -97,7 +97,7 @@ The skill uses these steps internally (leveraging repo tools):
    | **Errors** | Custom errors thrown | `AppError`, `RateLimitError` |
 
 3. **Mocking**:
-   - Contentful: Uses MSW or jest.mock for `getPostBySlug`.
+   - Database: Uses MSW or jest.mock for `getPostBySlug`.
    - DB/Auth: Mocks Prisma/NextAuth sessions.
    - IP/RateLimit: Fixed mocks for `getClientIP`.
 
@@ -117,7 +117,6 @@ The skill uses these steps internally (leveraging repo tools):
 
 - **Existing Tests**: Scan `**/*.test.{ts,tsx}` for patterns.
 - **Utils**: [lib/utils.ts](lib/utils.ts) – Prime for unit tests.
-- **Contentful**: [lib/contentful.ts](lib/contentful.ts) – Needs fetch mocks.
 - **API**: `app/api/` routes – Focus on auth/spam.
 - **Types**: [types/blog.ts](types/blog.ts) – Prop validation tests.
 

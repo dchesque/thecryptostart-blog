@@ -1,106 +1,169 @@
-# Security Auditor Agent Playbook
+# Security Auditor Playbook
 
 ## Mission
-The Security Auditor agent proactively identifies, assesses, and mitigates security vulnerabilities across the codebase, ensuring adherence to OWASP Top 10 risks (e.g., Broken Access Control, Injection, Cryptographic Failures), dependency security, and the principle of least privilege. Engage this agent for code reviews, PR merges, new feature integrations (especially auth/API), dependency updates, or periodic scans. It safeguards the Next.js blog application by auditing API routes, auth flows, client components, configurations, and third-party dependencies, producing actionable reports to prevent exploits like unauthorized access, data leaks, or DoS attacks.
+
+This agent conducts thorough security audits on the CryptoStartBlog codebase, a Next.js application focused on blog management, user interactions, SEO analytics, and admin functionalities. It identifies vulnerabilities, enforces OWASP Top 10 compliance, and ensures robust authentication/authorization using NextAuth.js.
+
+**When to engage:**
+- Before merging PRs involving API routes, auth changes, or user data handling
+- During vulnerability scans or dependency updates
+- When adding new endpoints (e.g., admin or public APIs)
+- Post-incident reviews or penetration testing simulations
+
+**Security approach:**
+- OWASP Top 10 (Injection, Broken Auth, Sensitive Data Exposure, etc.)
+- Defense in depth: Validation + Auth + Rate limiting + Logging
+- Least privilege: Admin routes gated by session checks
+- Automated checks + manual reviews
 
 ## Responsibilities
-- **OWASP Top 10 Audits**: Scan for Broken Access Control (e.g., missing `getServerSession` checks in `app/api/admin/`), Injection (SQL/NoSQL in user/comment routes), Cryptographic Failures (weak JWT in `types/auth.ts`), and others using `searchCode` for patterns like unsanitized `req.body`.
-- **Dependency Scanning**: Analyze `package.json`, `pnpm-lock.yaml` (or equivalent) with `npm audit`-like logic; flag vulnerable packages (e.g., outdated NextAuth); recommend updates and `pnpm audit`.
-- **Principle of Least Privilege Enforcement**: Verify role-based access (e.g., admin-only in `app/api/admin/comments/`); audit `AuthorizationError` usage; ensure non-admins can't PATCH/DELETE via user `Session.role`.
-- **API Endpoint Reviews**: Inspect all route handlers (e.g., `POST` in `app/api/auth/register/route.ts`, `GET`/`DELETE` in `app/api/users/[id]/route.ts`) for validation, rate limiting, and error handling.
-- **Auth & Session Validation**: Review `getServerSession`, `AuthProvider`, and `middleware.ts` for bypasses, CSRF (via `lib/csrf.ts`), and secure JWT handling.
-- **Configuration & Secrets Audit**: Check `next.config.js`, `.env` patterns, and headers for misconfigs (e.g., missing HSTS); scan for hardcoded secrets with `searchCode('process\.env\w+')`.
-- **Client-Side Security**: Audit components like `AuthorCard.tsx` and `AuthProvider.tsx` for XSS, secure storage, and prop validation.
-- **Reporting & Remediation**: Generate reports with severity (Critical/High/Med/Low based on CVSS), PoCs, and fixes; block PRs for Critical issues.
-- **Testing Integration**: Add security tests mocking malicious inputs; prioritize auth routes.
 
-## Best Practices
-- **Least Privilege**: Default to deny-all; explicitly check `session.user.role === 'admin'` before admin actions; throw `AuthorizationError` early.
-- **Input Validation**: Use Zod schemas matching `User`, `Session`, `JWT` types for all `NextRequest.json()`; reject with 400 on parse failure; limit payloads to 1MB.
-- **OWASP Compliance**: Sanitize for Injection (e.g., `z.string().regex(/^[a-zA-Z0-9]/)`); enforce HTTPS in `middleware.ts`; use secure cookies (`HttpOnly`, `Secure`).
-- **Dependency Management**: Run `searchCode('package\.json')`; flag CVEs >7.0; pin versions; use `overrides` in `package.json` for vulns.
-- **Error & Logging**: Never expose internals; standardize on `AuthenticationError`/`AuthorizationError`; log events sans PII (e.g., `{ event: 'auth_fail', ip: req.ip }`).
-- **Headers & Middleware**: Mandate `middleware.ts` with `X-Content-Type-Options: nosniff`, `Strict-Transport-Security`, `Permissions-Policy`.
-- **Rate Limiting & CSRF**: Apply to auth/user endpoints; validate `csrfToken` header in `POST`/`PATCH`.
-- **Secrets Handling**: Load `.env` server-side only; rotate keys; avoid `console.log(process.env)`.
-- **Scanning Cadence**: Automate full scans pre-deploy; focus deltas in PRs.
+- Audit API routes for input validation, auth checks, and error handling
+- Verify NextAuth.js configurations for secure JWT/session management
+- Scan for XSS/SQL/NoSQL injection in user inputs (comments, posts, authors)
+- Review sensitive data flows (e.g., user profiles, SEO metrics)
+- Check dependency vulnerabilities (e.g., Next.js, Prisma if used)
+- Implement/enforce security headers (CSP, HSTS) in Next.js config
+- Audit admin endpoints for privilege escalation risks
+- Recommend logging with structured security events (e.g., failed logins)
+
+## Workflows and Common Tasks
+
+### 1. API Endpoint Security Audit
+**Steps:**
+1. List all `app/api/*/route.ts` files using `listFiles('app/api/**/*.ts')`.
+2. For each route (GET/POST/PUT/DELETE):
+   - Check for `getServerSession` or session validation at the top.
+   - Verify input validation (zod/prisma-safe, no raw `req.body`).
+   - Scan for `eval()`, `new Function()`, or unsafe deserialization.
+   - Ensure `AuthenticationError`/`AuthorizationError` from `lib/errors.ts` are thrown appropriately.
+   - Test for rate limiting (e.g., Upstash Redis if integrated).
+3. Output: Markdown report with vuln severity (CVSS score), PoC, fix.
+
+**Example Command:** `analyzeSymbols('app/api/admin/authors/route.ts')` → Verify `POST` handler role checks.
+
+### 2. Authentication/Authorization Review
+**Steps:**
+1. Inspect `app/api/auth/[...nextauth]/route.ts` and `app/api/auth/register/route.ts`.
+2. Validate JWT callbacks in `types/auth.ts` (Session/JWT types).
+3. Check `AuthProvider.tsx` for secure client-side session propagation.
+4. Audit admin routes (e.g., `app/api/admin/authors/[id]/route.ts`) for `if (!session || session.user.role !== 'ADMIN')` guards.
+5. Review password hashing in register (bcrypt/argon2, not plain).
+6. Test CSRF protection in forms (NextAuth handles, but verify).
+7. Output: Flow diagram + gaps (e.g., missing 2FA).
+
+### 3. Sensitive Data & Injection Scan
+**Steps:**
+1. `searchCode('req.body|req.query', 'app/api/**/*.ts')` → Flag unsanitized inputs.
+2. Review types (`types/blog.ts: Author`, `types/auth.ts: User`) for PII fields.
+3. Check components like `AuthorCard.tsx`, `AuthorModal.tsx` for XSS (use `dangerouslySetInnerHTML`?).
+4. Audit DB queries if Prisma/Supabase used (prepared statements).
+5. Scan env vars exposure in `next.config.js` or builds.
+6. Output: Data flow map + encryption recommendations (e.g., encrypt emails).
+
+### 4. Dependency & Config Audit
+**Steps:**
+1. Run `npm audit` equivalent; flag high-severity in `package.json`.
+2. Review `next.config.js` for `headers()`: CSP, X-Frame-Options.
+3. Check `.env` patterns (no commit secrets).
+4. Output: Updated `SECURITY.md` with vulns.
+
+### 5. Full Codebase Scan
+1. `getFileStructure()` → Prioritize `app/api`, `lib`, `types`.
+2. `searchCode('process.env|session|req.body|sql|eval', '**/*.ts*')`.
+3. Cross-reference with OWASP cheat sheets.
+
+## Best Practices (Codebase-Derived)
+
+- **Auth Checks:** Always `const session = await getServerSession(authOptions);` first line in protected routes (seen in admin routes).
+- **Errors:** Throw `new AuthenticationError()` or `AuthorizationError()` from `lib/errors.ts` for 401/403.
+- **Validation:** Use Zod schemas matching `types/blog.ts` (Author, User); no direct Prisma `create(body)`.
+- **Sessions:** Extend NextAuth Session/JWT in `types/auth.ts`; role-based access.
+- **Inputs:** Sanitize comments/users with DOMPurify or server-side escaping.
+- **Headers:** Add via `NextResponse.headers.set('Content-Security-Policy', "...")` in routes.
+- **Logging:** Use `console.error` with context; integrate Sentry for prod.
+- **Conventions:** Route files export handlers directly (e.g., `export async function POST(request: Request)`).
 
 ## Key Project Resources
-- [Documentation Index](../docs/README.md) - Central hub for guides and architecture.
-- [AGENTS.md](../../AGENTS.md) - Agent collaboration protocols and invocation rules.
-- [Agent Handbook](../docs/agent-handbook.md) - Tool usage and behavioral standards.
-- [Contributor Guide](../CONTRIBUTING.md) - PR review and merge processes.
-- [Security Policy](../SECURITY.md) - Vulnerability disclosure and triage.
+
+- [AGENTS.md](../../AGENTS.md) – Agent collaboration guidelines
+- [docs/SECURITY.md](../docs/SECURITY.md) – Existing security notes (create if missing)
+- [Contributor Guide](../CONTRIBUTING.md) – PR review processes
+- NextAuth.js Docs: https://authjs.dev/reference/nextjs (for codebase patterns)
 
 ## Repository Starting Points
-- **`app/api/`**: All API routes (auth, users, admin, comments); primary focus for access control and injection risks.
-- **`lib/`**: Shared utils (`errors.ts`, `auth.ts`, `csrf.ts`); audit for crypto flaws and error leaks.
-- **`middleware.ts`**: Global guards and headers; check for coverage gaps (`/api/*`, protected paths).
-- **`types/`**: `auth.ts`, `blog.ts`; enforce typed payloads to prevent deserialization attacks.
-- **`components/`**: Auth-related (`AuthProvider.tsx`, `AuthorCard.tsx`); client-side storage and rendering security.
-- **`next.config.js` & `package.json`**: Configs and deps; dependency vulns and misconfigs.
-- **`app/api/admin/`**: Elevated privilege routes; strict least privilege checks.
 
-## Key Files
+- `app/api/` – All API routes (auth, admin, users, comments, SEO); 20+ endpoints
+- `lib/` – Shared utils like `errors.ts` (custom errors)
+- `types/` – `blog.ts` (Author/Post types), `auth.ts` (User/Session/JWT)
+- `components/` – AuthProvider.tsx, AuthorCard.tsx, admin modals (client-side risks)
+- `app/admin/` – Admin pages (authors, posts); server components with auth
+
+## Key Files and Purposes
+
 | File | Purpose | Security Focus |
 |------|---------|----------------|
-| [`middleware.ts`](middleware.ts) | Request interception | Auth guards, security headers, bypass prevention |
-| [`lib/errors.ts`](lib/errors.ts) | Custom errors | `AuthenticationError`, `AuthorizationError` usage |
-| [`lib/auth.ts`](lib/auth.ts) | NextAuth setup | Provider configs, JWT callbacks, secrets |
-| [`lib/csrf.ts`](lib/csrf.ts) | CSRF tokens | Generation/validation strength |
-| [`types/auth.ts`](types/auth.ts) | Auth types | `User`, `Session`, `JWT` enforcement |
-| [`types/blog.ts`](types/blog.ts) | Blog types | `Author` validation |
-| [`app/api/auth/register/route.ts`](app/api/auth/register/route.ts) | Registration | Input sanitization, duplicates |
-| [`app/api/auth/[...nextauth]/route.ts`](app/api/auth/[...nextauth]/route.ts) | Dynamic auth | Session handling |
-| [`app/api/users/route.ts`](app/api/users/route.ts) | User ops | CRUD authz |
-| [`app/api/admin/comments/[id]/route.ts`](app/api/admin/comments/[id]/route.ts) | Admin actions | Least privilege |
-| [`components/AuthProvider.tsx`](components/AuthProvider.tsx) | Session context | Client token security |
-| [`components AuthorCard.tsx`](components/AuthorCard.tsx) | Author display | XSS in props |
-| [`package.json`](package.json) | Dependencies | Vuln scanning |
-| [`next.config.js`](next.config.js) | App config | Headers, env security |
+| `lib/errors.ts` | Custom errors: `AuthenticationError`, `AuthorizationError` | Consistent 401/403 handling |
+| `types/blog.ts` | `Author` type (blog entities) | PII fields validation |
+| `types/auth.ts` | `User`, `Session`, `JWT` types | NextAuth extensions; role enforcement |
+| `app/api/auth/register/route.ts` | User registration (POST) | Password hashing, email uniqueness |
+| `app/api/admin/authors/route.ts` | Admin CRUD for authors (GET/POST) | Role checks, input sanitization |
+| `app/api/admin/authors/[id]/route.ts` | Author update/delete (GET/PUT/DELETE) | IDOR prevention (check ownership) |
+| `components/AuthProvider.tsx` | Session provider wrapper | Secure client hydration |
+| `app/api/auth/[...nextauth]/route.ts` | NextAuth handlers | Provider configs, callbacks |
+| `app/api/users/route.ts` | User list/create (GET/POST) | Pagination, filtering vulns |
+| `app/api/comments/route.ts` | Comment CRUD | XSS in content, spam prevention |
 
 ## Architecture Context
+
 ### Controllers (API Routes)
-- **Directories**: `app/api/users`, `app/api/comments`, `app/api/auth/[...nextauth]`, `app/api/admin/comments`
-- **Symbol Counts**: ~10 exported handlers (`GET`, `POST`, `PATCH`, `DELETE`)
-- **Key Exports**: All use `NextRequest`/`NextResponse`; focus on session checks.
+- **Directories:** `app/api/users`, `app/api/comments`, `app/api/admin/*`, `app/api/auth/*`, `app/api/seo/*`
+- **Key Exports:** 20+ handlers (e.g., `POST` @ `app/api/comments/route.ts:13`, `DELETE` @ `app/api/users/[id]/route.ts:65`)
+- **Patterns:** Server Actions pattern; `Request` → JSON → DB; session-gated admins
 
-### Middleware & Providers
-- **Directories/Files**: `middleware.ts`, `components/AuthProvider.tsx`
-- **Symbol Counts**: 5+ auth functions; client-server sync.
-- **Key Exports**: Session providers; verify least privilege propagation.
+### Client Components
+- `components/AuthProvider.tsx`, `AuthorCard.tsx`, `components/admin/AuthorModal.tsx`
+- **Risks:** XSS in props, session exposure
 
-### Types & Lib
-- **Directories/Files**: `types/auth.ts`, `types/blog.ts`, `lib/*`
-- **Symbol Counts**: 8 types (`User`, `Session`, `JWT`, `Author`); 2 errors.
-- **Key Exports**: Strong typing aids validation.
+### Types & Libs
+- Strong typing enforces schemas; errors centralized
 
 ## Key Symbols for This Agent
-- **`AuthenticationError`** (class) [`lib/errors.ts:12`](lib/errors.ts) - Use for credential failures; prevents info leaks.
-- **`AuthorizationError`** (class) [`lib/errors.ts:18`](lib/errors.ts) - Enforce least privilege; log with context.
-- **`User`** (type) [`types/auth.ts:5`](types/auth.ts) - Validate payloads; check `role` field.
-- **`Session`** (type) [`types/auth.ts:9`](types/auth.ts) - Server-side checks via `getServerSession`.
-- **`JWT`** (type) [`types/auth.ts:20`](types/auth.ts) - Audit token claims/crypto.
-- **`Author`** (type) [`types/blog.ts:44`](types/blog.ts) - Blog data security.
-- **`POST`** (function) [`app/api/auth/register/route.ts:12`](app/api/auth/register/route.ts) - Registration validation.
-- **`AuthProvider`** (component) [`components/AuthProvider.tsx:5`](components/AuthProvider.tsx) - Secure session context.
-- **`generateCSRFToken`** / **`validateCSRFToken`** (functions) [`lib/csrf.ts`](lib/csrf.ts) - CSRF protection.
+
+- `AuthenticationError` (lib/errors.ts:12) – Throw for invalid sessions
+- `AuthorizationError` (lib/errors.ts:18) – Insufficient privileges
+- `User`/`Session`/`JWT` (types/auth.ts) – Auth types; extend for roles
+- `Author` (types/blog.ts:34) – Blog entity; validate fields
+- Route handlers: `POST` (app/api/auth/register/route.ts:12), `DELETE` (app/api/admin/authors/[id]/route.ts:49)
 
 ## Documentation Touchpoints
-- [README.md](README.md) - Setup, env, deployment security.
-- [../docs/README.md](../docs/README.md) - Docs overview, auth flows.
-- [SECURITY.md](SECURITY.md) - Reporting process.
-- Inline JSDoc in API routes and `lib/auth.ts`.
-- [AGENTS.md](../../AGENTS.md) - Agent-specific security protocols.
+
+- Update `docs/SECURITY.md` with audit findings
+- `README.md` – Add security section
+- `AGENTS.md` – Link to this playbook
+- Inline JSDoc in routes for auth requirements
 
 ## Collaboration Checklist
-1. **Confirm Scope**: Validate task (e.g., "Audit PR #123 for OWASP A1"); use `getFileStructure()` and `listFiles('app/api/**')`.
-2. **Gather Context**: `searchCode` for risks (e.g., `req\.body.*without z\.`, `process\.env`); `analyzeSymbols` on auth files.
-3. **Scan Dependencies**: `readFile('package.json')`; simulate `npm audit`; check lockfiles.
-4. **Assess & Report**: Rate severity; provide PoCs/fixes; comment on PRs with badges (🔴 Critical).
-5. **Verify Fixes**: Re-scan post-remediation; test least privilege.
-6. **Update Docs**: Append to `SECURITY.md`; note patterns (e.g., "Added Zod to 4 routes").
-7. **Hand-off**: Summarize in thread; suggest tests/quarterly scans.
+
+- [ ] OWASP Top 10 scan (A01-A10) on APIs
+- [ ] Input validation/sanitization in all `req.body` uses
+- [ ] AuthZ in admin routes (session.role === 'ADMIN')
+- [ ] Sensitive data: No logs of secrets, encrypt at rest
+- [ ] Dependencies: `npm audit --audit-level high`
+- [ ] Headers: CSP strict-dynamic, HSTS max-age
+- [ ] Tests: Add security tests (e.g., invalid JWT)
+- [ ] Report: GitHub Issue with repro + PR fix
 
 ## Hand-off Notes
-Upon completion, summarize: "Remediated X Critical vulns (e.g., added rate-limit to auth/register); remaining Med risks (e.g., dep CVE-2023-XXXX); follow-ups: unit tests for authz, dep update PR, full scan post-deploy. Risks mitigated to Low overall." Flag any unaddressed OWASP gaps or privilege escalations.
+
+- **Outcomes:** Comprehensive report in `SECURITY-AUDIT.md`; fixed vulns in PR.
+- **Risks:** IDOR in `[id]` routes if no ownership check; client XSS in modals.
+- **Follow-ups:** Integrate `snyk` CI, quarterly audits, pentest external APIs.
+
+## Related Resources
+
+- [../docs/README.md](./../docs/README.md)
+- [README.md](./README.md)
+- [../../AGENTS.md](./../../AGENTS.md)
+- [NextAuth Security Guide](https://authjs.dev/getting-started/security)
+- [OWASP API Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html)

@@ -1,10 +1,9 @@
 /**
  * AI Search Optimization Utilities
- * Otimizar posts para ChatGPT, Claude, Perplexity
+ * Otimizar posts para ChatGPT, Claude, Perplexity (Markdown)
  */
 
 import type { BlogPost } from '@/types/blog'
-import type { Document } from '@contentful/rich-text-types'
 
 export interface AIOptimizationScore {
     overallScore: number // 0-100
@@ -21,34 +20,22 @@ export interface AIOptimizationScore {
 }
 
 /**
- * Extrair texto de um nó do Contentful Rich Text
- */
-function extractTextFromNode(node: any): string {
-    if (!node) return ''
-    if (node.nodeType === 'text') return node.value || ''
-
-    if (!node.content || !Array.isArray(node.content)) return ''
-
-    return node.content
-        .map((child: any) => extractTextFromNode(child))
-        .join('')
-}
-
-/**
  * Extrair primeiro parágrafo como quick answer
  */
-export function extractQuickAnswer(content: Document): string | null {
-    if (!content?.content) return null
+export function extractQuickAnswer(content: string): string | null {
+    if (!content) return null
 
-    // Procurar o primeiro parágrafo com conteúdo real
-    const firstParagraph = content.content.find(block =>
-        block.nodeType === 'paragraph' && extractTextFromNode(block).trim().length > 20
+    // Pega os parágrafos separando por linhas vazias
+    const paragraphs = content.split(/\n\s*\n/)
+
+    // Procura o primeiro parágrafo que não seja heading
+    const firstParagraph = paragraphs.find(p =>
+        p.trim().length > 20 && !p.trim().startsWith('#') && !p.trim().startsWith('!')
     )
 
     if (firstParagraph) {
-        const text = extractTextFromNode(firstParagraph).trim()
-        // Ideal: 40-60 palavras. Vamos truncar se for absurdamente longo para o preview,
-        // mas a extração deve ser o parágrafo inteiro se fizer sentido.
+        // Tira o markdown para contar tamanho real
+        const text = firstParagraph.replace(/[#*`_~[\]]/g, '').trim()
         if (text.length > 0) {
             return text.length > 300 ? text.substring(0, 297) + '...' : text
         }
@@ -60,23 +47,23 @@ export function extractQuickAnswer(content: Document): string | null {
 /**
  * Verificar se conteúdo tem Q&A well-structured
  */
-export function hasWellStructuredQA(content: Document): boolean {
-    if (!content?.content) return false
+export function hasWellStructuredQA(content: string): boolean {
+    if (!content) return false
 
-    let headingCount = 0
+    // Contar headings H2 e H3
+    const headingMatches = content.match(/^(#{2,3})\s+(.+)$/gm)
+    const headingCount = headingMatches ? headingMatches.length : 0
+
+    // Contar sentenças que parecem Q&A
+    const textLower = content.toLowerCase()
     let qaSentenceCount = 0
 
-    content.content.forEach((node: any) => {
-        // Contar headings (H2, H3)
-        if (node.nodeType?.includes('heading')) {
-            headingCount++
-        }
+    const qaKeywords = ['what ', 'how ', 'why ', 'como ', 'o que ', 'por que ']
+    const sentences = content.split(/[.!?\n]+/)
 
-        // Contar sentences que parecem Q&A
-        const text = extractTextFromNode(node).toLowerCase()
-        if (text.includes('?') || text.includes('what ') ||
-            text.includes('how ') || text.includes('why ') ||
-            text.includes('como ') || text.includes('o que ') || text.includes('por que ')) {
+    sentences.forEach(s => {
+        const sentence = s.toLowerCase().trim()
+        if (sentence.endsWith('?') || qaKeywords.some(kw => sentence.includes(kw))) {
             qaSentenceCount++
         }
     })
@@ -87,26 +74,24 @@ export function hasWellStructuredQA(content: Document): boolean {
 /**
  * Contar sentenças citáveis (específicas, com dados)
  */
-export function countCitableSentences(content: Document): number {
-    if (!content?.content) return 0
+export function countCitableSentences(content: string): number {
+    if (!content) return 0
 
     let citableCount = 0
 
-    content.content.forEach((node: any) => {
-        const text = extractTextFromNode(node)
-        const sentences = text.split(/[.!?]+/)
+    // Remove coisas de código ou tags de markdown difíceis
+    const cleanText = content.replace(/```[\s\S]*?```/g, '').replace(/[#*`_~[\]]/g, '')
+    const sentences = cleanText.split(/[.!?\n]+/)
 
-        sentences.forEach(sentence => {
-            const words = sentence.trim().split(/\s+/).filter(Boolean).length
+    sentences.forEach(sentence => {
+        const words = sentence.trim().split(/\s+/).filter(Boolean).length
 
-            // Ideal: sentenças com 8-25 palavras que contenham números ou nomes próprios
-            if (words >= 8 && words <= 25) {
-                // Regex para números ou Palavras Com Letra Maiúscula (entidades)
-                if (/[0-9]/.test(sentence) || /[A-Z][a-z]+/.test(sentence)) {
-                    citableCount++
-                }
+        // Ideal: sentenças com 8-25 palavras que contenham números ou entidades com Letra Maiúscula
+        if (words >= 8 && words <= 25) {
+            if (/[0-9]/.test(sentence) || /\b[A-Z][a-z]+\b/.test(sentence)) {
+                citableCount++
             }
-        })
+        }
     })
 
     return citableCount
@@ -118,7 +103,7 @@ export function countCitableSentences(content: Document): number {
 export function calculateAIOptimizationScore(
     post: BlogPost
 ): AIOptimizationScore {
-    const content = post.content
+    const content = post.content || ''
 
     // 1. Quick Answer (20 pontos)
     const quickAnswer = extractQuickAnswer(content)
@@ -133,8 +118,7 @@ export function calculateAIOptimizationScore(
     }
 
     // 2. FAQ Schema (25 pontos)
-    // Como estamos implementando isso programaticamente agora, vamos checar se o post tem tags que geram FAQ
-    const hasFAQSchema = post.tags && post.tags.length > 0 // Simplificação para o dashboard
+    const hasFAQSchema = post.tags && post.tags.length > 0
     const faqScore = hasFAQSchema ? 25 : 0
 
     // 3. Structure (20 pontos)
@@ -142,8 +126,8 @@ export function calculateAIOptimizationScore(
     const structureScore = hasWellStructured ? 20 : 10
 
     // 4. Authority (20 pontos)
-    const hasAuthorBio = !!post.author.bio
-    const hasAuthorImage = !!post.author.image
+    const hasAuthorBio = !!post.author?.bio
+    const hasAuthorImage = !!post.author?.image
     const isRecent = new Date(post.publishedAt).getTime() > Date.now() - 90 * 24 * 60 * 60 * 1000
     const authorScore = (hasAuthorBio ? 8 : 0) + (hasAuthorImage ? 6 : 0) + (isRecent ? 6 : 0)
 
@@ -165,15 +149,15 @@ export function calculateAIOptimizationScore(
     }
 
     // Helpers for minor flags
-    const contentString = JSON.stringify(content).toLowerCase()
+    const contentString = content.toLowerCase()
 
     return {
         overallScore,
         hasQuickAnswer,
         answerWordCount,
         hasFAQSchema: true, // Automático agora
-        hasNumberedList: contentString.includes('ordered-list'),
-        hasDefinitions: contentString.includes('bold') || contentString.includes('italic'),
+        hasNumberedList: contentString.includes('1.') || contentString.match(/^\d+\.\s/gm) !== null,
+        hasDefinitions: contentString.includes('**') || contentString.includes('__'),
         hasProperHeadings: hasWellStructured,
         authorExpertiseSignals: hasAuthorBio ? (hasAuthorImage ? 3 : 2) : 0,
         contentFreshness: isRecent ? 100 : 50,
@@ -192,7 +176,6 @@ export interface FAQItem {
 
 /**
  * Geração automática de FAQ com base nas tags e categoria do post.
- * Fornece respostas curtas e precisas (ideal para snippets de busca).
  */
 export function generateFAQFromPost(post: BlogPost): FAQItem[] {
     const faqsMap: Record<string, FAQItem> = {
@@ -225,8 +208,11 @@ export function generateFAQFromPost(post: BlogPost): FAQItem[] {
     const generatedFaqs: FAQItem[] = []
 
     // Adicionar FAQ baseada na categoria
-    if (faqsMap[post.category]) {
-        generatedFaqs.push(faqsMap[post.category])
+    const categorySlug = typeof post.category === 'string' ? post.category :
+        (post.category as any)?.slug || ''
+
+    if (categorySlug && faqsMap[categorySlug]) {
+        generatedFaqs.push(faqsMap[categorySlug])
     }
 
     // Adicionar FAQs baseadas em tags (limitar a 3 total)

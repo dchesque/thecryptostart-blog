@@ -1,129 +1,110 @@
-# Security
-
-This document outlines the security practices, authentication mechanisms, secrets management, and compliance policies implemented in the TheCryptoStartBlog platform. It serves as a guide for developers to maintain and extend security guardrails.
-
 ## Security & Compliance Notes
 
-The project implements robust security measures across the blog platform, admin interfaces, and API endpoints:
+This document details the security policies, practices, and guardrails for The Crypto Start Blog project, a Next.js application with Prisma database integration, NextAuth for authentication, and admin interfaces for content management. Security follows defense-in-depth principles, least privilege access, and secure-by-default configurations.
 
-- **Input Validation**: All user inputs (e.g., login, registration, comments, search) are validated using Zod schemas in `lib/validations.ts` (`LoginInput`, `RegisterInput`, `UpdateProfileInput`). Invalid inputs throw `ValidationError` from `lib/errors.ts`.
+Key security tenets:
+- **Input validation and sanitization**: All user inputs (e.g., comments, registrations, post edits) are validated using Zod schemas in `lib/validations.ts` and `lib/validations/admin.ts`.
+- **Rate limiting**: Implemented via `lib/rate-limit.ts` and `lib/spam-prevention.ts` (e.g., `checkRateLimit`, `detectSpam`) to prevent abuse on API routes like `/api/comments` and `/api/auth/register`.
+- **Error handling**: Custom errors (`AppError`, `AuthenticationError`, `AuthorizationError`, `ValidationError`, `RateLimitError`) in `lib/errors.ts` ensure sensitive information is not leaked.
+- **Dependency management**: Regular scans recommended; use `npm audit` and tools like Snyk for vulnerabilities.
+- **API protection**: All admin routes (e.g., `/api/admin/posts/[id]`, `/api/admin/users`) enforce authorization checks.
+- **Client-side protections**: CSP headers via Next.js config; no inline scripts.
 
-  ```ts
-  // Example from app/api/auth/register/route.ts
-  import { RegisterInput } from '@/lib/validations';
-  const validated = RegisterInput.parse(req.body);
-  ```
-
-- **Rate Limiting**: Protects sensitive endpoints (e.g., auth, comments) using `lib/rate-limit.ts` and `lib/spam-prevention.ts`. `checkRateLimit(ip)` enforces per-IP limits, throwing `RateLimitError`. IP extraction via `getIP` or `getClientIP`.
-
-  ```ts
-  // Usage in API routes
-  import { checkRateLimit } from '@/lib/rate-limit';
-  const ip = getIP(request);
-  checkRateLimit(ip, { windowMs: 15 * 60 * 1000, max: 5 });
-  ```
-
-- **CSRF Protection**: Tokens generated with `generateCSRFToken` and validated via `validateCSRFToken` in `lib/csrf.ts`. Required for state-changing forms (login, register, comments).
-
-  ```tsx
-  // In forms
-  const csrfToken = generateCSRFToken();
-  <input type="hidden" name="csrf" value={csrfToken} />
-  ```
-
-- **Error Handling**: Custom errors (`AppError`, `AuthenticationError`, `AuthorizationError`, `ValidationError`, `RateLimitError`) in `lib/errors.ts` ensure no sensitive info leaks. Use `handleError` wrappers in routes.
-
-  ```ts
-  // lib/errors.ts
-  export class RateLimitError extends AppError {
-    constructor(message = 'Too many requests') {
-      super(429, message);
-    }
-  }
-  ```
-
-- **Secure Headers**: Next.js middleware enforces HTTPS, CSP, HSTS, and permissions policies (see [architecture.md](./architecture.md)).
-- **Dependency Management**: Run `npm audit`, Snyk, or Dependabot in CI/CD. No known vulnerabilities in current deps.
-- **Content Security**: `lib/contentful.ts` uses read-only access tokens. Client-side fetches are proxied via API routes.
-
-**Developer Checklist**:
-- Scan for vulns before PRs: `npm audit --audit-level high`.
-- Never commit secrets (use `.gitignore` for `.env*`).
-- Test rate limits and CSRF in dev.
+Developers must review [architecture.md](./architecture.md) for deployment and infrastructure security (e.g., Vercel/Cloudflare edge protections).
 
 ## Authentication & Authorization
 
-Powered by NextAuth.js (`app/api/auth/[...nextauth]/route.ts`):
+### Authentication
+- **Provider**: NextAuth.js (`app/api/auth/[...nextauth]/route.ts`) with JWT sessions by default (configurable to database sessions via `NEXTAUTH_JWT_SECRET` and Prisma adapter).
+- **Supported flows**:
+  - Email/password registration/login (`app/api/auth/register/route.ts`, `lib/validations.ts` for `RegisterInput`, `LoginInput`).
+  - OAuth providers (e.g., Google, GitHub) configurable in `auth.ts`.
+- **Session strategy**: JWT tokens (`types/auth.ts`: `JWT`, `Session`). Tokens expire after 30 days (customizable via `session.maxAge`); short-lived access/refresh via sliding sessions.
+- **Components**: `AuthProvider` (`components/AuthProvider.tsx`) wraps app for session context; used in admin layouts (`app/admin/layout.tsx`).
+- **Middleware**: NextAuth handles session validation on protected routes.
 
-- **Providers**: Credentials (login/register via `app/api/auth/register/route.ts` with Prisma). Extendable to OAuth.
-- **Sessions**: JWT-based (`types/auth.ts`: `User`, `Session`, `JWT`, `UserWithRoles`). Database sessions via `lib/prisma.ts`.
-- **Roles & Permissions**: `types/roles.ts` (`RolePermissions`). Check with `lib/permissions.ts`:
-
+### Authorization
+- **Model**: Role-Based Access Control (RBAC) via `lib/permissions.ts` (`hasRole`, `hasPermission`).
+- **Roles** (defined in `types/roles.ts`: `RolePermissions`, `types/auth.ts`: `UserWithRoles`):
+  | Role   | Permissions                          |
+  |--------|--------------------------------------|
+  | `admin` | Full CRUD on posts, comments, categories, authors, users; SEO tools access. |
+  | `author` | Create/edit own posts; view analytics. |
+  | `user`  | Comment, view gated content.        |
+  | `guest` | Read-only public access.            |
+- **Enforcement**: Checked in API handlers (e.g., `app/api/admin/posts/route.ts` uses `getServerSession` + `hasRole('admin')`). Client-side: `AuthProvider` redirects unauthorized users from admin pages (e.g., `app/admin/posts/page.tsx`).
+- **Example**:
   ```ts
-  import { hasRole, hasPermission } from '@/lib/permissions';
   import { getServerSession } from 'next-auth';
+  import { hasRole } from '@/lib/permissions';
 
-  const session = await getServerSession();
-  if (!hasRole(session, 'admin')) {
-    throw new AuthorizationError('Admin required');
-  }
-  if (!hasPermission(session, 'comments:delete')) {
-    throw new AuthorizationError('Permission denied');
+  export async function GET() {
+    const session = await getServerSession();
+    if (!session || !hasRole(session.user, 'admin')) {
+      throw new AuthorizationError('Admin access required');
+    }
+    // Proceed with admin logic
   }
   ```
 
-- **Client-Side**: `AuthProvider` (`components/AuthProvider.tsx`) provides `useSession`.
-- **Protected Routes**: Middleware + server-side checks in admin pages (`app/admin/*`).
-
-**API Protection Examples**:
-- Users: `app/api/users/route.ts` (GET/POST), `app/api/users/[id]/route.ts` (PATCH/DELETE).
-- Comments: `app/api/comments/route.ts` (POST/GET), `app/api/admin/comments/[id]/route.ts` (PATCH/DELETE, admin-only).
+See [architecture.md](./architecture.md) for session flow diagrams.
 
 ## Secrets & Sensitive Data
 
-Managed exclusively via `.env.local` / `.env`. Never hardcode or commit.
+### Secrets Management
+- **Storage**: Environment variables only (`.env.local`, `.env.production`). Never commit secrets; use `.env.example` as template.
+  - Critical vars: `DATABASE_URL` (Prisma), `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `GOOGLE_CLIENT_ID/SECRET` (OAuth), `GSC_CREDENTIALS` (Google Search Console via `lib/gsc-client.ts`).
+- **Rotation**: Rotate every 90 days or on incident; use Vercel/ Railway env var dashboards or AWS Secrets Manager for production.
+- **Access**: Least privilege—deploy keys scoped to repo branches.
 
-| Variable | Purpose | Sensitivity | Rotation |
-|----------|---------|-------------|----------|
-| `DATABASE_URL` | Prisma (`lib/prisma.ts`) | High | Quarterly |
-| `CONTENTFUL_SPACE_ID`, `CONTENTFUL_ACCESS_TOKEN` | Contentful (`lib/contentful.ts`) | Medium | Monthly |
-| `NEXTAUTH_SECRET` | JWT signing | High | On breach |
-| `NEXTAUTH_URL` | Callbacks | Low | N/A |
-
-- **Best Practices**:
-  ```ts
-  const spaceId = process.env.CONTENTFUL_SPACE_ID ?? '';
-  if (!spaceId) throw new Error('Missing CONTENTFUL_SPACE_ID');
-  ```
-- **Encryption**: HTTPS/TLS enforced. DB at-rest by provider.
-- **PII Handling**: Minimal (email/username). No client storage of tokens.
-
-For prod, use cloud secrets (Vercel/AWS Secrets Manager).
+### Sensitive Data Handling
+- **Classification**:
+  | Level       | Examples                     | Handling                     |
+  |-------------|------------------------------|------------------------------|
+  | Public     | Blog posts, metadata        | No encryption needed.       |
+  | Internal   | User sessions, analytics    | TLS in transit; hash PII.   |
+  | Confidential | API keys, GSC tokens       | Env vars; never log.        |
+  | Restricted | DB credentials              | Vault/SSM; audit access.    |
+- **Encryption**:
+  - **At rest**: Prisma/Postgres handles (enable `sslmode=require` in `DATABASE_URL`); Vercel Postgres auto-encrypts.
+  - **In transit**: HTTPS/TLS 1.3 enforced via Next.js (strict HSTS headers).
+- **Practices**:
+  - No secrets in client bundles (NextAuth client-side safe).
+  - Logging: Use structured logs; redact PII with `lib/errors.ts`.
+  - Example env check:
+    ```bash
+    # .env.example
+    DATABASE_URL="postgresql://..."
+    NEXTAUTH_SECRET="generate-with-openssl-rand-hex-32"
+    ```
 
 ## Compliance & Policies
 
-- **GDPR/CCPA**: Consent via cookies banner (`app/layout.tsx`). Data deletion via admin (Prisma).
-- **Accessibility**: WCAG 2.1 AA (semantic HTML, ARIA).
-- **Auditing**: Rate limit/spam logs in `lib/spam-prevention.ts` (`logSpam`). Prisma query logs optional.
-- **Policies**:
-  - No PII in analytics (`lib/analytics.ts`).
-  - Weekly `npm audit`.
-  - Annual pentests.
+**Applicable Standards**:
+- **GDPR/CCPA**: User consent for cookies (NextAuth); data export/deletion on request via admin user management.
+- **SOC2 principles**: Availability via rate limiting; confidentiality via encryption.
+- **Internal**:
+  - Mandatory code review/PR approval for auth/security changes.
+  - Weekly `npm audit` + Dependabot alerts.
+  - Quarterly pen-tests (tools: OWASP ZAP).
 
-## Monitoring & Incident Response
+**Evidence**:
+- Audit logs: Vercel/Prisma query logs.
+- Scans: GitHub Security tab.
 
-- **Logging**: Errors to console/ Sentry. Spam detection via `detectSpam`, `validateEmail`.
-- **Alerts**: Rate limit exceeds logged.
-- **Response**: Rotate secrets on breach. Rollback deploys via Vercel.
+## Incident Response
 
-## Related Files
+**Detection & Reporting**:
+- Monitor Vercel logs, Sentry (integrate via `lib/errors.ts`), and Google Analytics anomalies.
+- Report issues to `security@thecryptostartblog.com` or GitHub SECURITY.md template. Triage within 24h; coordinated disclosure.
 
-- `lib/errors.ts` – Custom errors
-- `lib/rate-limit.ts`, `lib/spam-prevention.ts` – Protections
-- `lib/permissions.ts` – Role checks
-- `lib/csrf.ts` – Token utils
-- `lib/validations.ts` – Zod schemas
-- `types/auth.ts`, `types/roles.ts` – Types
-- [architecture.md](./architecture.md) – Middleware, sessions
+**Escalation Steps**:
+1. **Alert**: PagerDuty/Slack (#security) for high-severity (e.g., auth bypass).
+2. **Contain**: Rollback deploy, revoke secrets, IP block via Cloudflare.
+3. **Triage**: Assess via `lib/prisma.ts` queries; scope impact (users affected?).
+4. **Remediate**: Hotfix/PR; notify affected users if PII breached.
+5. **Post-mortem**: Root cause in GitHub issue; update policies.
 
-Report issues to security@thecryptostartblog.com.
+**On-Call**: Primary: @lead-dev; Backup: @security-lead.
+
+See [architecture.md](./architecture.md) for monitoring stack details.

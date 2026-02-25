@@ -2,138 +2,207 @@
 
 ## Visão Geral
 
-Este documento define as regras obrigatórias para o agente GEMINI durante o desenvolvimento do projeto **thecryptostartblog** (um blog Next.js com integração Contentful, autenticação, comentários e SEO avançado). Essas regras garantem consistência, qualidade e alinhamento com o contexto do projeto.
+Este documento define as **regras obrigatórias** para o agente GEMINI durante o desenvolvimento do projeto **thecryptostartblog** — um blog Next.js com integração Prisma/PostgreSQL próprio, autenticação NextAuth, sistema de comentários, painel admin, SEO avançado (GSC, AI optimization), spam prevention e mais.
 
-**Objetivo**: Padronizar comportamentos para versionamento, commits, análise de contexto, segurança e qualidade de código.
+**Objetivo**: Garantir consistência no versionamento, commits, análise de contexto, segurança, qualidade de código e alinhamento com a arquitetura existente.
 
-**Público-alvo**: Desenvolvedores e agentes AI que interagem com o repositório.
+**Público-alvo**: Desenvolvedores, agentes AI (ex: GEMINI, CLAUDE) e contribuidores.
 
-**Arquivos relacionados**:
-- [`.context/AGENTS.md`](.context/AGENTS.md): Descrição dos agentes disponíveis.
-- [`CLAUDE.md`](.context/CLAUDE.md): Diretrizes gerais do projeto.
-- [`docs/`](docs/): Documentação técnica (ex: tipos em `types/`, utils em `lib/`).
-- [`plans/`](plans/): Planos de implementação existentes.
+**Status**: Ativo | **Última revisão**: 2024-10-15 (atualizado com symbols e exports do codebase)
+
+**Arquivos relacionados** (cross-references):
+- [`.context/AGENTS.md`](.context/AGENTS.md): Funções dos agentes AI.
+- [`.context/CLAUDE.md`](.context/CLAUDE.md): Diretrizes gerais do projeto.
+- [`docs/types.md`](docs/types.md): Detalhes de tipos (ex: `BlogPost`, `Author` em `types/blog.ts`).
+- [`docs/lib.md`](docs/lib.md): Utils (ex: `lib/seo-analyzer.ts`, `lib/ai-optimization.ts`).
+- [`plans/`](plans/): Planos de implementação (verifique duplicatas).
 - [`prevc-template.md`](prevc-template.md): Template para novos planos.
 
-Sempre consulte esses arquivos **antes** de qualquer ação.
+**Sempre consulte esses arquivos antes de qualquer ação**. Use ferramentas como `listFiles("lib/**/*.ts")` ou `analyzeSymbols("types/blog.ts")` para contexto.
+
+## Sumário
+
+- [1. Idioma](#1-idioma)
+- [2. Versionamento](#2-versionamento)
+- [3. Commits](#3-commits)
+- [4. Contexto do Projeto](#4-contexto-do-projeto)
+- [5. Ações Destrutivas](#5-ações-destrutivas)
+- [6. Dependências](#6-dependências)
+- [7. Escopo Controlado](#7-escopo-controlado)
+- [8. Qualidade de Código](#8-qualidade-de-código)
+- [9. Tratamento de Erros](#9-tratamento-de-erros)
+- [10. Documentação](#10-documentação)
+- [Conformidade e Auditoria](#conformidade-e-auditoria)
 
 ## Regras Detalhadas
 
 ### 1. Idioma
-- **Regra**: Todas as conversas, respostas, comentários de código e documentação devem ser em **português-BR**.
-- **Razão**: Facilita comunicação com a equipe brasileira e mantém consistência no projeto.
+
+- **Regra**: Todas conversas, respostas, comentários de código, logs e documentação em **português-BR**.
+- **Razão**: Alinhamento com equipe brasileira e padronização.
+- **Exceções**: Nomes de funções/variáveis em inglês (ex: `calculateAIOptimizationScore` em `lib/ai-optimization.ts`, `getPostBySlug` em `lib/posts.ts`).
 - **Exemplo**:
-  ```
+  ```ts
   // ❌ Incorreto
-  console.log('User registered successfully');
+  console.log('User authenticated');
 
   // ✅ Correto
-  console.log('Usuário registrado com sucesso');
+  console.log('Usuário autenticado com sucesso');
   ```
-- **Exceções**: Nomes de variáveis, funções e APIs seguem convenções inglesas (ex: `getPostBySlug` em `lib/contentful.ts`).
 
 ### 2. Versionamento
-- **Regra**: Use semântica `vMAJOR.MINOR.PATCH`:
-  | Tipo     | Descrição              | Exemplo |
-  |----------|------------------------|---------|
-  | **MAJOR** | Breaking changes (quebra compatibilidade) | `v2.0.0` (mudança em schema do Contentful) |
-  | **MINOR** | Nova feature          | `v1.1.0` (adicionar componente `CommentsList`) |
-  | **PATCH** | Bugfix                | `v1.0.1` (corrigir rate-limit em `lib/spam-prevention.ts`) |
-- **Changelog obrigatório**: Gere com data, seções `Added`, `Changed`, `Fixed`. Nomeie como `changelog-v1.1.0-nova-feature-comments.md`.
+
+- **Regra**: Use semântica `vMAJOR.MINOR.PATCH`. Crie changelog obrigatório em `docs/changelog-vX.Y.Z-descricao.md`.
+- **Tabela de tipos**:
+
+  | Tipo    | Descrição                          | Exemplo                          |
+  |---------|------------------------------------|----------------------------------|
+  | **MAJOR** | Mudanças breaking (ex: schema Prisma) | `v2.0.0` (update `types/blog.ts`) |
+  | **MINOR** | Nova feature (ex: novo endpoint)  | `v1.1.0` (adicionar `app/api/ai-optimization/scores`) |
+  | **PATCH** | Correções (ex: bug em rate-limit) | `v1.0.1` (fix `lib/spam-prevention.ts`) |
+
 - **Exemplo de Changelog**:
   ```markdown
-  # Changelog v1.1.0 - Adicionar sistema de comentários
+  # Changelog v1.1.0 - Sistema de AI Optimization
 
   ## Added
-  - Novo endpoint `app/api/comments/route.ts`
-  - Componente `CommentsList` em `components/`
+  - `calculateAIOptimizationScore` em `lib/ai-optimization.ts`
+  - Endpoint `app/api/ai-optimization/scores/route.ts`
 
   ## Changed
-  - Atualização em `lib/contentful.ts` para suportar comentários
+  - Atualização em `app/admin/ai-optimization/page.tsx`
 
   ## Fixed
-  - Correção de spam detection em `lib/spam-prevention.ts`
+  - Melhoria em `lib/errors.ts` (novas classes `RateLimitError`)
 
-  Data: 2024-10-01
+  **Data**: 2024-10-15
   ```
 
 ### 3. Commits
-- **Regra**: Commits simples, seguindo versionamento. Use `git commit -m "tipo: descrição vMAJOR.MINOR.PATCH"`.
-- **Tipos comuns**: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`.
+
+- **Regra**: Commits atômicos com Conventional Commits: `tipo: descrição curta vMAJOR.MINOR.PATCH`.
+- **Tipos**: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `test:`.
 - **Exemplo**:
-  ```
-  git commit -m "feat: adicionar CommentsList v1.1.0"
+  ```bash
+  git add .
+  git commit -m "feat: adicionar AIOptimizationScore v1.1.0"
   git push origin main
   ```
-- **Evite**: Commits genéricos como "updates" ou múltiplas mudanças por commit.
+- **Evite**: Commits vagos como "updates" ou múltiplas features.
 
 ### 4. Contexto do Projeto
-- **Regra**: **Sempre** analise `.context/` antes de planejar:
-  1. Leia `AGENTS.md` (funções dos agentes).
-  2. Leia `CLAUDE.md` (diretrizes).
-  3. Consulte `docs/` (ex: `types/blog.ts` para `BlogPost`).
-  4. Verifique `plans/` para evitar duplicatas.
-  5. Use `prevc-template.md` para novos planos.
-- **Ferramentas úteis** (para análise):
-  - `listFiles("lib/**/*.ts")` → Lista utils como `contentful.ts`, `seo.ts`.
-  - `analyzeSymbols("types/blog.ts")` → Interfaces como `BlogPost`, `BlogCategory`.
-- **Exemplo de checklist pré-execução**:
-  - ✅ `AGENTS.md` lido?
-  - ✅ Plano não duplicado em `plans/`?
+
+- **Regra**: **Sempre** analise `.context/` + codebase antes de planejar:
+  1. `AGENTS.md`: Escolha agente correto (GEMINI para SEO/AI tasks).
+  2. `CLAUDE.md`: Diretrizes gerais.
+  3. `docs/`: Tipos (`types/blog.ts`: `BlogPost`, `BlogCategory`), utils (`lib/seo-analyzer.ts`: `analyzeSEO`).
+  4. Arquitetura: Controllers em `app/api/*`, Components em `components/admin/*`.
+  5. Verifique `plans/` para duplicatas.
+  6. Use template `prevc-template.md`.
+
+- **Checklist pré-execução**:
+  | Item | Status |
+  |------|--------|
+  | `AGENTS.md` lido? | ✅ |
+  | Plano único? | ✅ |
+  | Symbols analisados (ex: `analyzeSymbols("lib/errors.ts")`)? | ✅ |
+
+- **Ferramentas recomendadas**:
+  - `listFiles("app/api/admin/**/*.ts")` → Endpoints admin.
+  - `searchCode("calculateReadingTime")` → Usado em `lib/utils.ts` e `lib/posts.ts`.
 
 ### 5. Ações Destrutivas
-- **Regra**: Nunca delete sem confirmação explícita. Backup obrigatório para `env`, schemas Prisma (`lib/prisma.ts`), configs.
+
+- **Regra**: **Nunca delete sem confirmação**. Backup obrigatório para:
+  - `lib/prisma.ts` (PrismaClientSingleton).
+  - `.env` (secrets).
+  - Schemas Types (`types/blog.ts`).
 - **Exemplo**:
-  ```
-  // Antes de alterar lib/prisma.ts
-  cp lib/prisma.ts lib/prisma.ts.backup
+  ```bash
+  cp lib/errors.ts lib/errors.ts.backup  # Antes de editar classes como AppError
   ```
 
 ### 6. Dependências
-- **Regra**: Liste pacotes, versões estáveis e confirme antes de `npm install`. Verifique `package.json` primeiro.
-- **Exemplo**:
-  ```
-  Proponho instalar: @contentful/rich-text-types@6.3.0 (estável)
+
+- **Regra**: Verifique `package.json` primeiro. Proponha versões estáveis, confirme instalação.
+- **Exemplo** (baseado em deps existentes como `react-markdown`):
+  ```bash
+  # Verificar existentes
+  grep "next-auth" package.json
+
+  # Propor
+  Proponho: prisma@5.14.0 (compatível com lib/prisma.ts)
   Confirmar? [Y/n]
+  npm install prisma@5.14.0
   ```
-- **Verificação**: Busque similaridades (ex: já existe `next-auth` para auth?).
 
 ### 7. Escopo Controlado
-- **Regra**: Uma tarefa por vez. Divida complexas em etapas.
-- **Exemplo**:
-  1. Etapa 1: Implementar `POST /api/comments`.
+
+- **Regra**: Uma feature por tarefa. Divida em etapas confirmadas.
+- **Exemplo** (implementar comentários):
+  1. `POST /api/comments/route.ts` + `lib/spam-prevention.ts`.
   2. Confirmar.
-  3. Etapa 2: Adicionar `CommentsList`.
+  3. `components/CommentsList.tsx` + `app/blog/[slug]/page.tsx`.
 
 ### 8. Qualidade de Código
-- **Regra**: Mantenha padrões existentes:
-  | Aspecto     | Padrão no Projeto                  |
-  |-------------|------------------------------------|
-  | Naming     | CamelCase (ex: `getPostBySlug`)   |
-  | Estrutura  | `lib/` para utils, `components/` para UI |
-  | Estilo     | TypeScript estrito, sem `any`     |
-- **Limpeza**: Remova `console.log` antes de commit.
-- **Comentários**: Apenas para lógica não-óbvia (ex: spam detection em `lib/spam-prevention.ts`).
+
+- **Regra**: Siga padrões do projeto:
+  | Aspecto    | Padrão Exemplo                          |
+  |------------|-----------------------------------------|
+  | **Naming** | CamelCase: `getAllPosts` (`lib/posts.ts`) |
+  | **Estrutura** | Utils: `lib/`; UI: `components/`; API: `app/api/` |
+  | **TypeScript** | Estrito, sem `any`; use `BlogPost` (`types/blog.ts`) |
+  | **Estilo** | ESLint/Prettier; `cn` utility (`lib/utils.ts`) |
+
+- **Limpeza**: Remova `console.log`. Comentários só para lógica complexa (ex: `detectSpam` em `lib/spam-prevention.ts`).
+- **Exemplo prático**:
+  ```ts
+  // ✅ Bom: Usa types e utils
+  import { BlogPost } from '@/types/blog';
+  import { calculateReadingTime } from '@/lib/utils';
+
+  export async function getPostBySlug(slug: string): Promise<BlogPost> {
+    // Lógica com try-catch
+  }
+  ```
 
 ### 9. Tratamento de Erros
-- **Regra**: Sempre trate erros em API/DB/auth. Use classes de `lib/errors.ts` (`AppError`, `RateLimitError`).
-- **Exemplo**:
+
+- **Regra**: Trate **todos** erros em API/DB/auth. Use classes de `lib/errors.ts`.
+- **Classes disponíveis**:
+  - `AppError`
+  - `AuthenticationError`
+  - `AuthorizationError`
+  - `ValidationError`
+  - `RateLimitError`
+- **Exemplo** (em `app/api/comments/route.ts`):
   ```ts
-  // app/api/comments/route.ts
-  try {
-    // lógica
-  } catch (error) {
-    throw new RateLimitError('Tentativas excedidas');
+  import { RateLimitError, AppError } from '@/lib/errors';
+  import { checkRateLimit } from '@/lib/spam-prevention';
+
+  export async function POST(req: Request) {
+    try {
+      await checkRateLimit(req);
+      // Lógica
+    } catch (error) {
+      if (error instanceof RateLimitError) {
+        return Response.json({ error: 'Rate limit excedido' }, { status: 429 });
+      }
+      throw new AppError('Erro interno');
+    }
   }
   ```
 
 ### 10. Documentação
-- **Regra**: Atualize `.context/docs/` para novas features. Mantenha `CLAUDE.md` com decisões técnicas.
-- **Exemplo**: Após adicionar SEO, atualize `docs/seo.md` com `generateMetadata` de `lib/seo.ts`.
+
+- **Regra**: Atualize `docs/` para novas features. Registre decisões em `CLAUDE.md`.
+- **Exemplo**: Após AI Optimization, adicione `docs/ai-optimization.md` referenciando `AIOptimizationScore` (`lib/ai-optimization.ts`).
 
 ## Conformidade e Auditoria
-- **Violação**: Pare imediatamente e justifique.
-- **Atualizações**: Proponha mudanças via PR com changelog.
-- **Data de última revisão**: 2024-10-01
 
-Para dúvidas, consulte desenvolvedores ou revise contexto do projeto.
+- **Violação**: Pare, justifique e corrija imediatamente.
+- **Auditoria**: Todo commit/PR deve referenciar esta doc.
+- **Atualizações**: Proponha via PR com changelog.
+- **Versão do Codebase**: Baseado em exports como `analyzeSEO` (`lib/seo-analyzer.ts`), `GSCClient` (`lib/gsc-client.ts`).
+
+**Para dúvidas**: Consulte devs ou revise `.context/`. Sempre priorize qualidade e contexto!

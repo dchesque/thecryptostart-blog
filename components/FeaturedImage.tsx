@@ -1,5 +1,4 @@
 import Image from 'next/image'
-import contentfulLoader from '@/lib/contentful-loader'
 
 interface FeaturedImageProps {
     src: string
@@ -27,7 +26,6 @@ export default function FeaturedImage({
         <figure className={`my-8 ${className}`}>
             <div className="aspect-video relative rounded-xl overflow-hidden shadow-lg border border-crypto-light">
                 <Image
-                    loader={contentfulLoader}
                     src={normalizedSrc}
                     alt={alt}
                     fill

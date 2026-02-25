@@ -1,9 +1,7 @@
 /**
  * SEO Analysis Utilities
- * Analisar e otimizar conteúdo para SEO
+ * Analisar e otimizar conteúdo para SEO (Markdown)
  */
-
-import type { Document } from '@contentful/rich-text-types'
 
 export interface SEOAnalysis {
     wordCount: number
@@ -19,112 +17,86 @@ export interface SEOAnalysis {
 }
 
 /**
- * Contar palavras em documento
+ * Contar palavras em documento markdown
  */
-export function countWords(content: Document): number {
-    if (!content?.content) return 0
+export function countWords(content: string): number {
+    if (!content) return 0
+    // Remove markdown formatting to count real words
+    const stripped = content
+        .replace(/[#*`_~[\]]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
 
-    let wordCount = 0
-
-    const traverse = (node: any) => {
-        if (node.nodeType === 'text' && node.value) {
-            wordCount += node.value.split(/\s+/).filter(Boolean).length
-        }
-        if (node.content && Array.isArray(node.content)) {
-            node.content.forEach(traverse)
-        }
-    }
-
-    content.content.forEach(traverse)
-    return wordCount
+    return stripped ? stripped.split(/\s+/).length : 0
 }
 
 /**
  * Extrair todos os links
  */
-export function extractLinks(content: Document): {
+export function extractLinks(content: string): {
     internal: string[]
     external: string[]
 } {
-    if (!content?.content) return { internal: [], external: [] }
-
     const internal: string[] = []
     const external: string[] = []
 
-    const traverse = (node: any) => {
-        if (node.nodeType === 'hyperlink' && node.data?.uri) {
-            const url = node.data.uri
-            if (url.startsWith('/') || url.includes('thecryptostart.com')) {
-                internal.push(url)
-            } else {
-                external.push(url)
-            }
-        }
-        if (node.content && Array.isArray(node.content)) {
-            node.content.forEach(traverse)
+    if (!content) return { internal, external }
+
+    // Match markdown links: [text](url)
+    const linkRegex = /\[[^\]]*\]\(([^)]+)\)/g
+    let match
+
+    while ((match = linkRegex.exec(content)) !== null) {
+        const url = match[1]
+        if (url.startsWith('/') || url.includes('thecryptostart.com')) {
+            internal.push(url)
+        } else if (url.startsWith('http')) {
+            external.push(url)
         }
     }
 
-    content.content.forEach(traverse)
     return { internal, external }
 }
 
 /**
- * Contar imagens
+ * Contar imagens (markdown e tags HTML)
  */
-export function countImages(content: Document): number {
-    if (!content?.content) return 0
+export function countImages(content: string): number {
+    if (!content) return 0
 
-    let imageCount = 0
+    // Markdown images: ![alt](url)
+    const mdImagesMatches = content.match(/!\[[^\]]*\]\([^)]+\)/g)
+    const mdCount = mdImagesMatches ? mdImagesMatches.length : 0
 
-    const traverse = (node: any) => {
-        if (node.nodeType === 'embedded-asset' || node.nodeType === 'embedded-entry' || node.nodeType === 'asset-hyperlink') {
-            imageCount++
-        }
-        if (node.content && Array.isArray(node.content)) {
-            node.content.forEach(traverse)
-        }
-    }
+    // HTML img tags
+    const htmlImagesMatches = content.match(/<img[^>]+>/gi)
+    const htmlCount = htmlImagesMatches ? htmlImagesMatches.length : 0
 
-    content.content.forEach(traverse)
-    return imageCount
+    return mdCount + htmlCount
 }
 
 /**
- * Extrair headings
+ * Extrair headings (Markdown headers #)
  */
-export function extractHeadings(content: Document): string[] {
-    if (!content?.content) return []
+export function extractHeadings(content: string): string[] {
+    if (!content) return []
 
     const headings: string[] = []
+    const regex = /^(#{1,6})\s+(.+)$/gm
+    let match
 
-    const traverse = (node: any) => {
-        if (node.nodeType?.includes('heading')) {
-            const text = extractTextFromNode(node)
-            if (text) headings.push(text)
-        }
-        if (node.content && Array.isArray(node.content)) {
-            node.content.forEach(traverse)
-        }
+    while ((match = regex.exec(content)) !== null) {
+        headings.push(match[2].trim())
     }
 
-    content.content.forEach(traverse)
     return headings
-}
-
-function extractTextFromNode(node: any): string {
-    if (node.nodeType === 'text') return node.value || ''
-    if (!node.content) return ''
-    return node.content
-        .map((child: any) => extractTextFromNode(child))
-        .join('')
 }
 
 /**
  * Analisar SEO completo
  */
 export function analyzeSEO(
-    content: Document,
+    content: string,
     keywords: string[] = []
 ): SEOAnalysis {
     const wordCount = countWords(content)
@@ -135,12 +107,17 @@ export function analyzeSEO(
 
     // Keyword density
     const keywordDensity: { [key: string]: number } = {}
-    const contentText = extractTextFromNode({ content: content.content, nodeType: 'document', data: {} } as any).toLowerCase()
+    const contentText = content ? content.toLowerCase().replace(/[#*`_~[\]]/g, '') : ''
 
     keywords.forEach(keyword => {
         const kw = keyword.toLowerCase()
-        const regex = new RegExp(`\\b${kw}\\b`, 'gi')
+        if (!kw) return
+
+        // Escape keyword for regex
+        const escapedKw = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const regex = new RegExp(`\\b${escapedKw}\\b`, 'gi')
         const matches = contentText.match(regex) || []
+
         keywordDensity[keyword] = wordCount > 0 ? (matches.length / (wordCount / 100)) : 0
     })
 

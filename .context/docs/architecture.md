@@ -1,148 +1,151 @@
-# Architecture
+## Architecture Notes
 
-This is a monolithic Next.js (v14+) application for a crypto-focused blog platform. It uses the App Router, Contentful as a headless CMS for blog content, Prisma ORM with PostgreSQL for user data and authentication, and NextAuth.js for session management. The architecture emphasizes static site generation (SSG) for blog posts to boost SEO and performance, with server-side rendering (SSR) and API routes for dynamic features like admin panels and user interactions.
+This Next.js-based modular monolith powers "The Crypto Start Blog," a content platform focused on cryptocurrency education with advanced SEO, AI optimization, and admin tools. The design prioritizes developer velocity, SEO performance, and content scalability. It leverages Next.js App Router for hybrid rendering (server/client components), Prisma for type-safe database access, and custom libraries for SEO analysis, content expansion, and spam prevention. The architecture evolved from a static blog to a dynamic CMS with GSC integration and AI-driven insights to compete in search rankings. Key drivers include low-latency rendering, cost-effective scaling on Vercel, and extensibility for future micro-frontends or services.
 
-Deployment targets Vercel for edge caching, global CDN, and serverless scaling. All layers are co-located for simplicity, with TypeScript contracts ensuring type safety across boundaries.
+For complete symbol counts and dependency graphs, see [`codebase-map.json`](./codebase-map.json).
 
-## High-Level Data Flow
+## System Architecture Overview
 
-```
-Client Request → app/ Pages (SSG/SSR) → lib/ Fetchers & Utils → External Services (Contentful/Prisma)
-                    ↓
-               app/api/ Routes (Mutations) → Prisma/DB
-                    ↓
-               Components (UI Rendering) + Auth/Session Checks
-```
+**Architecture Style**: Modular Monolith
+
+Next.js handles the full stack: routing, rendering, and API execution in a single deployable unit. Deployment targets Vercel for edge functions, static exports, and serverless APIs.
+
+**Key Components**:
+- **Routing Layer**: App Router (`app/`) for pages and API routes.
+- **Presentation Layer**: React components with Tailwind CSS.
+- **Business Logic Layer**: Pure functions in `lib/` for SEO, posts, and AI.
+- **Data Layer**: Prisma ORM over PostgreSQL, with GSC/ external integrations.
+
+**Request Flow**:
+1. Browser/CLI hits Next.js entry (page or API route).
+2. Server Components fetch data via `lib/` (e.g., `getAllPosts`), render HTML/JSON.
+3. Client Components hydrate for interactivity (e.g., forms, modals).
+4. External calls (GSC, AI) gated by rate limits; errors bubble via custom classes.
+5. Persistence via Prisma transactions; caching implicit via Next.js revalidation.
+
+Control pivots at API routes (`route.ts`) and server actions, enforcing auth/permissions.
 
 ## Architectural Layers
 
-| Layer                  | Directory/Path                  | Responsibilities                          | Key Files/Exports                          |
-|------------------------|---------------------------------|-------------------------------------------|--------------------------------------------|
-| **Presentation**      | `app/`, `components/`           | UI rendering, pages, reusable components | `app/blog/[slug]/page.tsx`, `components/TableOfContents.tsx` |
-| **API**               | `app/api/`                      | Route handlers for auth, users, comments | `app/api/auth/register/route.ts`, `app/api/admin/comments/route.ts` |
-| **Business Logic**    | `lib/`, `types/`                | Data fetching, utils, validation, SEO    | `lib/contentful.ts` (`getPostBySlug`), `lib/seo.ts` (`generateMetadata`) |
-| **Persistence**       | `prisma/`                       | DB schema, migrations, queries           | `prisma/schema.prisma`, `lib/prisma.ts` (singleton) |
-| **Infrastructure**    | `lib/` (integrations), `public/`| Config, constants, static assets         | `lib/constants.ts` (`getCategoryBySlug`), `public/` |
+- **Presentation**: UI components and pages (`app/`, `components/`)
+- **API Controllers**: HTTP endpoints for CRUD and analytics (`app/api/`)
+- **Business Logic**: SEO analyzers, post processors, AI optimizers (`lib/`)
+- **Data Access**: Repositories and integrations (`lib/posts.ts`, `lib/gsc-client.ts`, `lib/prisma.ts`)
+- **Types & Validations**: Schemas and contracts (`types/`, `lib/validations/`)
+- **Utilities**: Cross-cutting concerns (`lib/utils.ts`, `lib/errors.ts`)
 
-## Design Patterns
+> See [`codebase-map.json`](./codebase-map.json) for complete symbol counts and dependency graphs.
 
-| Pattern     | Locations                          | Purpose                                      |
-|-------------|------------------------------------|----------------------------------------------|
-| **Singleton** | `lib/prisma.ts` (PrismaClientSingleton) | Single DB client instance per request        |
-| **Factory**  | `lib/contentful.ts` (getClient)    | Lazy Contentful client creation              |
-| **Adapter**  | `lib/contentful.ts` (transformPost)| Contentful data → internal `BlogPost` type   |
-| **Decorator**| `lib/seo.ts` (generateMetadata)   | Enhance page metadata with JSON-LD schemas   |
-| **Strategy** | `lib/permissions.ts` (hasRole/hasPermission) | Pluggable RBAC checks                |
+## Detected Design Patterns
+
+| Pattern          | Confidence | Locations                          | Description |
+|------------------|------------|------------------------------------|-------------|
+| Repository      | 95%       | `lib/posts.ts`                     | Data access functions like `getAllPosts`, `getPostBySlug` abstract Prisma queries. |
+| Factory         | 90%       | `lib/gsc-client.ts` (`createGSCClient`) | Instantiates `GSCClient` with auth/config for Google Search Console. |
+| Singleton       | 85%       | `lib/prisma.ts` (`PrismaClientSingleton`) | Ensures single Prisma instance across requests. |
+| Strategy        | 80%       | `lib/seo-analyzer.ts`, `lib/ai-optimization.ts` | Interchangeable analyzers (`analyzeSEO`, `calculateAIOptimizationScore`). |
+| Decorator       | 75%       | `lib/seo.ts` (`generateMetadata`)  | Enhances pages with dynamic schema/FAQ. |
+| Error Hierarchy | 90%       | `lib/errors.ts` (AppError subclasses) | Typed errors for auth, validation, rates. |
 
 ## Entry Points
 
-- **`app/layout.tsx`** — Root layout with `AuthProvider`, providers, and global metadata.
-- **`app/page.tsx`** — Landing/homepage.
-- **`app/blog/page.tsx`** — Blog index with `getAllPosts`, pagination, search.
-- **`app/blog/[slug]/page.tsx`** — Post viewer (SSG via `generateStaticParams`/`getPostBySlug`).
-- **`app/admin/page.tsx`** — Admin dashboard (`AdminDashboard`).
-- **`app/api/auth/register/route.ts`** — POST user registration.
-- **`app/api/users/route.ts`** — GET/POST users list.
-- **`prisma/seed.ts`** — DB seeding.
+- [`app/layout.tsx`](./app/layout.tsx) — Root layout with auth provider and metadata.
+- [`app/page.tsx`](./app/page.tsx) — Home/landing page.
+- [`app/blog/page.tsx`](./app/blog/page.tsx) — Blog index (`BlogPage`).
+- [`app/admin/layout.tsx`](./app/admin/layout.tsx) — Admin dashboard layout (`AdminLayout`).
+- [`app/api/auth/[...nextauth]/route.ts`](./app/api/auth/%5B...nextauth%5D/route.ts) — Authentication handler.
+- [`app/api/admin/posts/[id]/route.ts`](./app/api/admin/posts/%5Bid%5D/route.ts) — Admin post CRUD.
+- [`scripts/seo-monitor.ts`](../scripts/seo-monitor.ts) — Daily cron job entry.
 
-Example SSG setup in `app/blog/[slug]/page.tsx`:
+## Public API
 
-```tsx
-export async function generateStaticParams() {
-  const slugs = await getAllPostSlugs();
-  return slugs.map((slug) => ({ slug }));
-}
+| Symbol                      | Type       | Location                  |
+|-----------------------------|------------|---------------------------|
+| `cn`                        | function  | `lib/utils.ts`            |
+| `calculateReadingTime`      | function  | `lib/utils.ts`            |
+| `analyzeSEO`                | function  | `lib/seo-analyzer.ts`     |
+| `getAllPosts`               | function  | `lib/posts.ts`            |
+| `GSCClient`                 | class     | `lib/gsc-client.ts`       |
+| `AppError`                  | class     | `lib/errors.ts`           |
+| `BlogPost`                  | interface | `types/blog.ts`           |
+| `AIOptimizationScore`       | interface | `lib/ai-optimization.ts`  |
+| `AuthProvider`              | component | `components/AuthProvider.tsx` |
+| `BlogPage`                  | component | `app/blog/page.tsx`       |
 
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = await getPostBySlug(params.slug);
-  // Render with SEO, comments, etc.
-}
-```
+See [`codebase-map.json`](./codebase-map.json) for the complete public API listing (~120 exports).
 
-## Key Domains & Boundaries
+## Internal System Boundaries
 
-- **Blog Domain** (`lib/contentful.ts`, `types/blog.ts`): Read-only Contentful access. Types: `BlogPost`, `BlogCategory`, `ContentfulBlogPost`.
-- **Auth Domain** (`app/api/auth/`, `types/auth.ts`): Prisma-backed users/sessions. Exports: `UserWithRoles`, `hasPermission`.
-- **Admin Domain** (`app/admin/`): Gated by roles; fetches via API routes.
+Domains are loosely bounded: **Content** (`lib/posts.ts`, categories/authors), **SEO/Analytics** (`lib/seo-*.ts`, `lib/gsc-client.ts`), **Admin** (API routes with `hasPermission`), **Auth** (NextAuth + `lib/permissions.ts`). 
 
-No shared mutable state; data flows via props/fetch.
+- **Data Ownership**: Prisma models enforce schemas; `transformPrismaPost` normalizes for UI.
+- **Synchronization**: Stale-while-revalidate via Next.js; cron in `scripts/seo-monitor.ts` for GSC sync.
+- **Contracts**: Zod schemas in `lib/validations/` at API boundaries; TypeScript enforces internally.
 
-## Public API Surface
+No cross-domain transactions; events via DB triggers if needed.
 
-| Symbol                  | Type      | File                          | Usage Example |
-|-------------------------|-----------|-------------------------------|---------------|
-| `BlogPost`             | Interface | `types/blog.ts`              | Data model for posts |
-| `getPostBySlug(slug)`  | Function  | `lib/contentful.ts`          | `const post = await getPostBySlug('my-post');` |
-| `generateMetadata()`   | Function  | `lib/seo.ts`                 | Page `<head>` enhancement |
-| `calculateReadingTime(text)` | Function | `lib/utils.ts`            | `const time = calculateReadingTime(post.body);` |
-| `checkRateLimit(ip)`   | Function  | `lib/rate-limit.ts`          | API guard: `if (await checkRateLimit(ip)) return NextResponse.json(...);` |
-| `AuthProvider`         | Component | `components/AuthProvider.tsx`| `<AuthProvider>{children}</AuthProvider>` |
-| `hasPermission(user, perm)` | Function | `lib/permissions.ts`     | Admin gates |
+## External Service Dependencies
 
-Full list in [codebase-map.json](../codebase-map.json).
+- **Google Search Console (GSC)**: `GSCClient` via OAuth; rate-limited (100 queries/day); retries on 429 via lib wrappers.
+- **NextAuth Providers** (Google/GitHub): Session/JWT; env-based secrets.
+- **Prisma/PostgreSQL**: Connection pooled singleton; migrations via `prisma migrate`.
+- **AI Provider** (inferred OpenAI): `lib/ai-optimization.ts`, `lib/content-expander.ts`; API keys, token limits.
+- **Google Analytics/AdSense**: Event tracking (`lib/analytics.ts`); no auth, client-side.
 
-## External Dependencies
+Failures: Custom `RateLimitError`; circuit breakers recommended for production.
 
-| Service       | Integration File       | Config                  | Fallback/Notes |
-|---------------|-----------------------|-------------------------|----------------|
-| **Contentful**| `lib/contentful.ts`  | `CONTENTFUL_SPACE_ID`, `CONTENTFUL_TOKEN` | SSG cache; query limits tracked |
-| **Prisma/PG**| `lib/prisma.ts`      | `DATABASE_URL`         | Singleton; auto-migrations |
-| **NextAuth** | `app/api/auth/[...nextauth]/route.ts` | `NEXTAUTH_SECRET`, providers | Credentials + sessions |
-| **AdSense**  | `components/AdSense.tsx` | Client-side script   | CSP headers required |
+## Key Decisions & Trade-offs
 
-## Deployment & Scaling
+- **Next.js App Router**: Won over Pages Router for streaming/RSC; trade-off: steeper learning curve vs. perf gains (TTFB <100ms).
+- **Prisma over Drizzle**: Typegen + migrations > raw SQL; cost: schema lock-in.
+- **Monolith**: Simplicity/deploy speed > microservices; scales to 10k posts via Vercel.
+- **Server-First Rendering**: SEO priority > client SPA; mitigated hydration mismatches.
 
-- **Build**: `pnpm build` → SSG outputs in `.next/static`.
-- **Runtime**: Vercel Edge for APIs; ISR revalidation for dynamic pages.
-- **Scaling**: Monolith to 10k DAU; add Upstash Redis for rate limits if needed.
-- **Local Dev**: `pnpm dev`; Docker for Postgres/Contentful mocks.
+No formal ADRs; log in Git history.
 
-## Trade-offs
-
-| Decision                  | Pro                          | Con                          | Alternative |
-|---------------------------|------------------------------|------------------------------|-------------|
-| Contentful CMS            | Non-dev content edits       | Vendor cost/latency (~300ms)| Markdown files |
-| SSG + API SSR             | SEO + perf                  | Build times for 100+ posts  | Full ISR    |
-| Prisma + NextAuth         | Type-safe auth              | Schema lock-in              | Custom JWT  |
-| Monolith                  | Fast iteration              | No independent scaling      | Turborepo   |
-
-## Architecture Diagram
+## Diagrams
 
 ```mermaid
 graph TD
-    Client[Browser/Client] -->|GET /blog/[slug]| Pages[app/ Pages<br/>SSG/SSR]
-    Pages -->|fetch| Lib[lib/<br/>contentful.ts, seo.ts]
-    Lib -->|Query| Contentful[Contentful CMS]
-    Lib -->|Query| Prisma[Prisma<br/>Postgres DB]
-    Pages -->|Mutations| API[app/api/ Routes]
-    API --> Prisma
-    Pages -->|Sessions| Auth[NextAuth.js]
-    Pages --> Components[components/<br/>UI + Ads]
-    Auth -.->|RBAC| Lib
+    subgraph Internet["🌐 External"]
+        GSC[Google Search Console]
+        AI[AI Provider]
+    end
+    subgraph NextJS["🛠️ Next.js Monolith"]
+        Entry[Entry Points<br/>app/, API routes] --> Auth[Auth & Permissions<br/>lib/permissions.ts]
+        Auth --> BL[Business Logic<br/>lib/seo-*, lib/posts.ts]
+        BL --> DB[Prisma/PostgreSQL]
+        BL -.-> GSC
+        BL -.-> AI
+        Entry --> UI[Presentation<br/>components/, app/pages]
+        UI --> BL
+    end
+    classDef layer fill:#e1f5fe
+    class Entry,BL,UI,DB layer
 ```
 
-## Risks & Mitigations
+## Risks & Constraints
 
-- **Vendor Lock (Contentful)**: Export scripts; cap at 1k posts.
-- **Cold Starts**: Edge runtime; <500ms p95 target.
-- **Spam/Rate Limits**: `lib/rate-limit.ts`, `lib/spam-prevention.ts` (IP-based).
-- **SEO**: `lib/seo.ts` schemas; monitor Core Web Vitals.
+- **Rate Limits**: GSC (2k/day verified), AI tokens (~$0.01/score); mitigate with queues.
+- **Scaling**: DB queries O(n) for related posts; add Redis for hot paths.
+- **Vendor Lock**: Heavy GSC/Prisma; abstract via interfaces.
+- **SEO Volatility**: Google updates; monitor via `scripts/seo-monitor.ts`.
+- **Performance**: Rich text parsing blocks; offload to workers.
 
-## Directory Structure
+## Top Directories Snapshot
 
-```
-.
-├── app/              # Pages, layouts, API routes (~25 files)
-├── components/       # UI (~15 files: Sidebar, CommentsList)
-├── lib/              # Utils, fetchers (~20 files: contentful.ts, utils.ts)
-├── types/            # TS defs (~5 files: blog.ts, auth.ts)
-├── prisma/           # DB (~5 files: schema.prisma)
-├── docs/             # This docs/
-└── public/           # Assets
-```
+- `app/` — 50+ files (pages, API routes, layouts)
+- `components/` — 40+ files (UI primitives, admin panels)
+- `lib/` — 25+ files (core logic, SEO tools, utils)
+- `types/` — 10 files (interfaces, schemas)
+- `docs/` — 15 files (guides, architecture)
+- `prisma/` — 5 files (schema, migrations)
+- `scripts/` — 5 files (cron jobs, seeds)
 
-## Related Docs
+*See [`codebase-map.json`](./codebase-map.json) for detailed file counts.*
 
-- [project-overview.md](./project-overview.md) — High-level project goals.
-- [data-flow.md](./data-flow.md) — Detailed request/response traces.
-- [codebase-map.json](./codebase-map.json) — Symbols, deps, graphs.
+## Related Resources
+
+- [Project Overview](./project-overview.md)
+- [Data Flow](./data-flow.md)
+- [Codebase Map](./codebase-map.json)

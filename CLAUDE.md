@@ -6,7 +6,7 @@
 
 # The Crypto Start Blog - Documentation
 
-Welcome to the comprehensive documentation for **The Crypto Start Blog**, a modern Next.js blog platform focused on cryptocurrency education, startup guides, and Web3 insights. Built with TypeScript, App Router, Contentful CMS, Prisma ORM, and production-ready features like SEO optimization, authentication, rate limiting, and an admin dashboard.
+Welcome to the comprehensive documentation for **The Crypto Start Blog**, a modern Next.js blog platform focused on cryptocurrency education, startup guides, and Web3 insights. Built with TypeScript, App Router, a self-hosted PostgreSQL/Prisma CMS, and production-ready features like SEO optimization, authentication, rate limiting, and an admin dashboard.
 
 This docs site serves as your knowledge base. Use the sidebar or the guide index below to navigate.
 
@@ -15,7 +15,6 @@ This docs site serves as your knowledge base. Use the sidebar or the guide index
 ### Prerequisites
 - Node.js 18+
 - PostgreSQL (via Docker or local)
-- Contentful account (free tier works)
 - Vercel or similar for deployment (optional)
 
 ### Setup Steps
@@ -29,8 +28,6 @@ This docs site serves as your knowledge base. Use the sidebar or the guide index
 2. **Environment Variables** (copy `.env.example` to `.env.local`):
    ```
    DATABASE_URL="postgresql://..."
-   CONTENTFUL_SPACE_ID=...
-   CONTENTFUL_ACCESS_TOKEN=...
    NEXTAUTH_SECRET=...
    NEXTAUTH_URL=http://localhost:3000
    # See lib/env.ts for full list
@@ -43,18 +40,13 @@ This docs site serves as your knowledge base. Use the sidebar or the guide index
    npx prisma db seed   # Optional: seed.ts
    ```
 
-4. **Contentful Setup**:
-   - Create space and environment
-   - Install Contentful CLI: `npm i -g contentful-cli`
-   - Follow `CONTENTFUL_SETUP.md` for content types (BlogPost, Category, Author)
-
-5. **Run Dev Server**:
+4. **Run Dev Server**:
    ```bash
    npm run dev
    ```
    Open [http://localhost:3000](http://localhost:3000)
 
-6. **Build & Deploy**:
+5. **Build & Deploy**:
    ```bash
    npm run build
    npm run start
@@ -68,29 +60,29 @@ For Docker: `docker-compose up`
 |-------|----------------|------|
 | **Frontend** | App Router pages (`app/`), Components (`components/`) | Next.js 14+, Tailwind CSS, shadcn/ui |
 | **Backend** | API Routes (`app/api/`), Lib utils | Prisma, NextAuth.js, Upstash Rate Limit |
-| **Data** | Blog Posts/Categories (CMS), Users/Roles (DB) | Contentful, PostgreSQL |
+| **Data** | Blog Posts/Categories (CMS), Users/Roles (DB) | PostgreSQL, Prisma |
 | **Auth** | Session-based (NextAuth), RBAC | Credentials + Database provider |
 | **SEO/Perf** | Metadata API, Schema.org, Sitemap | next-seo patterns, Core Web Vitals optimized |
 
 - **Pages**: Home (`/`), Blog (`/blog`), Post (`/blog/[slug]`), Admin (`/admin`), About (`/about`), Login (`/login`)
-- **Key Libs**: `lib/contentful.ts` (CMS queries), `lib/seo.ts` (structured data), `lib/permissions.ts` (RBAC)
+- **Key Libs**: `lib/posts.ts` (Data layer), `lib/seo.ts` (structured data), `lib/permissions.ts` (RBAC)
 - **Middleware**: Auth guards, rate limiting (`middleware.ts`)
 
 See [Architecture Notes](./architecture.md) for diagrams and ADRs.
 
 ## ✨ Key Features
 
-- **Dynamic Blog**: Fetch posts/categories from Contentful with pagination, search, related posts.
+- **Dynamic Blog**: Fetch posts/categories from PostgreSQL with pagination, search, related posts.
   ```ts
-  // Example: lib/contentful.ts
+  // Example: lib/posts.ts
   export const getAllPosts = async (options: PaginationOptions) => { ... };
   ```
 - **Authentication**: Register/Login, Admin-only routes, Role-based access (User/Admin).
-- **Admin Dashboard**: User management (`/admin/users`), protected with `hasRole`.
+- **Admin Dashboard**: User management (`/admin/users`), Posts, Categories, Authors management protected with `hasRole`.
 - **SEO Optimized**: Auto-generated metadata, JSON-LD schemas (Breadcrumb, Organization, Website).
-- **Performance**: SSG/ISR for posts, reading time calc, TOC extraction, AdSense integration.
+- **Performance**: SSG/ISR for posts, reading time calc, Markdown TOC extraction, AdSense integration.
 - **Security**: CSRF protection, rate limiting, Zod validations.
-- **Utils**: `calculateReadingTime`, `formatDate`, `slugify`, custom errors (AppError, RateLimitError).
+- **Utils**: `calculateReadingTime`, `formatDate`, custom errors (AppError, RateLimitError).
 
 Public API exports: 50+ functions/types (e.g., `BlogPost`, `getPostBySlug`, `generateMetadata`).
 
@@ -99,13 +91,13 @@ Public API exports: 50+ functions/types (e.g., `BlogPost`, `getPostBySlug`, `gen
 ```
 .
 ├── app/                 # Next.js App Router (pages, API routes)
-│   ├── api/             # Auth, users, register
-│   ├── admin/           # Dashboard, users
+│   ├── api/             # Auth, users, admin, register
+│   ├── admin/           # Dashboard, users, posts, categories, authors
 │   ├── blog/            # Listing, [slug]
 │   ├── layout.tsx       # Root layout + AuthProvider
 │   └── globals.css
 ├── components/          # Reusable UI (TOC, Sidebar, Footer, AdSense)
-├── lib/                 # Core logic (contentful, seo, utils, prisma)
+├── lib/                 # Core logic (posts, seo, utils, prisma)
 ├── types/               # TS interfaces (blog.ts, auth.ts, roles.ts)
 ├── prisma/              # Schema, seed.ts
 ├── public/              # Static assets
@@ -115,7 +107,7 @@ Public API exports: 50+ functions/types (e.g., `BlogPost`, `getPostBySlug`, `gen
 ├── middleware.ts        # Edge runtime guards
 ├── next.config.mjs      # Images, env
 ├── tailwind.config.ts
-├── package.json         # Turbopack, shadcn, @contentful/rich-text-types
+├── package.json         # Turbopack, shadcn, react-markdown
 └── ... (Dockerfile, etc.)
 ```
 
@@ -132,7 +124,6 @@ Full snapshot: See [Repository Snapshot](#repository-snapshot).
 | [Glossary & Domain Concepts](./glossary.md) | Terms: BlogPost, RolePermissions | Crypto/blog domain |
 | [Security & Compliance](./security.md) | Auth model, secrets, rate limits | AUTH_ARCHITECTURE.md |
 | [Tooling & Productivity](./tooling.md) | Scripts, IDE setup, linting | shadcn, Prisma Studio |
-| [Contentful Setup](./CONTENTFUL_SETUP.md) | CMS config | Content types, queries |
 | [Database Setup](./SETUP_DATABASE.md) | Prisma migrations | Docker Postgres |
 
 ## 🔧 Tooling & Scripts
@@ -140,7 +131,6 @@ Full snapshot: See [Repository Snapshot](#repository-snapshot).
 - `npm run dev` / `build` / `start` / `lint` / `type-check`
 - `npx prisma studio` - DB explorer
 - `npm run db:seed` - Run seed.ts
-- Contentful: `contentful login`, `contentful space environment import`
 
 ## 🤝 Contributing
 
@@ -161,7 +151,6 @@ See [Development Workflow](./development-workflow.md).
 
 | Issue | Solution |
 |-------|----------|
-| Contentful 404 | Check env vars, space ID |
 | Prisma connect fail | Verify DATABASE_URL |
 | Auth mismatch | Sync NEXTAUTH_URL |
 | Rate limit hit | Upstash Redis config |
@@ -170,7 +159,7 @@ Report issues with reproduction steps.
 
 ## 📄 License & Credits
 
-MIT License. Powered by Next.js, Contentful, Prisma.
+MIT License. Powered by Next.js, Prisma, PostgreSQL.
 
 ---
 
@@ -179,10 +168,9 @@ MIT License. Powered by Next.js, Contentful, Prisma.
 ### Repository Snapshot
 ```
 app/ AUTH_ARCHITECTURE.md/ auth.ts/ CHANGELOG.md/ components/
-CONTENTFUL_SETUP.md/ CORE_WEB_VITALS.md/ data/ docker-compose.yml/
+CORE_WEB_VITALS.md/ data/ docker-compose.yml/
 Dockerfile/ FASE3_STATUS.md/ lib/ middleware.ts/ next-env.d.ts/
 next.config.mjs/ package-lock.json/ package.json/ postcss.config.js/
 prisma/ prompts/ public/ README.md/ scripts/ SETUP_DATABASE.md/
 styles/ tailwind.config.ts/ tsconfig.json/ types/
 ```
-

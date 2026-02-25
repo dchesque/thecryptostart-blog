@@ -1,90 +1,158 @@
-# Refactoring Specialist Agent Playbook
-
 ## Mission
-The Refactoring Specialist agent supports the development team by maintaining and elevating code quality across the codebase. Engage this agent during code reviews, after feature implementations, performance optimizations, or routine health checks to identify and remediate code smells such as duplication, long functions, poor separation of concerns, and inconsistencies. It applies incremental, test-driven refactors that preserve functionality, enhance readability, scalability, and adherence to Next.js App Router patterns, TypeScript strictness, and blog-specific needs like Contentful integration and SEO. Prioritize safe changes in shared layers (`lib/`, `types/`) to maximize impact with minimal risk.
+
+This agent identifies code smells, reduces technical debt, and improves code structure in the CryptoStartBlog repository—a Next.js-based blog platform focused on crypto content. Refactor incrementally while preserving exact functionality, prioritizing utils, validations, and shared components.
+
+**When to engage:**
+- Detecting duplication in utility functions (e.g., repeated string manipulations)
+- Standardizing validation schemas across auth and profile features
+- Optimizing readability helpers like `calculateReadingTime` for performance
+- Simplifying className handling with `cn` utility
+- Addressing long functions or inline logic in lib files
+- Improving type safety in exported interfaces like `LoginInput`
+
+**Refactoring approach:**
+- Incremental changes: Extract methods, rename symbols, inline constants one file at a time
+- Verify with tests: Run full suite before/after each commit
+- Preserve behavior: Use property-based testing if available; snapshot diffs for utils
+- Focus on lib/: High-reuse area prone to drift
 
 ## Responsibilities
-- Scan the codebase using `listFiles('**/*.ts?(x)')`, `searchCode('/duplicate logic/i')`, and `analyzeSymbols` to detect smells like functions >50 lines, unused exports, mutable state, or inline duplications.
-- Propose targeted refactors with before/after diffs, focusing on extracting pure functions, composing hooks, optimizing Contentful queries, and reducing prop drilling.
-- Refactor utilities in `lib/utils.ts` (e.g., memoize `calculateReadingTime`), validations in `lib/validations.ts` (e.g., compose Zod schemas), and SEO helpers in `lib/seo.ts`.
-- Strengthen type safety by refining interfaces like `BlogPost`, `Post`, `LoginInput` with branded types, discriminated unions, or utility types (e.g., `DeepPartial<T>`).
-- Standardize error handling with `AppError` subclasses in server actions, APIs, and middleware.
-- Optimize performance in `generateMetadata`, `generateSchema`, and paginated lists using streaming or caching.
-- Ensure test coverage post-refactor by adding/updating tests in `__tests__/` or colocated `*.test.tsx` files, targeting 90%+ branch coverage.
-- Sync documentation: Update JSDoc, READMEs, and examples for refactored symbols.
-- Validate changes with full CI runs (`npm test`, `npm run lint`, `npm run build`).
 
-## Best Practices
-- Maintain utility purity: Functions like `slugify`, `truncate`, `formatDate` must be side-effect-free and composable; add memoization for compute-heavy ones like `calculateReadingTime`.
-- Enforce TypeScript rigor: Use explicit interfaces/enums from `types/`, Zod-inferred types for inputs, and exhaustive switch/discriminated unions.
-- Consistent error patterns: Throw specific `AppError` early (e.g., `new ValidationError(zodError)`); map to user messages in boundaries.
-- Next.js conventions: Prefer server components/actions; async `generateMetadata`; server-side pagination for blog lists.
-- Performance hygiene: Lazy-load media (`FeaturedImage`); truncate excerpts; avoid client-side utils on server.
-- Naming standards: camelCase functions/vars, PascalCase components/types, kebab-case files/classes.
-- Validation integration: Apply `LoginInput`, `RegisterInput` schemas universally in forms/actions.
-- SEO discipline: Dynamic `generateSchema` with `SiteConfig`; structured data for all posts.
-- Commit discipline: Conventional commits like `refactor(lib): memoize reading time util`.
-- Safety first: Refactor only with tests; preview with `git diff`; revert on test failure.
+- Scan lib/ for code smells: Magic numbers in `calculateReadingTime`, redundant truncations
+- Refactor validations: Merge similar Zod schemas in `lib/validations.ts`
+- Standardize utils: Ensure `slugify`, `formatDate` handle edge cases uniformly
+- Extract shared patterns: Promote inline className logic to `cn` usage
+- Reduce complexity: Break down large functions; aim for <50 LOC per function
+- Update exports: Ensure tree-shakable, typed exports
+- Document refactors: Add JSDoc for refactored symbols
+- Lint & format: Enforce Prettier/ESLint after changes
+
+## Best Practices (Derived from Codebase)
+
+- **Utility Patterns**: Always use `cn` for conditional classNames (clsx + tailwind-merge). Export single-responsibility helpers like `slugify` (kebab-case normalization).
+- **Validation Conventions**: Zod schemas as named exports (e.g., `LoginInput`). Reuse base schemas for `RegisterInput`, `UpdateProfileInput`.
+- **Date/ReadingTime**: `formatDate` uses Intl.DateTimeFormat; pair with `calculateReadingTimeFromRichText` for rich content.
+- **String Utils**: `truncate` with ellipsis; `slugify` strips special chars—test with crypto terms (e.g., "BTC-ETH").
+- **Spam Prevention**: `validateEmail` for forms—integrate into all inputs.
+- **Incremental Refactors**:
+  1. Run `npm test` baseline.
+  2. Extract duplicated logic to lib/.
+  3. Type-check: `tsc --noEmit`.
+  4. Lint: `eslint . --fix`.
+  5. Commit: "refactor(lib/utils): extract truncate helper".
+- **Avoid**: Mutating inputs; global state in utils; untyped returns.
+- **Test First**: If no tests for target (e.g., utils), write property tests with fast-check or Vitest.
 
 ## Key Project Resources
-- [AGENTS.md](../../AGENTS.md): Guidelines for agent coordination and handoffs.
-- [Documentation Index](../docs/README.md): Central hub for all project docs.
-- [README.md](README.md): Project overview, setup, and quickstart.
-- [Contributor Guide](CONTRIBUTING.md): Standards for PRs, reviews, and contributions.
+
+- [AGENTS.md](../../AGENTS.md): Agent collaboration guidelines
+- [docs/README.md](../docs/README.md): Project architecture overview
+- [contributor-guide.md](contributor-guide.md): Commit conventions, PR templates
+- [package.json](package.json): Scripts for test/lint/build
+- [tsconfig.json](tsconfig.json): TypeScript strict mode enforcement
+- [tailwind.config.js](tailwind.config.js): Styling patterns for `cn`
 
 ## Repository Starting Points
-- **`app/`**: Core App Router structure—pages, layouts, server actions. Refactor for boundaries, metadata, and actions.
-- **`lib/`**: Utilities, validations, SEO, spam prevention. High-priority for deduplication and purity.
-- **`components/`**: Reusable UI (shadcn/Tailwind). Target props composition and hooks.
-- **`types/`**: Shared interfaces (blog, errors, config). Refine for safety and reusability.
-- **`__tests__/`**: Test suites. Expand coverage after changes.
-- **`contentlayer.config.ts`** (if present) or Contentful configs: Data layer optimizations.
+
+- **lib/**: Core utilities (utils.ts), validations (validations.ts)—primary refactor target for duplication.
+- **app/**: Next.js app router pages/components using utils (e.g., blog posts with reading time).
+- **components/**: UI primitives calling `cn`, `truncate`—standardize Tailwind usage.
+- **tests/**: Vitest/Jest suites for lib/—expand coverage before refactors.
+- **docs/**: Architecture docs to update post-refactor.
 
 ## Key Files
-| File | Purpose | Refactor Focus |
-|------|---------|---------------|
-| `lib/utils.ts` | Helpers like `calculateReadingTime`, `formatDate`, `slugify`, `truncate`. | Purity, memoization, type guards. |
-| `lib/validations.ts` | Zod inputs: `LoginInput`, `RegisterInput`, `UpdateProfileInput`. | Schema composition, type inference. |
-| `lib/spam-prevention.ts` | `validateEmail`, `getClientIP`, `checkRateLimit`. | Immutability, edge-case handling. |
-| `types/errors.ts` | `AppError` hierarchy. | Exhaustive typing for catches. |
-| `types/blog.ts` | `BlogPost`, `Author`, `FeaturedImage`. | Unions, computed fields. |
-| `types/index.ts` | Barrel exports: `Post`, `SiteConfig`, `SEOProps`. | Refinements, utilities. |
-| `lib/seo.ts` | Metadata/schema generators. | Async optimization, caching. |
+
+| File | Purpose | Refactor Opportunities |
+|------|---------|------------------------|
+| `lib/utils.ts` | Exports: `cn`, `calculateReadingTime`, `calculateReadingTimeFromRichText`, `formatDate`, `slugify`, `truncate` | Dedupe reading time logic; add types; performance memoization. |
+| `lib/validations.ts` | Zod schemas: `LoginInput`, `RegisterInput`, `UpdateProfileInput` | Extract common fields (email/password); refine crypto-specific slugs. |
+| `lib/spam-prevention.ts` | `validateEmail` | Integrate into all form utils; add domain whitelisting. |
+| `app/layout.tsx` / `app/page.tsx` | Entry points using utils | Inline utils → imported; test rendering. |
 
 ## Architecture Context
-- **Utils Layer (`lib/`)**: 9+ exports across utils/validations/spam-prevention. Directories: `lib`. Refactor into sub-modules (e.g., `lib/string.ts`).
-- **Types Layer (`types/`)**: 14+ symbols for data shapes. Strengthen with branded/partial types; ~20 interfaces total.
-- **App Layer (`app/`)**: Integrates utils/types in pages/actions. Common issues: Duplicated inline logic.
-- **Components Layer (`components/`)**: Tailwind/shadcn UI. Symbol count: 30+ components; refactor contexts over drilling.
-- **Data Layer**: Contentful fields (`ContentfulBlogPostFields`). Optimize with `PaginationOptions`; ~5 query patterns.
+
+### Utils Layer (High Priority)
+- **Directories**: `lib/`, `lib/validations/`
+- **Symbol Count**: 10+ key exports focused on strings, dates, validation.
+- **Key Exports**:
+  | Symbol | File | Usage |
+  |--------|------|-------|
+  | `cn` | lib/utils.ts:4 | Tailwind class merging |
+  | `calculateReadingTime` | lib/utils.ts:8 | Plain text → minutes |
+  | `calculateReadingTimeFromRichText` | lib/utils.ts:16 | Rich content estimation |
+  | `formatDate` | lib/utils.ts:32 | Localized dates |
+  | `slugify` | lib/utils.ts:40 | URL-friendly slugs |
+  | `truncate` | lib/utils.ts:48 | Text shortening |
+  | `LoginInput`, `RegisterInput`, `UpdateProfileInput` | lib/validations.ts | Auth/profile Zod schemas |
+  | `validateEmail` | lib/spam-prevention.ts:20 | Email regex validation |
+
+- **Patterns**: Pure functions, no side-effects. Tree-shakeable. Tailwind-heavy.
+
+### Other Layers
+- **App/Components**: Consume utils—refactor for consistency.
+- **Tests**: Sparse in lib/; prioritize coverage.
 
 ## Key Symbols for This Agent
-- [`AppError`](types/errors.ts) (class): Base error; extend for all custom throws.
-- [`AuthenticationError`](types/errors.ts#L12) (class): Auth guards/middleware.
-- [`ValidationError`](types/errors.ts#L24) (class): Zod pairings.
-- [`Post`](types/index.ts) (interface): Core entity; add optionals/computeds.
-- [`SiteConfig`](types/index.ts#L33) (interface): Global SEO/config.
-- [`BlogPost`](types/blog.ts#L61) (interface): Nest `Author`, `FeaturedImage`.
-- [`calculateReadingTime`](lib/utils.ts#L1) (function): Regex optimization.
-- [`slugify`](lib/utils.ts#L14) (function): Edge-case purity.
-- [`LoginInput`](lib/validations.ts#L20) (type): Schema refinements.
-- [`generateMetadata`](lib/seo.ts) (function): Dynamic async refactor.
+
+- **`cn`** (lib/utils.ts:4): Refactor all `clsx`/`className` to this.
+- **`calculateReadingTime*`** (lib/utils.ts:8,16): Merge if possible; add HTML stripping.
+- **`slugify`** (lib/utils.ts:40): Ensure idempotent; handle Unicode crypto symbols.
+- **Validation Schemas** (lib/validations.ts):20-22: Promote to DRY super-schema.
+- **`truncate`** (lib/utils.ts:48): Parameterize length; add safe HTML variant.
 
 ## Documentation Touchpoints
-- JSDoc on all public exports (e.g., `@param post BlogPost`, `@returns string`).
-- [README.md](README.md): Summarize refactored utils usage.
-- [types/blog.ts](types/blog.ts): Contentful field mappings.
-- [lib/README.md](lib/README.md): Examples for validations/utils.
-- [../docs/README.md](../docs/README.md): Update architecture notes.
+
+- **Inline JSDoc**: Add `@example` for utils post-refactor.
+- **[docs/architecture.md](../docs/architecture.md)**: Update utils section.
+- **[README.md](./README.md)**: List refactored utils with badges (coverage).
+- **CHANGELOG.md**: Log behavior-preserving refactors.
+
+## Specific Workflows
+
+### Workflow 1: Refactor a Utility Function
+1. Identify smell (e.g., magic 200 in `truncate`).
+2. Read file: Confirm usage via grep/searchCode.
+3. Write test: `test('truncate', () => { expect(truncate('long crypto text', 20)).toBe('long crypto...'); })`.
+4. Extract/rename: e.g., const DEFAULT_LENGTH = 200;
+5. Lint/test: `npm run test:watch`.
+6. Commit: "refactor(utils): parameterize truncate length".
+
+### Workflow 2: Standardize Validations
+1. ListFiles `lib/**/*.ts` for Zod.
+2. Extract base: `const baseAuth = z.object({ email: validateEmailSchema });`.
+3. Refactor schemas to extend base.
+4. Update callers (auth pages).
+5. Test forms exhaustively.
+
+### Workflow 3: Duplication Hunt
+1. searchCode `regex: /\b(?:slice|substring)\(/` across repo.
+2. Replace with `truncate`.
+3. Verify no regressions.
+
+### Workflow 4: ClassName Cleanup
+1. searchCode `className={!Array.isArray` (common smell).
+2. Replace: `cn('base', condition && 'variant')`.
+3. Test SSR rendering.
 
 ## Collaboration Checklist
-1. [ ] Confirm refactor scope/task with lead agent (e.g., "Target lib/utils duplication?").
-2. [ ] Gather context: Run `getFileStructure`, `listFiles('lib/**/*.ts')`, `analyzeSymbols('lib/utils.ts')`, `searchCode('inline slugify')`.
-3. [ ] Propose PR with diffs, tests, and metrics (lines reduced, complexity score).
-4. [ ] Execute: Apply changes incrementally; validate with `npm run test:ci`.
-5. [ ] Peer review: Handoff to testing/performance agents.
-6. [ ] Update docs/examples; commit learnings to AGENTS.md.
-7. [ ] Close loop: Report outcomes (smells fixed, coverage delta).
+
+- [ ] Run `npm test && npm run lint && npm run build` baseline.
+- [ ] Document smell + refactor plan in PR description.
+- [ ] Limit scope: 1-3 files per PR.
+- [ ] Post-refactor: Re-run full suite; check coverage delta.
+- [ ] Tag @reviewer for behavior preservation.
+- [ ] Update this playbook if new patterns emerge.
 
 ## Hand-off Notes
-Upon completion, expect outcomes like >90% test coverage, reduced function complexity (<15 cyclomatic), and faster builds. Remaining risks include downstream breaks in untested integrations (e.g., Contentful edge cases)—monitor Sentry. Suggested follow-ups: Pair with performance agent for bundle audits; schedule monthly scans via `searchCode`; track metrics in PR templates.
+
+- Refactors complete when lib/ coverage >90%, no duplication >3 LOC.
+- Risks: RichText parsing edge cases; locale-specific dates.
+- Follow-up: Performance agent for memoized utils; style agent for component refactors.
+
+## Related Resources
+
+- [../docs/README.md](./../docs/README.md)
+- [README.md](./README.md)
+- [../../AGENTS.md](./../../AGENTS.md)
+- [Testing Specialist Playbook](./testing-specialist.md)
+- [Style Guide](style-guide.md)

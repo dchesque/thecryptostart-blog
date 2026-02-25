@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated": "2026-02-17T13:41:39.093Z",
+  "generated": "2026-02-25T20:24:21.926Z",
   "stack": {
     "primaryLanguage": "typescript",
     "languages": [
@@ -22,17 +22,17 @@
     "runtimeEnvironment": "browser"
   },
   "structure": {
-    "totalFiles": 69,
+    "totalFiles": 150,
     "rootPath": ".",
     "topDirectories": [
       {
         "name": "app",
-        "fileCount": 13,
+        "fileCount": 38,
         "description": "Application entry (Next.js app router)"
       },
       {
         "name": "components",
-        "fileCount": 14,
+        "fileCount": 45,
         "description": "UI components"
       },
       {
@@ -41,18 +41,23 @@
         "description": "Module directory"
       },
       {
+        "name": "docs",
+        "fileCount": 2,
+        "description": "Documentation files"
+      },
+      {
         "name": "lib",
-        "fileCount": 10,
+        "fileCount": 21,
         "description": "Shared library code"
       },
       {
         "name": "prisma",
-        "fileCount": 2,
+        "fileCount": 5,
         "description": "Module directory"
       },
       {
         "name": "prompts",
-        "fileCount": 2,
+        "fileCount": 1,
         "description": "Prompt templates"
       },
       {
@@ -62,7 +67,7 @@
       },
       {
         "name": "scripts",
-        "fileCount": 3,
+        "fileCount": 6,
         "description": "Build and utility scripts"
       },
       {
@@ -78,24 +83,32 @@
     ],
     "languageDistribution": [
       {
-        "extension": ".ts",
-        "count": 23
+        "extension": ".tsx",
+        "count": 65
       },
       {
-        "extension": ".tsx",
-        "count": 23
+        "extension": ".ts",
+        "count": 50
       },
       {
         "extension": ".md",
-        "count": 9
+        "count": 11
+      },
+      {
+        "extension": ".txt",
+        "count": 5
       },
       {
         "extension": ".json",
-        "count": 4
+        "count": 5
       },
       {
         "extension": ".js",
-        "count": 3
+        "count": 5
+      },
+      {
+        "extension": ".tsbuildinfo",
+        "count": 1
       },
       {
         "extension": ".mjs",
@@ -108,14 +121,6 @@
       {
         "extension": ".css",
         "count": 1
-      },
-      {
-        "extension": ".txt",
-        "count": 1
-      },
-      {
-        "extension": ".sh",
-        "count": 1
       }
     ]
   },
@@ -125,9 +130,10 @@
         "name": "Utils",
         "description": "Shared utilities and helpers",
         "directories": [
-          "lib"
+          "lib",
+          "lib\\validations"
         ],
-        "symbolCount": 40,
+        "symbolCount": 93,
         "dependsOn": []
       },
       {
@@ -135,10 +141,24 @@
         "description": "Request handling and routing",
         "directories": [
           "app\\api\\users",
+          "app\\api\\comments",
+          "app\\api\\users\\[id]",
+          "app\\api\\seo\\metrics",
+          "app\\api\\gsc\\analytics",
           "app\\api\\auth\\[...nextauth]",
-          "app\\api\\auth\\register"
+          "app\\api\\auth\\register",
+          "app\\api\\ai-optimization\\scores",
+          "app\\api\\admin\\posts",
+          "app\\api\\admin\\comments",
+          "app\\api\\admin\\categories",
+          "app\\api\\admin\\authors",
+          "app\\api\\admin\\posts\\[id]",
+          "app\\api\\admin\\comments\\[id]",
+          "app\\api\\admin\\categories\\[id]",
+          "app\\api\\admin\\authors\\[id]",
+          "app\\api\\admin\\posts\\[id]\\publish"
         ],
-        "symbolCount": 2,
+        "symbolCount": 32,
         "dependsOn": []
       },
       {
@@ -147,14 +167,26 @@
         "directories": [
           "components",
           "app",
+          "components\\admin",
           "app\\login",
+          "app\\guest-post-guidelines",
           "app\\blog",
           "app\\admin",
           "app\\about",
           "app\\blog\\[slug]",
-          "app\\admin\\users"
+          "app\\blog\\clusters",
+          "app\\admin\\users",
+          "app\\admin\\seo",
+          "app\\admin\\posts",
+          "app\\admin\\gsc-dashboard",
+          "app\\admin\\comments",
+          "app\\admin\\categories",
+          "app\\admin\\authors",
+          "app\\admin\\ai-optimization",
+          "app\\admin\\posts\\new",
+          "app\\admin\\posts\\[id]\\edit"
         ],
-        "symbolCount": 27,
+        "symbolCount": 96,
         "dependsOn": []
       }
     ],
@@ -191,6 +223,13 @@
         "exported": true
       },
       {
+        "name": "GSCClient",
+        "kind": "class",
+        "file": "lib\\gsc-client.ts",
+        "line": 34,
+        "exported": true
+      },
+      {
         "name": "RateLimitError",
         "kind": "class",
         "file": "lib\\errors.ts",
@@ -207,101 +246,150 @@
     ],
     "interfaces": [
       {
+        "name": "AIOptimizationScore",
+        "kind": "interface",
+        "file": "lib\\ai-optimization.ts",
+        "line": 8,
+        "exported": true
+      },
+      {
         "name": "Author",
         "kind": "interface",
         "file": "types\\blog.ts",
-        "line": 44,
+        "line": 34,
         "exported": true
       },
       {
         "name": "BlogMetadata",
         "kind": "interface",
         "file": "types\\blog.ts",
-        "line": 91,
+        "line": 112,
         "exported": true
       },
       {
         "name": "BlogPost",
         "kind": "interface",
         "file": "types\\blog.ts",
-        "line": 61,
+        "line": 51,
+        "exported": true
+      },
+      {
+        "name": "BrokenLink",
+        "kind": "interface",
+        "file": "lib\\broken-link-finder.ts",
+        "line": 9,
         "exported": true
       },
       {
         "name": "CategoryConfig",
         "kind": "interface",
         "file": "types\\blog.ts",
-        "line": 179,
+        "line": 152,
         "exported": true
       },
       {
-        "name": "ContentfulBlogPost",
+        "name": "ExpansionOpportunity",
         "kind": "interface",
-        "file": "types\\blog.ts",
-        "line": 171,
+        "file": "lib\\content-expander.ts",
+        "line": 9,
         "exported": true
       },
       {
-        "name": "ContentfulBlogPostFields",
+        "name": "FAQItem",
         "kind": "interface",
-        "file": "types\\blog.ts",
-        "line": 130,
+        "file": "lib\\ai-optimization.ts",
+        "line": 172,
         "exported": true
       },
       {
-        "name": "ContentfulSys",
+        "name": "FAQItem",
         "kind": "interface",
-        "file": "types\\blog.ts",
-        "line": 162,
+        "file": "components\\FAQSection.tsx",
+        "line": 5,
         "exported": true
       },
       {
         "name": "FeaturedImage",
         "kind": "interface",
         "file": "types\\blog.ts",
-        "line": 28,
+        "line": 18,
+        "exported": true
+      },
+      {
+        "name": "GSCAnalytics",
+        "kind": "interface",
+        "file": "lib\\gsc-client.ts",
+        "line": 24,
+        "exported": true
+      },
+      {
+        "name": "GSCPage",
+        "kind": "interface",
+        "file": "lib\\gsc-client.ts",
+        "line": 16,
+        "exported": true
+      },
+      {
+        "name": "GSCQuery",
+        "kind": "interface",
+        "file": "lib\\gsc-client.ts",
+        "line": 8,
+        "exported": true
+      },
+      {
+        "name": "KeywordMetric",
+        "kind": "interface",
+        "file": "lib\\keyword-research.ts",
+        "line": 6,
+        "exported": true
+      },
+      {
+        "name": "LinkingSuggestion",
+        "kind": "interface",
+        "file": "lib\\link-builder.ts",
+        "line": 8,
         "exported": true
       },
       {
         "name": "PaginationOptions",
         "kind": "interface",
         "file": "types\\blog.ts",
-        "line": 109,
-        "exported": true
-      },
-      {
-        "name": "Post",
-        "kind": "interface",
-        "file": "types\\index.ts",
-        "line": 1,
+        "line": 130,
         "exported": true
       },
       {
         "name": "SearchOptions",
         "kind": "interface",
         "file": "types\\blog.ts",
-        "line": 121,
+        "line": 142,
+        "exported": true
+      },
+      {
+        "name": "SEOAnalysis",
+        "kind": "interface",
+        "file": "lib\\seo-analyzer.ts",
+        "line": 6,
         "exported": true
       },
       {
         "name": "SEOProps",
         "kind": "interface",
         "file": "types\\index.ts",
-        "line": 41,
+        "line": 9,
         "exported": true
       },
       {
         "name": "SiteConfig",
         "kind": "interface",
         "file": "types\\index.ts",
-        "line": 33,
+        "line": 1,
         "exported": true
       },
       {
         "name": "TagOptions",
         "kind": "interface",
         "file": "types\\blog.ts",
-        "line": 188,
+        "line": 162,
         "exported": true
       },
       {
@@ -312,108 +400,59 @@
         "exported": false
       },
       {
-        "name": "BlogCardProps",
+        "name": "AIScore",
         "kind": "interface",
-        "file": "components\\BlogCard.tsx",
-        "line": 6,
-        "exported": false
-      },
-      {
-        "name": "BlogPageProps",
-        "kind": "interface",
-        "file": "app\\blog\\page.tsx",
+        "file": "app\\admin\\ai-optimization\\page.tsx",
         "line": 17,
         "exported": false
       },
       {
-        "name": "BlogPostProps",
+        "name": "Analytics",
         "kind": "interface",
-        "file": "components\\BlogPost.tsx",
-        "line": 8,
+        "file": "app\\admin\\gsc-dashboard\\page.tsx",
+        "line": 40,
         "exported": false
       },
       {
-        "name": "FAQItem",
+        "name": "Author",
         "kind": "interface",
-        "file": "components\\FAQ.tsx",
-        "line": 5,
-        "exported": false
-      },
-      {
-        "name": "JWT",
-        "kind": "interface",
-        "file": "types\\auth.ts",
-        "line": 18,
-        "exported": false
-      },
-      {
-        "name": "MetadataInput",
-        "kind": "interface",
-        "file": "lib\\seo.ts",
-        "line": 11,
-        "exported": false
-      },
-      {
-        "name": "PostPageProps",
-        "kind": "interface",
-        "file": "app\\blog\\[slug]\\page.tsx",
-        "line": 20,
-        "exported": false
-      },
-      {
-        "name": "RelatedPostsProps",
-        "kind": "interface",
-        "file": "components\\RelatedPosts.tsx",
+        "file": "components\\admin\\AuthorModal.tsx",
         "line": 6,
         "exported": false
       },
       {
-        "name": "SchemaInput",
+        "name": "Author",
         "kind": "interface",
-        "file": "lib\\seo.ts",
-        "line": 80,
-        "exported": false
-      },
-      {
-        "name": "Session",
-        "kind": "interface",
-        "file": "types\\auth.ts",
-        "line": 9,
-        "exported": false
-      },
-      {
-        "name": "ShareButtonsProps",
-        "kind": "interface",
-        "file": "components\\ShareButtons.tsx",
-        "line": 5,
-        "exported": false
-      },
-      {
-        "name": "SidebarProps",
-        "kind": "interface",
-        "file": "components\\Sidebar.tsx",
+        "file": "app\\admin\\authors\\page.tsx",
         "line": 8,
         "exported": false
       },
       {
-        "name": "TableOfContentsProps",
+        "name": "AuthorCardProps",
         "kind": "interface",
-        "file": "components\\TableOfContents.tsx",
-        "line": 13,
+        "file": "components\\AuthorCard.tsx",
+        "line": 4,
         "exported": false
       },
       {
-        "name": "TOCItem",
+        "name": "AuthorModalProps",
         "kind": "interface",
-        "file": "components\\TableOfContents.tsx",
-        "line": 7,
+        "file": "components\\admin\\AuthorModal.tsx",
+        "line": 15,
         "exported": false
       },
       {
-        "name": "User",
+        "name": "BlogCardCompactProps",
         "kind": "interface",
-        "file": "types\\auth.ts",
-        "line": 5,
+        "file": "components\\BlogCardCompact.tsx",
+        "line": 6,
+        "exported": false
+      },
+      {
+        "name": "BlogCardProps",
+        "kind": "interface",
+        "file": "components\\BlogCard.tsx",
+        "line": 6,
         "exported": false
       }
     ],
@@ -426,10 +465,38 @@
         "exported": true
       },
       {
-        "name": "AdminDashboard",
+        "name": "AdminLayout",
         "kind": "function",
-        "file": "app\\admin\\page.tsx",
-        "line": 3,
+        "file": "app\\admin\\layout.tsx",
+        "line": 5,
+        "exported": true
+      },
+      {
+        "name": "analyzeAllForExpansion",
+        "kind": "function",
+        "file": "lib\\content-expander.ts",
+        "line": 82,
+        "exported": true
+      },
+      {
+        "name": "analyzeForExpansion",
+        "kind": "function",
+        "file": "lib\\content-expander.ts",
+        "line": 22,
+        "exported": true
+      },
+      {
+        "name": "analyzeKeywordGap",
+        "kind": "function",
+        "file": "lib\\keyword-research.ts",
+        "line": 29,
+        "exported": true
+      },
+      {
+        "name": "analyzeSEO",
+        "kind": "function",
+        "file": "lib\\seo-analyzer.ts",
+        "line": 98,
         "exported": true
       },
       {
@@ -440,10 +507,66 @@
         "exported": true
       },
       {
+        "name": "BlogPage",
+        "kind": "function",
+        "file": "app\\blog\\page.tsx",
+        "line": 39,
+        "exported": true
+      },
+      {
+        "name": "calculateAIOptimizationScore",
+        "kind": "function",
+        "file": "lib\\ai-optimization.ts",
+        "line": 103,
+        "exported": true
+      },
+      {
         "name": "calculateReadingTime",
         "kind": "function",
         "file": "lib\\utils.ts",
-        "line": 1,
+        "line": 8,
+        "exported": true
+      },
+      {
+        "name": "calculateReadingTime",
+        "kind": "function",
+        "file": "lib\\posts.ts",
+        "line": 16,
+        "exported": true
+      },
+      {
+        "name": "calculateReadingTimeFromRichText",
+        "kind": "function",
+        "file": "lib\\utils.ts",
+        "line": 16,
+        "exported": true
+      },
+      {
+        "name": "calculateWordCount",
+        "kind": "function",
+        "file": "lib\\posts.ts",
+        "line": 8,
+        "exported": true
+      },
+      {
+        "name": "CategoryCard",
+        "kind": "function",
+        "file": "components\\CategoryCard.tsx",
+        "line": 9,
+        "exported": true
+      },
+      {
+        "name": "CategoryLinks",
+        "kind": "function",
+        "file": "components\\CategoryLinks.tsx",
+        "line": 10,
+        "exported": true
+      },
+      {
+        "name": "checkRateLimit",
+        "kind": "function",
+        "file": "lib\\spam-prevention.ts",
+        "line": 34,
         "exported": true
       },
       {
@@ -454,187 +577,117 @@
         "exported": true
       },
       {
-        "name": "fetchUsers",
+        "name": "cn",
         "kind": "function",
-        "file": "app\\admin\\users\\page.tsx",
-        "line": 19,
-        "exported": true
-      },
-      {
-        "name": "Footer",
-        "kind": "function",
-        "file": "components\\Footer.tsx",
+        "file": "lib\\utils.ts",
         "line": 4,
         "exported": true
       },
       {
-        "name": "formatDate",
+        "name": "CommentsList",
         "kind": "function",
-        "file": "lib\\utils.ts",
-        "line": 6,
+        "file": "components\\CommentsList.tsx",
+        "line": 19,
         "exported": true
       },
       {
-        "name": "generateBreadcrumbSchema",
+        "name": "countCitableSentences",
         "kind": "function",
-        "file": "lib\\seo.ts",
-        "line": 170,
+        "file": "lib\\ai-optimization.ts",
+        "line": 77,
         "exported": true
       },
       {
-        "name": "generateCSRFToken",
+        "name": "countImages",
         "kind": "function",
-        "file": "lib\\csrf.ts",
-        "line": 8,
+        "file": "lib\\seo-analyzer.ts",
+        "line": 64,
         "exported": true
       },
       {
-        "name": "generateMetadata",
+        "name": "countWords",
         "kind": "function",
-        "file": "lib\\seo.ts",
-        "line": 24,
+        "file": "lib\\seo-analyzer.ts",
+        "line": 22,
         "exported": true
       },
       {
-        "name": "generateMetadata",
+        "name": "createGSCClient",
         "kind": "function",
-        "file": "app\\blog\\[slug]\\page.tsx",
-        "line": 31,
+        "file": "lib\\gsc-client.ts",
+        "line": 168,
         "exported": true
       },
       {
-        "name": "generateOrganizationSchema",
+        "name": "DELETE",
         "kind": "function",
-        "file": "lib\\seo.ts",
-        "line": 147,
+        "file": "app\\api\\users\\[id]\\route.ts",
+        "line": 65,
         "exported": true
       },
       {
-        "name": "generateSchema",
+        "name": "DELETE",
         "kind": "function",
-        "file": "lib\\seo.ts",
-        "line": 93,
-        "exported": true
-      },
-      {
-        "name": "generateStaticParams",
-        "kind": "function",
-        "file": "app\\blog\\[slug]\\page.tsx",
-        "line": 25,
-        "exported": true
-      },
-      {
-        "name": "generateWebsiteSchema",
-        "kind": "function",
-        "file": "lib\\seo.ts",
-        "line": 126,
-        "exported": true
-      },
-      {
-        "name": "GET",
-        "kind": "function",
-        "file": "app\\api\\users\\route.ts",
-        "line": 7,
-        "exported": true
-      },
-      {
-        "name": "getAllCategories",
-        "kind": "function",
-        "file": "lib\\contentful.ts",
-        "line": 243,
-        "exported": true
-      },
-      {
-        "name": "getAllPosts",
-        "kind": "function",
-        "file": "lib\\contentful.ts",
-        "line": 144,
-        "exported": true
-      },
-      {
-        "name": "getAllPostSlugs",
-        "kind": "function",
-        "file": "lib\\contentful.ts",
-        "line": 308,
-        "exported": true
-      },
-      {
-        "name": "getCategoryBySlug",
-        "kind": "function",
-        "file": "lib\\constants.ts",
-        "line": 116,
-        "exported": true
-      },
-      {
-        "name": "getCategoryName",
-        "kind": "function",
-        "file": "lib\\constants.ts",
-        "line": 123,
-        "exported": true
-      },
-      {
-        "name": "getIP",
-        "kind": "function",
-        "file": "lib\\rate-limit.ts",
+        "file": "app\\api\\admin\\posts\\[id]\\route.ts",
         "line": 53,
         "exported": true
       },
       {
-        "name": "getPostBySlug",
+        "name": "DELETE",
         "kind": "function",
-        "file": "lib\\contentful.ts",
-        "line": 179,
+        "file": "app\\api\\admin\\comments\\[id]\\route.ts",
+        "line": 31,
         "exported": true
       },
       {
-        "name": "getPostsByCategory",
+        "name": "DELETE",
         "kind": "function",
-        "file": "lib\\contentful.ts",
-        "line": 203,
+        "file": "app\\api\\admin\\categories\\[id]\\route.ts",
+        "line": 49,
         "exported": true
       },
       {
-        "name": "getRelatedPosts",
+        "name": "DELETE",
         "kind": "function",
-        "file": "lib\\contentful.ts",
-        "line": 217,
+        "file": "app\\api\\admin\\authors\\[id]\\route.ts",
+        "line": 49,
         "exported": true
       },
       {
-        "name": "getTotalPostsCount",
+        "name": "detectSpam",
         "kind": "function",
-        "file": "lib\\contentful.ts",
-        "line": 257,
+        "file": "lib\\spam-prevention.ts",
+        "line": 57,
         "exported": true
       },
       {
-        "name": "hasPermission",
+        "name": "EditPostPage",
         "kind": "function",
-        "file": "lib\\permissions.ts",
+        "file": "app\\admin\\posts\\[id]\\edit\\page.tsx",
         "line": 8,
-        "exported": true
-      },
-      {
-        "name": "hasRole",
-        "kind": "function",
-        "file": "lib\\permissions.ts",
-        "line": 15,
-        "exported": true
-      },
-      {
-        "name": "POST",
-        "kind": "function",
-        "file": "app\\api\\auth\\register\\route.ts",
-        "line": 12,
         "exported": true
       }
     ],
     "types": [
       {
+        "name": "AuthorInput",
+        "kind": "type",
+        "file": "lib\\validations\\admin.ts",
+        "line": 70,
+        "exported": true
+      },
+      {
         "name": "BlogCategory",
         "kind": "type",
         "file": "types\\blog.ts",
-        "line": 15,
+        "line": 5,
+        "exported": true
+      },
+      {
+        "name": "CategoryInput",
+        "kind": "type",
+        "file": "lib\\validations\\admin.ts",
+        "line": 69,
         "exported": true
       },
       {
@@ -642,6 +695,13 @@
         "kind": "type",
         "file": "lib\\validations.ts",
         "line": 20,
+        "exported": true
+      },
+      {
+        "name": "PostInput",
+        "kind": "type",
+        "file": "lib\\validations\\admin.ts",
+        "line": 71,
         "exported": true
       },
       {
@@ -666,11 +726,39 @@
         "exported": true
       },
       {
+        "name": "User",
+        "kind": "type",
+        "file": "app\\admin\\users\\page.tsx",
+        "line": 7,
+        "exported": true
+      },
+      {
         "name": "UserWithRoles",
         "kind": "type",
         "file": "types\\auth.ts",
-        "line": 24,
+        "line": 26,
         "exported": true
+      },
+      {
+        "name": "AdSlot",
+        "kind": "type",
+        "file": "components\\StickyHeaderAd.tsx",
+        "line": 7,
+        "exported": false
+      },
+      {
+        "name": "AdSlot",
+        "kind": "type",
+        "file": "components\\StickyFooterAd.tsx",
+        "line": 7,
+        "exported": false
+      },
+      {
+        "name": "AdSlot",
+        "kind": "type",
+        "file": "components\\RecommendedContent.tsx",
+        "line": 7,
+        "exported": false
       },
       {
         "name": "AdSlot",
@@ -678,6 +766,21 @@
         "file": "components\\AdSense.tsx",
         "line": 6,
         "exported": false
+      },
+      {
+        "name": "InfoBoxType",
+        "kind": "type",
+        "file": "components\\InfoBox.tsx",
+        "line": 3,
+        "exported": false
+      },
+      {
+        "name": "MetricName",
+        "kind": "type",
+        "file": "lib\\analytics.ts",
+        "line": 6,
+        "exported": false,
+        "description": "Web Vitals Analytics\rTracks Core Web Vitals and sends to GA4"
       },
       {
         "name": "PrismaClientSingleton",
@@ -692,13 +795,6 @@
         "file": "lib\\rate-limit.ts",
         "line": 1,
         "exported": false
-      },
-      {
-        "name": "User",
-        "kind": "type",
-        "file": "app\\admin\\users\\page.tsx",
-        "line": 5,
-        "exported": false
       }
     ],
     "enums": []
@@ -712,10 +808,45 @@
       "exported": true
     },
     {
-      "name": "AdminDashboard",
+      "name": "AdminLayout",
       "kind": "function",
-      "file": "app\\admin\\page.tsx",
-      "line": 3,
+      "file": "app\\admin\\layout.tsx",
+      "line": 5,
+      "exported": true
+    },
+    {
+      "name": "AIOptimizationScore",
+      "kind": "interface",
+      "file": "lib\\ai-optimization.ts",
+      "line": 8,
+      "exported": true
+    },
+    {
+      "name": "analyzeAllForExpansion",
+      "kind": "function",
+      "file": "lib\\content-expander.ts",
+      "line": 82,
+      "exported": true
+    },
+    {
+      "name": "analyzeForExpansion",
+      "kind": "function",
+      "file": "lib\\content-expander.ts",
+      "line": 22,
+      "exported": true
+    },
+    {
+      "name": "analyzeKeywordGap",
+      "kind": "function",
+      "file": "lib\\keyword-research.ts",
+      "line": 29,
+      "exported": true
+    },
+    {
+      "name": "analyzeSEO",
+      "kind": "function",
+      "file": "lib\\seo-analyzer.ts",
+      "line": 98,
       "exported": true
     },
     {
@@ -736,7 +867,14 @@
       "name": "Author",
       "kind": "interface",
       "file": "types\\blog.ts",
-      "line": 44,
+      "line": 34,
+      "exported": true
+    },
+    {
+      "name": "AuthorInput",
+      "kind": "type",
+      "file": "lib\\validations\\admin.ts",
+      "line": 70,
       "exported": true
     },
     {
@@ -757,35 +895,105 @@
       "name": "BlogCategory",
       "kind": "type",
       "file": "types\\blog.ts",
-      "line": 15,
+      "line": 5,
       "exported": true
     },
     {
       "name": "BlogMetadata",
       "kind": "interface",
       "file": "types\\blog.ts",
-      "line": 91,
+      "line": 112,
+      "exported": true
+    },
+    {
+      "name": "BlogPage",
+      "kind": "function",
+      "file": "app\\blog\\page.tsx",
+      "line": 39,
       "exported": true
     },
     {
       "name": "BlogPost",
       "kind": "interface",
       "file": "types\\blog.ts",
-      "line": 61,
+      "line": 51,
+      "exported": true
+    },
+    {
+      "name": "BrokenLink",
+      "kind": "interface",
+      "file": "lib\\broken-link-finder.ts",
+      "line": 9,
+      "exported": true
+    },
+    {
+      "name": "calculateAIOptimizationScore",
+      "kind": "function",
+      "file": "lib\\ai-optimization.ts",
+      "line": 103,
       "exported": true
     },
     {
       "name": "calculateReadingTime",
       "kind": "function",
       "file": "lib\\utils.ts",
-      "line": 1,
+      "line": 8,
+      "exported": true
+    },
+    {
+      "name": "calculateReadingTime",
+      "kind": "function",
+      "file": "lib\\posts.ts",
+      "line": 16,
+      "exported": true
+    },
+    {
+      "name": "calculateReadingTimeFromRichText",
+      "kind": "function",
+      "file": "lib\\utils.ts",
+      "line": 16,
+      "exported": true
+    },
+    {
+      "name": "calculateWordCount",
+      "kind": "function",
+      "file": "lib\\posts.ts",
+      "line": 8,
+      "exported": true
+    },
+    {
+      "name": "CategoryCard",
+      "kind": "function",
+      "file": "components\\CategoryCard.tsx",
+      "line": 9,
       "exported": true
     },
     {
       "name": "CategoryConfig",
       "kind": "interface",
       "file": "types\\blog.ts",
-      "line": 179,
+      "line": 152,
+      "exported": true
+    },
+    {
+      "name": "CategoryInput",
+      "kind": "type",
+      "file": "lib\\validations\\admin.ts",
+      "line": 69,
+      "exported": true
+    },
+    {
+      "name": "CategoryLinks",
+      "kind": "function",
+      "file": "components\\CategoryLinks.tsx",
+      "line": 10,
+      "exported": true
+    },
+    {
+      "name": "checkRateLimit",
+      "kind": "function",
+      "file": "lib\\spam-prevention.ts",
+      "line": 34,
       "exported": true
     },
     {
@@ -796,131 +1004,44 @@
       "exported": true
     },
     {
-      "name": "ContentfulBlogPost",
-      "kind": "interface",
-      "file": "types\\blog.ts",
-      "line": 171,
-      "exported": true
-    },
-    {
-      "name": "ContentfulBlogPostFields",
-      "kind": "interface",
-      "file": "types\\blog.ts",
-      "line": 130,
-      "exported": true
-    },
-    {
-      "name": "ContentfulSys",
-      "kind": "interface",
-      "file": "types\\blog.ts",
-      "line": 162,
-      "exported": true
-    },
-    {
-      "name": "FeaturedImage",
-      "kind": "interface",
-      "file": "types\\blog.ts",
-      "line": 28,
-      "exported": true
-    },
-    {
-      "name": "fetchUsers",
-      "kind": "function",
-      "file": "app\\admin\\users\\page.tsx",
-      "line": 19,
-      "exported": true
-    },
-    {
-      "name": "Footer",
-      "kind": "function",
-      "file": "components\\Footer.tsx",
-      "line": 4,
-      "exported": true
-    },
-    {
-      "name": "formatDate",
+      "name": "cn",
       "kind": "function",
       "file": "lib\\utils.ts",
-      "line": 6,
-      "exported": true
-    },
-    {
-      "name": "generateBreadcrumbSchema",
-      "kind": "function",
-      "file": "lib\\seo.ts",
-      "line": 170,
-      "exported": true
-    },
-    {
-      "name": "generateCSRFToken",
-      "kind": "function",
-      "file": "lib\\csrf.ts",
-      "line": 8,
-      "exported": true
-    },
-    {
-      "name": "generateMetadata",
-      "kind": "function",
-      "file": "lib\\seo.ts",
-      "line": 24,
-      "exported": true
-    },
-    {
-      "name": "generateMetadata",
-      "kind": "function",
-      "file": "app\\blog\\[slug]\\page.tsx",
-      "line": 31,
-      "exported": true
-    },
-    {
-      "name": "generateOrganizationSchema",
-      "kind": "function",
-      "file": "lib\\seo.ts",
-      "line": 147,
-      "exported": true
-    },
-    {
-      "name": "generateSchema",
-      "kind": "function",
-      "file": "lib\\seo.ts",
-      "line": 93,
-      "exported": true
-    },
-    {
-      "name": "generateStaticParams",
-      "kind": "function",
-      "file": "app\\blog\\[slug]\\page.tsx",
-      "line": 25,
-      "exported": true
-    },
-    {
-      "name": "generateWebsiteSchema",
-      "kind": "function",
-      "file": "lib\\seo.ts",
-      "line": 126,
-      "exported": true
-    },
-    {
-      "name": "GET",
-      "kind": "function",
-      "file": "app\\api\\users\\route.ts",
-      "line": 7,
-      "exported": true
-    },
-    {
-      "name": "getAllCategories",
-      "kind": "function",
-      "file": "lib\\contentful.ts",
-      "line": 243,
+      "line": 4,
       "exported": true
     }
   ],
   "dependencies": {
     "mostImported": [
       {
+        "file": "components\\NewsletterForm.tsx",
+        "importedBy": 4,
+        "description": "UI components"
+      },
+      {
+        "file": "lib\\seo-analyzer.ts",
+        "importedBy": 3,
+        "description": "Shared library code"
+      },
+      {
         "file": ".next\\dev\\types\\routes.d.ts",
         "importedBy": 1,
         "description": "TypeScript type definitions"
+      },
+      {
+        "file": "lib\\posts.ts",
+        "importedBy": 1,
+        "description": "Shared library code"
+      },
+      {
+        "file": "lib\\broken-link-finder.ts",
+        "importedBy": 1,
+        "description": "Shared library code"
+      },
+      {
+        "file": "lib\\prisma.ts",
+        "importedBy": 1,
+        "description": "Shared library code"
       },
       {
         "file": "lib\\constants.ts",
@@ -928,16 +1049,30 @@
         "description": "Configuration and constants"
       },
       {
+        "file": "components\\CommentForm.tsx",
+        "importedBy": 1,
+        "description": "UI components"
+      },
+      {
+        "file": "components\\CommentsList.tsx",
+        "importedBy": 1,
+        "description": "UI components"
+      },
+      {
         "file": "styles\\globals.css",
         "importedBy": 1,
         "description": "CSS/SCSS stylesheets"
+      },
+      {
+        "file": "app\\admin\\users\\page.tsx",
+        "importedBy": 1
       }
     ]
   },
   "stats": {
-    "totalSymbols": 92,
-    "exportedSymbols": 63,
-    "analysisTimeMs": 336
+    "totalSymbols": 245,
+    "exportedSymbols": 153,
+    "analysisTimeMs": 979
   },
   "keyFiles": [
     {

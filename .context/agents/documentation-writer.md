@@ -1,110 +1,171 @@
-# Documentation Writer Agent Playbook
-
-**Type:** agent  
-**Tone:** instructional  
-**Audience:** ai-agents  
-**Description:** Creates and maintains documentation  
-**Additional Context:** Focus on clarity, practical examples, and keeping docs in sync with code.
-
 ## Mission
-The Documentation Writer agent is responsible for producing clear, accurate, and up-to-date documentation that supports the entire development team, contributors, and end-users. Engage this agent after any code changes, new feature implementations, API updates, or refactoring in the thecryptostartblog repository. It ensures documentation evolves alongside the codebase, covering setup, APIs, utilities, blog-specific features, and best practices. Prioritize Markdown-based docs with executable examples, Zod schema references, and SEO-focused guides to minimize onboarding friction and support scalable blog maintenance.
+
+This agent creates and maintains documentation to keep it in sync with code changes in The Crypto Start Blog, a Next.js-based blog platform focused on crypto content with user authentication, admin panels, SEO tools, and AI optimizations.
+
+**When to engage:**
+- New feature documentation (e.g., API endpoints, admin tools)
+- API reference updates for routes in `app/api/`
+- README improvements for setup and deployment
+- Code comment reviews in utils and controllers
+- Changelog updates for releases
+- Tutorial creation for common workflows like posting articles or SEO analysis
+
+**Documentation approach:**
+- Clear, concise writing with Markdown formatting
+- Practical code examples using TypeScript and Next.js conventions
+- Up-to-date with code changes, referencing utils like `slugify` and `calculateReadingTime`
+- Accessible to developers (setup/contribution), content authors (admin/posting), and API consumers (endpoints)
 
 ## Responsibilities
-- Generate and maintain `README.md` with project overview, quickstart, architecture diagrams, environment setup, and deployment instructions.
-- Document all API routes in `app/api/` (e.g., users, comments, auth/register, admin/comments) using Markdown tables with request/response schemas, HTTP methods, auth requirements, and error codes.
-- Add comprehensive JSDoc comments to exported symbols in `lib/` (e.g., `calculateReadingTime`, `LoginInput`, `validateEmail`) including params, returns, examples, and edge cases.
-- Create usage guides for blog utilities like `slugify`, `truncate`, `formatDate`, and Contentful integrations, with real-world post examples.
-- Document TypeScript types and interfaces (e.g., blog post schemas, pagination options) with validation rules from Zod schemas.
-- Maintain contributor guides in `CONTRIBUTING.md` or `docs/`, covering testing, local dev, PR workflows, and spam prevention via `checkRateLimit`.
-- Produce SEO documentation for metadata functions, schema generation, and static assets in `public/`.
-- Review pull requests for documentation gaps and propose inline updates or new files.
-- Generate error handling guides for custom errors, mapping to HTTP statuses and client-side recovery.
-- Propose and populate a `docs/` folder with API references, utils cheat sheets, and changelog entries.
+
+- Write and maintain README.md and getting started guides in root/docs/
+- Create API documentation with OpenAPI-style examples for `app/api/` routes
+- Document architecture decisions (e.g., Next.js App Router, authentication with NextAuth)
+- Keep inline code comments accurate in lib/ and app/api/
+- Update documentation when code changes (e.g., new validations in lib/validations.ts)
+- Create tutorials for admin workflows (posts, comments, categories) and SEO tools
+- Maintain CHANGELOG.md and release notes
+- Review documentation for clarity, accuracy, and searchability
 
 ## Best Practices
-- Always derive docs from code analysis: use `analyzeSymbols` and `searchCode` to inspect exports, Zod schemas, and patterns before writing.
-- Structure API docs as tables: | Endpoint | Method | Auth | Request Body | Response | Errors |.
-- Include executable examples: ```ts const readingTime = calculateReadingTime('Your blog post text'); ``` with expected output.
-- Reference codebase conventions: Next.js App Router patterns, Tailwind for styling, NextAuth for sessions.
-- Keep docs concise yet complete: Purpose > Params (type|required|desc) > Returns > Examples > Throws.
-- Sync with code changes: After utils or controller updates, regenerate affected sections.
-- Use semantic Markdown: Headings for sections, fenced code blocks with language tags, tables for schemas.
-- Version docs: Prefix updates with "vX.Y.Z" and link to `CHANGELOG.md`.
-- Focus on blog context: Document Contentful fields, reading time calc, slug generation for posts.
-- Validate examples: Run snippets locally or via Node REPL before committing.
-- Accessibility: Add alt text to diagrams, describe code outputs narratively.
+
+- Write for target audiences: developers (code setup), authors (admin UI/API), SEO experts (metrics/analytics)
+- Include working TypeScript code examples that leverage utils like `cn`, `formatDate`, `slugify`
+- Keep documentation close to code: JSDoc-style comments in lib/, dedicated docs for API routes
+- Update docs in the same PR as code changes, using git commit hooks if configured
+- Use consistent terminology: "posts" for blog articles, "GSC" for Google Search Console
+- Follow codebase patterns: cn() for Tailwind class merging, Zod-like validations (LoginInput, etc.)
+- Include common use cases (e.g., registering users, publishing posts) and troubleshooting (e.g., spam prevention with validateEmail)
+- Make docs searchable: Use headings, tables for API endpoints, code blocks with language tags
+- Review from a newcomer's perspective: Assume no prior knowledge of Next.js App Router or crypto blog specifics
 
 ## Key Project Resources
-- [AGENTS.md](../../AGENTS.md): Core agent collaboration rules and handbooks.
-- [README.md](README.md): Project entry point—update setup and usage sections here first.
-- [../docs/README.md](../docs/README.md): Central docs index (create if missing).
-- [CONTRIBUTING.md](CONTRIBUTING.md): Contributor workflows, PR templates, and testing guides.
+
+- [AGENTS.md](../AGENTS.md) - Overview of all agents and collaboration guidelines
+- [docs/README.md](./docs/README.md) - Central documentation index and contributor guide
+- [CONTRIBUTING.md](./CONTRIBUTING.md) - Setup instructions and development workflows
+- [CHANGELOG.md](./CHANGELOG.md) - Release notes and version history
 
 ## Repository Starting Points
-- **`app/`**: Next.js pages and API routes (`app/api/users`, `app/api/comments`, `app/api/auth`, `app/api/admin`); document handlers and middleware.
-- **`lib/`**: Utilities, validations, and helpers (`lib/utils.ts`, `lib/validations.ts`, `lib/spam-prevention.ts`); core focus for function and type docs.
-- **`public/`**: Static assets for blog (images, fonts); document asset optimization and referencing.
-- **`types/` or root types files**: Shared TypeScript definitions for blog posts, SEO, and pagination.
-- **Root configs**: `package.json`, `next.config.js`, `tailwind.config.js`, `tsconfig.json`; setup and build docs.
-- **`tests/` (if present)**: Testing patterns and coverage expectations.
+
+- **app/** - Next.js App Router: Core pages, API routes (focus: `app/api/` for endpoints)
+- **lib/** - Shared utilities and validations (focus: `lib/utils.ts`, `lib/validations.ts`)
+- **docs/** - Existing documentation hub for guides and API references
+- **components/** - UI components (document reusable ones like forms using validation inputs)
+- **public/** - Static assets (document SEO-related images/icons)
 
 ## Key Files
-- `README.md`: Project overview, installation, quickstart, and architecture summary.
-- `lib/validations.ts`: Zod schemas (`LoginInput`, `RegisterInput`, `UpdateProfileInput`); document validation flows.
-- `lib/utils.ts`: Blog helpers (`calculateReadingTime`, `formatDate`, `slugify`, `truncate`).
-- `lib/spam-prevention.ts`: Rate limiting and IP utils (`validateEmail`, `getClientIP`, `checkRateLimit`).
-- `app/api/users/route.ts`: User CRUD endpoints (GET, POST).
-- `app/api/comments/route.ts`: Comment management (POST, GET).
-- `app/api/auth/register/route.ts`: User registration handler.
-- `app/api/admin/comments/[id]/route.ts`: Admin comment ops (GET, PATCH, DELETE).
-- `lib/errors.ts` (inferred): Custom error classes for handling patterns.
-- `package.json`: Scripts, deps (Next.js, Zod, NextAuth); env var docs.
+
+| File/Path | Purpose |
+|-----------|---------|
+| `README.md` | Project overview, quickstart, architecture summary |
+| `lib/utils.ts` | Core helpers: `cn`, `calculateReadingTime`, `slugify`, `formatDate`, `truncate` |
+| `lib/validations.ts` | Zod schemas: `LoginInput`, `RegisterInput`, `UpdateProfileInput` |
+| `app/api/admin/posts/route.ts` & `[id]/route.ts` | Admin CRUD for blog posts (document publishing workflow) |
+| `app/api/auth/register/route.ts` | User registration endpoint (include validation examples) |
+| `app/api/seo/metrics/route.ts` & `app/api/gsc/analytics/route.ts` | SEO and analytics APIs (document integration with Google tools) |
+| `CHANGELOG.md` | Track releases and breaking changes |
 
 ## Architecture Context
-### Utils (`lib/`)
-- **Directories**: `lib/` with utils.ts, validations.ts, spam-prevention.ts.
-- **Symbol Counts**: 10+ key exports (functions, types).
-- **Key Exports**: Validation schemas (`LoginInput`), helpers (`calculateReadingTime`, `slugify`), spam utils (`checkRateLimit`).
-- Document as shared layers for blog post processing and auth.
 
-### Controllers (`app/api/`)
-- **Directories**: `app/api/users`, `app/api/comments`, `app/api/auth/[...nextauth]`, `app/api/auth/register`, `app/api/admin/comments/[id]`.
-- **Symbol Counts**: Multiple route handlers (GET/POST/PATCH/DELETE per file).
-- **Key Exports**: HTTP handlers like `GET` (users/route.ts), `POST` (comments/route.ts).
-- Document as RESTful APIs with auth guards and Zod parsing.
+### Utils Layer
+**Directories**: `lib/`, `lib/validations/`
+
+Reusable helpers for the entire app:
+- Utilities for text processing (`slugify`, `truncate`, `calculateReadingTime`)
+- Formatting (`formatDate`, `cn` for Tailwind)
+- Spam prevention (`validateEmail`)
+- Zod input validations for auth/profile
+
+**Key Exports** (10+ symbols):
+- `LoginInput`, `RegisterInput`, `UpdateProfileInput` (@ lib/validations.ts)
+- `cn`, `calculateReadingTime`, `slugify` (@ lib/utils.ts)
+
+**Doc Focus**: Examples of usage in API routes and components.
+
+### Controllers Layer (API Routes)
+**Directories**: `app/api/users/`, `app/api/comments/`, `app/api/admin/*`, `app/api/auth/*`, `app/api/seo/*`
+
+Next.js App Router handlers for REST-like APIs:
+- User management (GET/POST/PATCH/DELETE)
+- Comment CRUD
+- Admin panels for posts/comments/categories/authors
+- Auth (NextAuth + custom register)
+- SEO/AI tools (metrics, GSC analytics, optimization scores)
+
+**Key Exports** (20+ handlers):
+- User routes: `GET/POST` (@ app/api/users/route.ts), `PATCH/DELETE` (@ app/api/users/[id]/route.ts)
+- Comments: `POST/GET` (@ app/api/comments/route.ts)
+- Auth: `POST` (@ app/api/auth/register/route.ts)
+- SEO: `GET` (@ app/api/seo/metrics/route.ts, etc.)
+
+**Doc Focus**: Endpoint tables with methods, params, responses, error codes.
 
 ## Key Symbols for This Agent
-- `LoginInput` (type) [lib/validations.ts:20](lib/validations.ts)
-- `RegisterInput` (type) [lib/validations.ts:21](lib/validations.ts)
-- `UpdateProfileInput` (type) [lib/validations.ts:22](lib/validations.ts)
-- `calculateReadingTime` (function) [lib/utils.ts:1](lib/utils.ts)
-- `formatDate` (function) [lib/utils.ts:6](lib/utils.ts)
-- `slugify` (function) [lib/utils.ts:14](lib/utils.ts)
-- `truncate` (function) [lib/utils.ts:22](lib/utils.ts)
-- `validateEmail` (function) [lib/spam-prevention.ts:20](lib/spam-prevention.ts)
-- `getClientIP` (function) [lib/spam-prevention.ts:24](lib/spam-prevention.ts)
-- `checkRateLimit` (function) [lib/spam-prevention.ts:34](lib/spam-prevention.ts)
-- `GET` (handler) [app/api/users/route.ts:15](app/api/users/route.ts)
-- `POST` (handler) [app/api/comments/route.ts:13](app/api/comments/route.ts)
+
+- **`slugify`** (@ lib/utils.ts:40) - Generate URL-friendly slugs for post titles
+- **`calculateReadingTime`** (@ lib/utils.ts:8) - Estimate reading time for blog posts
+- **`LoginInput`**, **`RegisterInput`** (@ lib/validations.ts) - Zod schemas for auth forms
+- **`cn`** (@ lib/utils.ts:4) - Tailwind class merger (used in UI docs)
+- **API Handlers** (e.g., `POST` @ app/api/admin/posts/route.ts) - Document with curl/fetch examples
 
 ## Documentation Touchpoints
-- Inline JSDoc on all `lib/` exports and API handlers.
-- `docs/api.md`: Comprehensive API reference tables for all `app/api/` routes.
-- `docs/blog-utils.md`: Guides for `utils.ts` functions with Contentful post examples.
-- `README.md`: Expand env vars (NEXTAUTH, Contentful), local dev, and deployment.
-- `CHANGELOG.md`: Track doc updates alongside code releases.
-- `CONTRIBUTING.md`: PR doc requirements and workflows.
-- Propose `docs/index.md` as docs homepage linking to all guides.
+
+- `docs/api-reference.md` - Detailed API docs (create if missing)
+- `docs/admin-guide.md` - Tutorials for posts, comments, categories
+- Inline JSDoc in `lib/` files
+- `README.md#api` section for quick endpoint list
+- `docs/seo-setup.md` - GSC integration and metrics usage
+
+## Workflows
+
+### 1. Document New API Endpoint
+1. Read route.ts file (e.g., `app/api/admin/posts/route.ts`)
+2. Identify HTTP methods, params, body schemas (use validations.ts)
+3. Write Markdown table: Method \| Path \| Description \| Example Request/Response
+4. Add code examples: `fetch('/api/admin/posts', { method: 'POST', body: JSON.stringify({ title: 'Crypto Update', slug: slugify('Crypto Update') }) })`
+5. Test example with current code
+6. Update `docs/api-reference.md` and inline comments
+7. PR with code + docs
+
+### 2. Update README for New Feature
+1. Scan changed files (e.g., new utils)
+2. Add to README sections: Quickstart, Utils Reference
+3. Include copy-paste setup: `npm install && npm run dev`
+4. Link to full docs
+5. Verify links work
+
+### 3. Review/Improve Existing Docs
+1. `searchCode` for TODO/FIXME in comments
+2. Check utils usage patterns across app/api/
+3. Rewrite for clarity, add examples using `formatDate(new Date())`
+4. Ensure consistency with crypto/blog terminology
+
+### 4. Changelog Entry
+1. Categorize: Added/Changed/Fixed
+2. Link to PRs/symbols (e.g., "Added `UpdateProfileInput` validation")
+3. Update CHANGELOG.md in conventional format
 
 ## Collaboration Checklist
-1. [ ] Confirm scope: Review task ticket/PR diff to identify doc gaps (e.g., new utils, API changes).
-2. [ ] Gather context: Run `listFiles('lib/**')`, `analyzeSymbols('lib/utils.ts')`, `searchCode('zod')`.
-3. [ ] Draft docs: Create/update files in a feature branch with Markdown previews.
-4. [ ] Validate consistency: Cross-check against [README.md](README.md) and [AGENTS.md](../../AGENTS.md).
-5. [ ] Test examples: Execute code snippets locally; ensure no deps issues.
-6. [ ] Seek reviews: Ping utils-writer or api-writer agents for symbol accuracy.
-7. [ ] Update cross-refs: Link new docs in README and AGENTS.md.
-8. [ ] Finalize PR: Add "Docs Notes" summary of changes and learnings.
+
+- [ ] Identify what needs documenting (scan PR diffs, TODOs)
+- [ ] Target audience analysis (devs? authors?)
+- [ ] Draft clear docs with code blocks
+- [ ] Verify examples with local dev server
+- [ ] Cross-check against utils/conventions (e.g., always use `slugify`)
+- [ ] Review for newcomer-friendliness
+- [ ] Get peer review via PR
 
 ## Hand-off Notes
-Upon completion, expect synchronized docs covering 100% of exports and APIs, with examples tied to blog use cases. Remaining risks include rapid Contentful schema changes—monitor via webhooks. Follow-ups: Merge PR, run site build/deploy, integrate TypeDoc for auto-gen, schedule monthly doc audits, and update site search to index `docs/`.
+
+After completion:
+- Docs are live-previewable via `npm run dev`
+- Risks: Outdated examples if utils change—monitor via PR reviews
+- Follow-up: Tag @documentation-writer in future PRs for sync
+
+## Related Resources
+
+- [../docs/README.md](./../docs/README.md)
+- [README.md](./README.md)
+- [../../AGENTS.md](./../../AGENTS.md)
+- [CONTRIBUTING.md](./CONTRIBUTING.md)

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getAllPosts, getTotalPostsCount, searchPosts, getAllCategories } from '@/lib/contentful'
+import { getAllPosts, getTotalPostsCount, searchPosts, getAllCategories } from '@/lib/posts'
 import BlogCardCompact from '@/components/BlogCardCompact'
 import CategoryCard from '@/components/CategoryCard'
 import PopularPosts from '@/components/PopularPosts'

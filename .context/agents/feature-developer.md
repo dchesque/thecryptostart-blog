@@ -1,116 +1,164 @@
-# Feature Developer Agent Playbook
-
 ## Mission
-The Feature Developer agent implements new features for the CryptoStartBlog, a Next.js 14+ application built with the App Router, TypeScript, Tailwind CSS, shadcn/ui, Contentful for content management, and NextAuth for authentication. Engage this agent for product specifications requiring new UI pages, API routes, reusable components, admin tools, blog enhancements, or third-party integrations. It prioritizes clean architecture by extending existing patterns, ensuring seamless integration, type safety, responsive design, SEO optimization, and comprehensive testing to maintain scalability, performance, and maintainability.
+
+This agent implements new features for the Crypto Start Blog, a Next.js application focused on blog content, admin management, SEO analytics, user interactions, and AI optimizations. Features integrate with existing API routes, UI components, and admin dashboards while maintaining clean architecture, performance, and SEO best practices.
+
+**When to engage:**
+- New feature implementation (e.g., blog post enhancements, admin tools, SEO metrics, user auth/comments)
+- Feature enhancement requests (e.g., new components like ads, newsletters, or analytics dashboards)
+- User story development (e.g., gated content, FAQ sections, social sharing)
+- API endpoint additions (e.g., new routes under `app/api/admin/` or `app/api/seo/`)
+
+**Implementation approach:**
+- Analyze requirements against existing patterns in controllers (`app/api/`), pages (`app/`), and components (`components/`)
+- Design API/UI before coding, reusing symbols like `PostMetaProps`, `CommentsListProps`
+- Integrate with Prisma/DB via existing services, Drizzle ORM patterns, and NextAuth for auth
+- Write tests in `__tests__/` or alongside files using Jest/RTL patterns
+- Ensure mobile-responsive, SEO-optimized (e.g., OpenGraph, schema), and ad-friendly UI
 
 ## Responsibilities
-- Scaffold new App Router pages in `/app/` (e.g., `page.tsx`, `layout.tsx`) with server-side rendering, dynamic segments (`[slug]`), `generateStaticParams`, and `generateMetadata` for SSG and SEO.
-- Develop API routes in `/app/api/` (e.g., `route.ts` with `GET`, `POST`, `PATCH`, `DELETE` handlers) including authentication checks, database operations via Prisma or similar, Contentful fetches, and standardized error responses.
-- Create reusable components in `/components/` with TypeScript interfaces for props (e.g., cards, modals, sidebars, ads) following shadcn/ui and Tailwind conventions.
-- Integrate authentication using `AuthProvider`, session checks, and protected routes for admin areas (`/app/admin/`).
-- Fetch, parse, and display Contentful data (posts, comments, authors) with patterns like `extractHeadings` for TOC and rich text handling.
-- Extend global types in `/types/` and error classes for new data shapes and consistent handling.
-- Incorporate UI elements like ads (`StickyHeaderAd`), newsletters (`NewsletterForm`), share buttons, and social comments into new pages.
-- Implement responsive, accessible designs with Tailwind classes, mobile-first approach, and ARIA attributes.
-- Add unit/integration tests for new components and APIs using existing test patterns (Vitest/Jest).
-- Update documentation, SEO metadata, and changelog for deployed features.
+
+- Implement new API endpoints in `app/api/` following route.ts patterns (e.g., GET/POST handlers with auth checks)
+- Build/enhance UI in `app/` pages (e.g., `app/blog/[slug]/page.tsx`) and reusable `components/` (e.g., new cards, forms)
+- Add admin features in `app/admin/` subpaths (e.g., posts, users, SEO dashboards)
+- Handle data fetching with Server Components, revalidate paths, and integrate GSC/SEO APIs
+- Create TypeScript types mirroring existing props (e.g., `FAQSectionProps`, `RecommendedContentProps`)
+- Write comprehensive tests for APIs (unit/integration) and components (RTL)
+- Update docs in `docs/` or inline JSDoc; ensure accessibility (ARIA) and performance (Web Vitals)
+- Maintain backward compatibility for public APIs; use Zod for validation
 
 ## Best Practices
-- Prioritize Server Components; use `"use client"` only for interactive elements (e.g., forms, modals with hooks).
-- Define strict TypeScript interfaces for all props/data (e.g., `PostMetaProps`, `CommentsListProps`); infer from Contentful schemas.
-- Secure APIs with NextAuth session validation; throw `AuthenticationError` for unauthorized access.
-- Follow Contentful patterns: use `client.getEntries` with queries; parse rich text for TOC/slugs with `extractHeadings`.
-- Generate dynamic metadata (`generateMetadata`) and static params (`generateStaticParams`) for blog/admin pages.
-- Handle errors uniformly: custom classes (`AppError`), `notFound()`, `redirect()`; provide user-friendly messages.
-- Style with Tailwind/shadcn/ui: extend `tailwind.config.js`, use utility classes, ensure responsiveness (`sm:`, `md:` breakpoints).
-- Optimize performance: SSG where possible, `revalidatePath` for ISR, lazy-load components/images.
-- Test comprehensively: unit tests for components (`@testing-library/react`), API mocks, E2E with Playwright if patterned.
-- Commit conventions: feature branches (`feat/new-feature`), descriptive messages; run `lint`, `type-check`, `test` pre-PR.
-- Integrate cross-cutting concerns: ads, newsletters, SEO, analytics in all public pages.
+
+**Derived from codebase:**
+- **API Routes (`app/api/`)**: Use async handlers with `NextRequest/NextResponse`; auth via `getServerSession`; Prisma queries; error handling with JSON responses (status 400/401/500); rate limiting where applicable.
+- **UI Components**: Functional components with TypeScript props (e.g., `interface TrendingListProps { posts: Post[] }`); Tailwind CSS for styling; shadcn/ui patterns; Server/Client boundaries with `'use client'`.
+- **Pages**: App Router structure (`app/blog/[slug]/page.tsx`); metadata exports for SEO; loading/error/suspense boundaries; integrate components like `TableOfContents`, `NewsletterForm`.
+- **Data Flow**: Server Components for fetching (e.g., from `/api/users`, GSC analytics); revalidateTag/Path for dynamic data; optimistic updates in forms.
+- **Testing**: Colocated `__tests__/`; mock APIs with MSW; test props, renders, interactions.
+- **Conventions**: Kebab-case dynamic routes (`[id]`); consistent naming (e.g., `route.ts` exports methods); ESLint/Prettier; Git commit: `feat: add user comments API`.
+- **Performance/SEO**: Lazy-load ads (`StickyHeaderAd`); schema.org JSON-LD; Core Web Vitals tracking; image optimization.
+- **Commits**: Scoped (`feat(admin): new posts editor`), small, descriptive.
 
 ## Key Project Resources
-- [README.md](../README.md) - Project overview, setup, scripts, environment variables.
-- [AGENTS.md](../../AGENTS.md) - Agent roles, collaboration protocols.
-- [../docs/README.md](../docs/README.md) - Documentation index and guides.
-- [Contributor Guide](../CONTRIBUTING.md) - PR workflow, code standards, deployment.
-- Contentful SDK Docs: [Content Delivery API](https://www.contentful.com/developers/docs/references/content-delivery-api/).
+
+- [AGENTS.md](../../AGENTS.md) - Agent collaboration guidelines
+- [docs/README.md](../docs/README.md) - Architecture and setup
+- [README.md](./README.md) - Project overview and contrib guide
+- [next.config.js](next.config.js) - Build/Webpack config
+- [tailwind.config.js](tailwind.config.js) - Styling conventions
+- [tsconfig.json](tsconfig.json) - TypeScript strict mode
 
 ## Repository Starting Points
-- `/app/` - Core App Router structure: pages, layouts, loading/error states, dynamic routes (`[slug]`), and metadata.
-- `/components/` - Reusable UI elements: blog/sidebar components, ads, auth UI, forms, and content displays.
-- `/app/api/` - API routes for users, comments, auth; handlers follow REST patterns with auth guards.
-- `/app/admin/` - Protected admin interfaces: dashboards, user/comment management pages.
-- `/app/blog/` - Blog functionality: post listings, dynamic slugs, TOC, related content.
-- `/types/` - Shared TypeScript definitions: data models, props interfaces, error types.
+
+- `app/` - App Router pages: blog (`app/blog/`), admin (`app/admin/`), auth/SEO routes
+- `app/api/` - API handlers: users/comments (`app/api/users/`), admin CRUD (`app/api/admin/`), SEO/GSC (`app/api/seo/`, `app/api/gsc/`)
+- `components/` - Reusable UI: blog enhancers (`TrendingList.tsx`, `RelatedPosts.tsx`), forms (`NewsletterForm.tsx`, `CommentForm.tsx`), ads (`StickyHeaderAd.tsx`)
+- `lib/` - Utilities, DB (Prisma/Drizzle), auth (NextAuth), SEO helpers
+- `types/` - Shared TypeScript definitions (e.g., Post, User, Comment)
+- `__tests__/` - Unit/integration tests for APIs/components
 
 ## Key Files
+
 | File | Purpose |
 |------|---------|
-| [`app/api/users/route.ts`](../app/api/users/route.ts) | User CRUD operations (GET, POST); template for new entity APIs. |
-| [`app/api/comments/route.ts`](../app/api/comments/route.ts) | Comment handling (POST, GET); extend for moderation features. |
-| [`app/api/admin/comments/[id]/route.ts`](../app/api/admin/comments/[id]/route.ts) | Admin comment management (GET, PATCH, DELETE). |
-| [`components/TableOfContents.tsx`](../components/TableOfContents.tsx) | TOC generation from rich text; use `extractHeadings` for blog pages. |
-| [`components/StickyHeaderAd.tsx`](../components/StickyHeaderAd.tsx) | Persistent ad component; integrate in layouts. |
-| [`components/SocialComments.tsx`](../components/SocialComments.tsx) | Comments display; pair with `CommentForm`. |
-| [`components/NewsletterForm.tsx`](../components/NewsletterForm.tsx) | Subscription UI; add to sidebars/footers. |
-| [`components/Footer.tsx`](../components/Footer.tsx) | Global footer with links, ads, newsletter CTA. |
-| [`app/blog/[slug]/page.tsx`](../app/blog/[slug]/page.tsx) | Dynamic post page; model for content-heavy features. |
-| [`components/TrendingList.tsx`](../components/TrendingList.tsx) | Trending content sidebar; reuse for recommendations. |
+| `app/api/users/route.ts` | User listing (`GET`), creation (`POST`); auth-guarded |
+| `app/api/comments/route.ts` | Comment creation (`POST`), listing (`GET`) |
+| `app/api/admin/posts/[id]/route.ts` | Admin post CRUD (GET/PATCH/DELETE); publish endpoint |
+| `components/TableOfContents.tsx` | Dynamic TOC from headings; `TOCItem` type |
+| `components/NewsletterForm.tsx` | Email signup; integrates with backend service |
+| `components/SocialComments.tsx` | Embeddable comments; props for moderation |
+| `components/RelatedPosts.tsx` | AI-recommended posts; `RelatedPostsProps` |
+| `components/PostMeta.tsx` | SEO metadata renderer; OpenGraph/schema |
+| `app/blog/[slug]/page.tsx` | Single post page; integrates TOC, comments, ads |
+| `app/admin/posts/new/page.tsx` | New post editor form; integrates rich text/upload |
 
 ## Architecture Context
-### Controllers (API Routes)
-- **Directories**: `app/api/users`, `app/api/comments`, `app/api/users/[id]`, `app/api/auth/[...nextauth]`, `app/api/auth/register`, `app/api/admin/comments`, `app/api/admin/comments/[id]`.
-- **Symbol Count**: 10+ handlers.
-- **Key Exports**:
-  - `GET` @ `app/api/users/route.ts:15` - List users.
-  - `POST` @ `app/api/users/route.ts:48` - Create user.
-  - `POST` @ `app/api/comments/route.ts:13` - Add comment.
-  - `GET` @ `app/api/comments/route.ts:112` - Fetch comments.
-  - `PATCH` @ `app/api/users/[id]/route.ts:15` - Update user.
-  - `DELETE` @ `app/api/users/[id]/route.ts:59` - Delete user.
-  - `POST` @ `app/api/auth/register/route.ts:12` - Registration.
-  - `GET` @ `app/api/admin/comments/route.ts:5` - Admin comment list.
-  - `PATCH` @ `app/api/admin/comments/[id]/route.ts:4` - Admin update.
-  - `DELETE` @ `app/api/admin/comments/[id]/route.ts:31` - Admin delete.
 
-### Components (UI Layer)
-- **Directories**: `app`, `components`, `app/login`, `app/blog`, `app/admin`, `app/about`, `components/admin`, `app/blog/[slug]`, `app/admin/users`, `app/admin/comments`.
-- **Symbol Count**: 30+ components and props interfaces.
-- **Key Exports**:
-  - `TableOfContents` @ `components/TableOfContents.tsx:86`.
-  - `StickyHeaderAd` @ `components/StickyHeaderAd.tsx:19`.
-  - `StickyFooterAd` @ `components/StickyFooterAd.tsx:19`.
-  - `SocialComments` @ `components/SocialComments.tsx:16`.
-  - `NewsletterForm` @ `components/NewsletterForm.tsx:13`.
+### Controllers (API Layer)
+- **Directories**: `app/api/users/`, `app/api/comments/`, `app/api/admin/posts/[id]/`, `app/api/seo/metrics/`, `app/api/gsc/analytics/`, `app/api/auth/register/`
+- **Patterns**: `route.ts` files export HTTP methods (e.g., `export async function GET(request: NextRequest)`); auth via `getServerSession`; Prisma `db.user.findMany()`; Zod validation; caching with `revalidatePath`.
+- **Key Exports**: 10+ handlers (GET users@18, POST comments@13, GET SEO metrics@7).
+
+### Components/UI Layer
+- **Directories**: `app/blog/[slug]/`, `app/admin/`, `components/` (50+ files)
+- **Patterns**: Props-driven FCs (e.g., `interface TableOfContentsProps { items: TOCItem[] }`); Tailwind; hooks for state (useState, useEffect); `'use client'` for interactive.
+- **Key Exports**: `TableOfContents`, `StickyHeaderAd`, `NewsletterForm`, `CommentsList` (30+ components).
+
+### Data/Services
+- Prisma schema inferred; GSC/SEO integrations; NextAuth (`app/api/auth/[...nextauth]/route.ts`).
 
 ## Key Symbols for This Agent
-- `TrendingListProps` @ `components/TrendingList.tsx:7` - Props for trending posts list.
-- `TOCItem` @ `components/TableOfContents.tsx:7` - TOC heading structure.
-- `TableOfContentsProps` @ `components/TableOfContents.tsx:13` - Input for TOC generation.
-- `StickyHeaderAdProps` @ `components/StickyHeaderAd.tsx:9` - Ad configuration.
-- `SocialCommentsProps` @ `components/SocialComments.tsx:8` - Comments display props.
-- `NewsletterFormProps` @ `components/NewsletterForm.tsx:5` - Form handling props.
-- `CommentsListProps` @ `components/CommentsList.tsx:14` - List rendering.
-- `CommentFormProps` @ `components/CommentForm.tsx:6` - Submission form.
-- `PostMetaProps` @ `components/PostMeta.tsx:4` - Post metadata display.
-- `FeaturedArticleCardProps` @ `components/FeaturedArticleCard.tsx:5` - Card component props.
+
+- **Props/Types**: `TrendingListProps`, `TableOfContentsProps`, `SocialCommentsProps`, `RelatedPostsProps`, `RecommendedContentProps`, `FAQSectionProps`, `CommentsListProps`
+- **Data Models**: `Comment`, `FAQItem`, `RecommendedPost`, `PostMetaProps`, `PopularPostsProps`
+- **API Handlers**: Exported `GET`, `POST`, `PATCH`, `DELETE` from `route.ts` files
+- **UI Utils**: `WebVitals`, `ReadingProgressBar`, `ShareButtonsProps`
 
 ## Documentation Touchpoints
-- [`../docs/README.md`](../docs/README.md) - Central docs index.
-- [`types/README.md`](../types/README.md) - Type definitions guidelines.
-- [Contentful Guide](../docs/contentful.md) - Data fetching and parsing.
-- [Auth README](../app/api/auth/README.md) - NextAuth extensions and sessions.
-- [Admin Patterns](../app/admin/README.md) - Protected page checklist.
+
+- Inline JSDoc on components/exports (e.g., `@param {TrendingListProps} props`)
+- `components/*.tsx` prop docs
+- API comments in `app/api/route.ts` (e.g., request/response shapes)
+- Update `README.md` for new features; `docs/` for admin guides
+
+## Workflows for Common Tasks
+
+### 1. New API Endpoint (e.g., `/api/admin/categories`)
+```
+1. Create `app/api/admin/categories/route.ts` and `[id]/route.ts`
+2. Export methods: GET (list), POST (create), etc.; use auth middleware
+3. Validate with Zod; query Prisma (e.g., `db.category.findMany({ include: { posts: true } })`)
+4. Handle errors: `return NextResponse.json({ error }, { status: 400 })`
+5. Test: `__tests__/api/admin/categories.test.ts` with MSW
+6. Revalidate: `revalidateTag('categories')`
+```
+
+### 2. New UI Component (e.g., `AuthorCard.tsx`)
+```
+1. Add to `components/AuthorCard.tsx`; define `interface AuthorCardProps { author: Author }`
+2. Use Tailwind/shadcn; export default FC
+3. Integrate in pages (e.g., `app/admin/authors/page.tsx`)
+4. Add `__tests__/AuthorCard.test.tsx`: render, snapshot, prop variants
+5. Usage: `<AuthorCard author={data.author} />`
+```
+
+### 3. New Page/Feature (e.g., `app/blog/clusters/page.tsx`)
+```
+1. Create page.tsx; fetch data server-side (async function)
+2. Integrate components: `<TableOfContents />`, `<RelatedPosts />`
+3. Add metadata: `export const metadata = { title: 'Clusters' }`
+4. Suspense for loading; error.tsx for boundaries
+5. Test interactions; update nav if needed
+```
+
+### 4. Feature Enhancement (e.g., Add AI Scores to Posts)
+```
+1. Extend `/api/ai-optimization/scores` or new endpoint
+2. Update `Post` type; add to `PostMeta.tsx`
+3. UI: New `<AIScoreBadge />` component
+4. Admin integration: `app/admin/posts/[id]/edit/page.tsx`
+```
 
 ## Collaboration Checklist
-1. **Confirm Spec**: Parse feature requirements; query Product Owner for ambiguities (e.g., Contentful fields, auth levels).
-2. **Gather Context**: Use tools to scan similar files (e.g., `app/blog/[slug]/page.tsx` for new post types); list relevant symbols.
-3. **Plan Implementation**: Outline files/types/APIs; mock wireframes if UI-heavy.
-4. **Develop Iteratively**: Create types first → API routes → pages/components → tests → integrations (auth, Contentful, ads).
-5. **Validate**: Run linting, type-check, tests; self-review for patterns/best practices.
-6. **Document & PR**: Update READMEs/types/changelog; create PR with screenshots/demo; notify reviewers.
-7. **Review & Iterate**: Address feedback; capture edge cases/learnings in `LEARNINGS.md`.
-8. **Hand-off**: Summarize outcomes, risks; suggest next agents (e.g., Performance for optimizations).
+
+- [ ] Clarify requirements: acceptance criteria, wireframes, edge cases
+- [ ] Sketch design: API schema, component tree, data flow
+- [ ] Implement per workflows; TDD for critical paths
+- [ ] Self-test: unit (90% coverage), e2e if UI-heavy
+- [ ] Lint/build: `npm run lint`, `npm run build`
+- [ ] Docs: JSDoc, README updates
+- [ ] PR: Descriptive title/body, screenshots, tests passed
+- [ ] Review: Address feedback; perf/security checks
 
 ## Hand-off Notes
-Upon completion, confirm the feature is fully integrated, tested across devices/browsers, and deployed to preview. Remaining risks include Contentful schema drifts or high-traffic auth bottlenecks—monitor logs. Follow-ups: Engage QA Agent for E2E tests, Performance Agent for bundle analysis if >500KB, and Docs Agent to expand guides with new patterns. Link PR in spec ticket for tracking.
+
+- Verify feature in staging; monitor Web Vitals/SEO impact
+- Risks: DB migrations (run prisma migrate), auth regressions (test NextAuth)
+- Follow-up: Analytics agent for usage metrics; deploy after approvals
+
+## Related Resources
+
+- [../docs/README.md](./../docs/README.md)
+- [README.md](./README.md)
+- [../../AGENTS.md](./../../AGENTS.md)
+- [Testing Agent Playbook](../testing-agent/playbook.md)
+- [Review Agent Playbook](../review-agent/playbook.md)

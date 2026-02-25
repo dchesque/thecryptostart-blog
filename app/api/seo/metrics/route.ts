@@ -1,4 +1,4 @@
-import { getAllPosts } from '@/lib/contentful'
+import { getAllPosts } from '@/lib/posts'
 import { analyzeSEO } from '@/lib/seo-analyzer'
 import { analyzeAllForExpansion } from '@/lib/content-expander'
 import { generateLinkingSuggestionsForAll } from '@/lib/link-builder'

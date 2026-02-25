@@ -2,9 +2,12 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { documentToReactComponents, Options } from '@contentful/rich-text-react-renderer'
-import { BLOCKS, INLINES, MARKS } from '@contentful/rich-text-types'
-import { getPostBySlug, getRelatedPosts, getAllPostSlugs, getAllCategories } from '@/lib/contentful'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeSlug from 'rehype-slug'
+import rehypeAutolinkHeadings from 'rehype-autolink-headings'
+import rehypeHighlight from 'rehype-highlight'
+import { getPostBySlug, getRelatedPosts, getAllPostSlugs, getAllCategories } from '@/lib/posts'
 import { generateMetadata as generateSeoMetadata, generateSchema, generateBreadcrumbSchema, generateAIOptimizedArticleSchema } from '@/lib/seo'
 import { extractQuickAnswer, generateFAQFromPost } from '@/lib/ai-optimization'
 import FAQSection from '@/components/FAQSection'
@@ -90,122 +93,100 @@ interface Heading {
   level: 1 | 2 | 3
 }
 
-function extractHeadingsFromRichText(content: any): Heading[] {
+function splitMarkdownIntoHalves(markdown: string) {
+  if (!markdown) return { firstHalf: '', secondHalf: '' }
+  const length = markdown.length
+  const midPoint = Math.floor(length / 2)
+
+  let splitIndex = markdown.indexOf('\n\n', midPoint)
+  if (splitIndex === -1) {
+    splitIndex = markdown.lastIndexOf('\n\n', midPoint)
+  }
+  if (splitIndex === -1) {
+    splitIndex = midPoint
+  }
+
+  const firstHalf = markdown.slice(0, splitIndex)
+  const secondHalf = markdown.slice(splitIndex)
+  return { firstHalf, secondHalf }
+}
+
+function extractHeadingsFromMarkdown(content: string): Heading[] {
   const headings: Heading[] = []
   const seenIds = new Map<string, number>()
 
-  content.content.forEach((node: any) => {
-    if ([BLOCKS.HEADING_2, BLOCKS.HEADING_3].includes(node.nodeType)) {
-      const text = node.content[0]?.value || ''
-      if (!text) return
+  if (!content) return headings
 
-      const level = node.nodeType === BLOCKS.HEADING_2 ? 2 : 3
-      let id = slugify(text)
+  const regex = /^(#{2,3})\s+(.+)$/gm
+  let match
 
-      if (seenIds.has(id)) {
-        const count = seenIds.get(id)! + 1
-        seenIds.set(id, count)
-        id = `${id}-${count}`
-      } else {
-        seenIds.set(id, 0)
-      }
+  while ((match = regex.exec(content)) !== null) {
+    const level = match[1].length as 2 | 3
+    const text = match[2].trim()
+    let id = slugify(text)
 
-      headings.push({ id, text, level: level as 1 | 2 | 3 })
+    if (seenIds.has(id)) {
+      const count = seenIds.get(id)! + 1
+      seenIds.set(id, count)
+      id = `${id}-${count}`
+    } else {
+      seenIds.set(id, 0)
     }
-  })
+
+    headings.push({ id, text, level })
+  }
 
   return headings
 }
 
-const richTextOptions: Options = {
-  renderMark: {
-    [MARKS.BOLD]: (text) => <strong className="font-bold">{text}</strong>,
-    [MARKS.ITALIC]: (text) => <em className="italic">{text}</em>,
-    [MARKS.UNDERLINE]: (text) => <u className="underline">{text}</u>,
-    [MARKS.CODE]: (text) => (
-      <code className="bg-crypto-darker px-2 py-1 rounded text-crypto-primary font-mono text-sm">
-        {text}
+const MarkdownComponents = {
+  a: ({ node, href, ...props }: any) => {
+    const linkHref = href || ''
+    const className = "text-crypto-primary hover:text-crypto-accent underline transition-colors"
+
+    if (linkHref.startsWith('/')) {
+      return <Link href={linkHref} className={className} {...props} />
+    }
+
+    return <a href={linkHref} target="_blank" rel="noopener noreferrer" className={className} {...props} />
+  },
+  img: ({ node, src, alt, ...props }: any) => (
+    <figure className="my-8">
+      <Image
+        src={src || ''}
+        alt={alt || 'Blog image'}
+        width={800}
+        height={450}
+        className="rounded-xl w-full object-cover aspect-video"
+      />
+      {alt && (
+        <figcaption className="text-center text-sm text-gray-500 mt-2">
+          {alt}
+        </figcaption>
+      )}
+    </figure>
+  ),
+  blockquote: ({ node, ...props }: any) => (
+    <blockquote className="border-l-4 border-crypto-primary pl-4 py-2 my-6 italic text-gray-400 bg-crypto-darker/50 rounded-r-lg" {...props} />
+  ),
+  code: ({ node, className, children, ...props }: any) => {
+    const match = /language-(\w+)/.exec(className || '')
+    const isInline = !match && !className?.includes('language-')
+
+    if (isInline) {
+      return (
+        <code className="bg-crypto-darker px-2 py-1 rounded text-crypto-primary font-mono text-sm" {...props}>
+          {children}
+        </code>
+      )
+    }
+
+    return (
+      <code className={className} {...props}>
+        {children}
       </code>
-    ),
-  },
-  renderNode: {
-    [BLOCKS.PARAGRAPH]: (node, children) => (
-      <p className="leading-tight mb-2 last:mb-0 text-crypto-charcoal/80">{children}</p>
-    ),
-    [BLOCKS.HEADING_2]: (node, children) => {
-      const text = (node.content[0] as any)?.value || ''
-      const id = slugify(text)
-      return (
-        <h2 id={id} className="text-2xl font-bold mt-10 mb-4 scroll-mt-24">
-          {children}
-        </h2>
-      )
-    },
-    [BLOCKS.HEADING_3]: (node, children) => {
-      const text = (node.content[0] as any)?.value || ''
-      const id = slugify(text)
-      return (
-        <h3 id={id} className="text-xl font-semibold mt-8 mb-3 scroll-mt-24">
-          {children}
-        </h3>
-      )
-    },
-    [BLOCKS.HEADING_4]: (node, children) => (
-      <h4 className="text-lg font-semibold mt-6 mb-2">{children}</h4>
-    ),
-    [BLOCKS.UL_LIST]: (node, children) => (
-      <ul className="list-disc list-outside mb-4 ml-6 space-y-1">{children}</ul>
-    ),
-    [BLOCKS.OL_LIST]: (node, children) => (
-      <ol className="list-decimal list-outside mb-4 ml-6 space-y-1">{children}</ol>
-    ),
-    [BLOCKS.LIST_ITEM]: (node, children) => {
-      // If children is a paragraph, we might want to unwrap it if it's the only one
-      // but Tailwind Typography .prose li p handles it better if we just control margins
-      return <li className="text-crypto-charcoal/80 pl-2 leading-tight">{children}</li>
-    },
-    [BLOCKS.QUOTE]: (node, children) => (
-      <blockquote className="border-l-4 border-crypto-primary pl-4 py-2 my-6 italic text-gray-400 bg-crypto-darker/50 rounded-r-lg">
-        {children}
-      </blockquote>
-    ),
-    [BLOCKS.HR]: () => (
-      <hr className="my-8 border-crypto-primary/20" />
-    ),
-    [BLOCKS.EMBEDDED_ASSET]: (node) => {
-      const { file, title, description } = node.data.target.fields
-      if (!file?.url) return null
-
-      const url = file.url.startsWith('//') ? `https:${file.url}` : file.url
-
-      return (
-        <figure className="my-8">
-          <Image
-            src={url}
-            alt={description || title || 'Blog image'}
-            width={file.details?.image?.width || 800}
-            height={file.details?.image?.height || 450}
-            className="rounded-xl w-full"
-          />
-          {title && (
-            <figcaption className="text-center text-sm text-gray-500 mt-2">
-              {title}
-            </figcaption>
-          )}
-        </figure>
-      )
-    },
-    [INLINES.HYPERLINK]: (node, children) => (
-      <a
-        href={node.data.uri}
-        target={node.data.uri.startsWith('http') ? '_blank' : undefined}
-        rel={node.data.uri.startsWith('http') ? 'noopener noreferrer' : undefined}
-        className="text-crypto-primary hover:text-crypto-accent underline transition-colors"
-      >
-        {children}
-      </a>
-    ),
-  },
+    )
+  }
 }
 
 export default async function PostPage({ params }: PostPageProps) {
@@ -316,7 +297,7 @@ export default async function PostPage({ params }: PostPageProps) {
             <aside className="hidden lg:block">
               <div className="sticky top-24">
                 <CompactTableOfContents
-                  headings={extractHeadingsFromRichText(post.content)}
+                  headings={extractHeadingsFromMarkdown(post.content)}
                   variant="minimal"
                 />
               </div>
@@ -368,58 +349,22 @@ export default async function PostPage({ params }: PostPageProps) {
 
               <div className="prose prose-lg max-w-none prose-p:my-4 prose-p:leading-8 prose-h2:mt-12 prose-h2:mb-5 prose-h3:mt-10 prose-h3:mb-4 prose-headings:font-heading prose-headings:text-crypto-navy prose-p:text-crypto-charcoal/80 prose-a:text-crypto-primary prose-a:no-underline hover:prose-a:text-crypto-accent prose-a:font-bold prose-img:rounded-3xl prose-strong:text-crypto-navy prose-strong:font-bold">
                 {(() => {
-                  const seenIds = new Map<string, number>()
-                  const nodes = post.content.content
-                  const midIndex = Math.floor(nodes.length / 2)
-                  const firstHalf = { ...post.content, content: nodes.slice(0, midIndex) }
-                  const secondHalf = { ...post.content, content: nodes.slice(midIndex) }
-
-                  const renderOptions = {
-                    ...richTextOptions,
-                    renderNode: {
-                      ...richTextOptions.renderNode,
-                      [BLOCKS.HEADING_2]: (node: any, children: any) => {
-                        const text = (node.content[0] as any)?.value || ''
-                        let id = slugify(text)
-
-                        if (seenIds.has(id)) {
-                          const count = seenIds.get(id)! + 1
-                          seenIds.set(id, count)
-                          id = `${id}-${count}`
-                        } else {
-                          seenIds.set(id, 0)
-                        }
-
-                        return (
-                          <h2 id={id} className="text-3xl lg:text-4xl font-bold mt-10 mb-6 text-crypto-navy scroll-mt-32 relative pl-6 border-l-4 border-crypto-primary rounded-l-sm">
-                            {children}
-                          </h2>
-                        )
-                      },
-                      [BLOCKS.HEADING_3]: (node: any, children: any) => {
-                        const text = (node.content[0] as any)?.value || ''
-                        let id = slugify(text)
-
-                        if (seenIds.has(id)) {
-                          const count = seenIds.get(id)! + 1
-                          seenIds.set(id, count)
-                          id = `${id}-${count}`
-                        } else {
-                          seenIds.set(id, 0)
-                        }
-
-                        return (
-                          <h3 id={id} className="text-2xl lg:text-3xl font-bold mt-8 mb-4 text-crypto-navy scroll-mt-32">
-                            {children}
-                          </h3>
-                        )
-                      },
-                    }
+                  const contentString = post.content || ''
+                  if (!contentString) {
+                    return <div className="py-10 text-center text-gray-500 italic">This post has no content yet.</div>
                   }
+
+                  const { firstHalf, secondHalf } = splitMarkdownIntoHalves(contentString)
 
                   return (
                     <>
-                      {documentToReactComponents(firstHalf, renderOptions)}
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSlug, rehypeAutolinkHeadings, rehypeHighlight]}
+                        components={MarkdownComponents}
+                      >
+                        {firstHalf}
+                      </ReactMarkdown>
 
                       {/* Ad — Middle Content (blog-middle) */}
                       <div className="not-prose my-10 rounded-xl overflow-hidden bg-gray-50 min-h-[280px] flex items-center justify-center border border-gray-100">
@@ -429,7 +374,13 @@ export default async function PostPage({ params }: PostPageProps) {
                       {/* Inline Newsletter */}
                       <InlineNewsletter />
 
-                      {documentToReactComponents(secondHalf, renderOptions)}
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSlug, rehypeAutolinkHeadings, rehypeHighlight]}
+                        components={MarkdownComponents}
+                      >
+                        {secondHalf}
+                      </ReactMarkdown>
 
                       {/* Ad — Bottom Content (blog-bottom) */}
                       <div className="not-prose my-10 rounded-xl overflow-hidden bg-gray-50 min-h-[280px] flex items-center justify-center border border-gray-100">
@@ -490,7 +441,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
                 {/* TOC Compact (Secondary) */}
                 <CompactTableOfContents
-                  headings={extractHeadingsFromRichText(post.content)}
+                  headings={extractHeadingsFromMarkdown(post.content)}
                   variant="compact"
                 />
 

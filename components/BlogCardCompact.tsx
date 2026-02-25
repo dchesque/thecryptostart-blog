@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import contentfulLoader from '@/lib/contentful-loader'
+
 import { BlogPost } from '@/types/blog'
 
 interface BlogCardCompactProps {
@@ -20,7 +20,7 @@ export default function BlogCardCompact({
             <div className="relative aspect-[16/10] overflow-hidden bg-gray-100">
                 {post.featuredImage?.url && (
                     <Image
-                        loader={contentfulLoader}
+
                         src={post.featuredImage.url}
                         alt={post.title}
                         fill
@@ -50,7 +50,7 @@ export default function BlogCardCompact({
                         <div className="w-6 h-6 rounded-full bg-gray-100 overflow-hidden border border-gray-200">
                             {post.author.image ? (
                                 <Image
-                                    loader={contentfulLoader}
+
                                     src={post.author.image}
                                     alt={post.author.name}
                                     width={24}

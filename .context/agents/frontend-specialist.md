@@ -1,157 +1,184 @@
-# Frontend Specialist Agent Playbook
-
 ## Mission
-The Frontend Specialist agent designs, implements, optimizes, and maintains user interfaces for the CryptoStartBlog, a Next.js 14+ application featuring cryptocurrency blog posts, admin dashboards, authentication, newsletters, ads, and SEO-optimized pages. Focus on responsive design across devices, WCAG-compliant accessibility, efficient state management (e.g., Context API, useState/useEffect), and performance (e.g., lazy loading, SSR/SSG).
 
-Engage this agent when:
-- Developing or refactoring reusable UI components like sidebars, ads, newsletters, or TOC.
-- Building/updating app pages such as blog posts (`/blog/[slug]`), admin panels (`/admin/users`), or landing pages.
-- Integrating responsive layouts, accessibility features (ARIA, keyboard nav), stateful interactions (forms, modals), or performance tweaks (image optimization, code splitting).
-- Handling Contentful rich text rendering, auth flows with Clerk/Supabase, SEO metadata, social sharing, or ad placements.
-- Debugging UI issues, running Lighthouse audits, or ensuring mobile-first experiences.
+This agent designs and implements user interfaces with focus on UX and accessibility for a Next.js blog platform (thecryptostartblog). Specializes in blog-specific UI elements like post layouts, admin dashboards, ads, newsletters, and SEO-optimized components.
+
+**When to engage:**
+- UI component development (e.g., blog cards, sidebars, forms)
+- Page layouts in `app/` directory (e.g., blog posts, admin panels)
+- State management for interactive elements (e.g., TableOfContents, comments)
+- Accessibility improvements (e.g., keyboard nav in FAQs, ARIA labels)
+- Frontend performance (e.g., lazy-loading ads, reading progress bars)
+
+**Implementation approach:**
+- Component-based architecture using React/Next.js App Router
+- Tailwind CSS for styling with `cn` utility for conditional classes
+- TypeScript for props and validations (e.g., `LoginInput`, `RegisterInput`)
+- Server Components by default, Client Components (`"use client"`) for interactivity
 
 ## Responsibilities
-- Design and implement responsive React components in `/components/` using Tailwind CSS, TypeScript props (e.g., `TrendingListProps`, `TableOfContentsProps`), and patterns from existing exports like `StickyHeaderAd`, `NewsletterForm`.
-- Develop Next.js App Router pages in `/app/` with server-side rendering, `generateMetadata`, `generateStaticParams`, dynamic routes (`[slug]`), and data fetching for blog posts, admin tables.
-- Render Contentful rich text using `@contentful/rich-text-react-renderer`, extract headings for `TableOfContents`, apply utils like `slugify`, `truncate`, `calculateReadingTime`.
-- Manage state with `AuthProvider` for authentication, `useState`/`useEffect` for local UI state, and optimistic updates for forms/comments.
-- Integrate ads (`StickyHeaderAd`, `StickyFooterAd`), newsletters (`NewsletterForm`, `InlineNewsletter`), social features (`SocialComments`, `ShareButtons`), and gated content.
-- Optimize performance: Use `next/image` for lazy images, `Suspense` boundaries, pagination/infinite scroll for lists, and monitor Core Web Vitals.
-- Ensure accessibility: Semantic HTML, ARIA roles/labels, focus management, color contrast, screen reader testing.
-- Implement admin UIs in `/app/admin/` with tables (users, comments), forms validated via Zod schemas (`LoginInput`).
-- Add tests with React Testing Library/Jest for components; Storybook for visual regression.
-- Update SEO with `lib/seo.ts` generators and structured data.
+
+- Implement reusable UI components in `components/`
+- Build responsive pages in `app/` (e.g., `app/blog/[slug]`, `app/admin/*`)
+- Integrate utils like `calculateReadingTime`, `slugify`, `formatDate`
+- Ensure WCAG compliance (semantic HTML, alt texts, focus management)
+- Optimize rendering (Suspense, lazy-loading for ads/newsletters)
+- Handle forms with Zod schemas from `lib/validations.ts`
+- Implement blog features (TOC, related posts, social sharing, comments)
+- Add performance metrics via `WebVitals`
 
 ## Best Practices
-- **Responsive Design**: Mobile-first Tailwind (e.g., `flex flex-col md:flex-row`); test on breakpoints `sm:`, `md:`, `lg:`, `xl:`; use `container` for max-width.
-- **Accessibility (a11y)**: Semantic elements (`<main>`, `<article>`); `aria-label`, `role`; `focus-visible`; alt texts; `keyboard` nav for TOC/accordions; run axe-core audits.
-- **State Management**: Leverage Context (`AuthProvider`); `useState` for forms; `useTransition` for smooth updates; avoid prop drilling; persist with `localStorage` for prefs.
-- **Performance**: Server Components default; client-only with `'use client'`; lazy `<Image>`, `dynamic` imports; `loading.tsx` skeletons; bundle analysis via `@next/bundle-analyzer`.
-- **TypeScript & Validation**: Props interfaces (e.g., `SidebarProps`); Zod from `lib/validations.ts`; exhaustive unions; `satisfies` for literals.
-- **Styling & Patterns**: Tailwind utilities; component colocation; shadcn/ui patterns if extended; extract repeated styles to `globals.css`.
-- **Contentful Handling**: Custom `renderers` for rich text; `assetBlock` for images; extract `TOCItem` via heading nodeTypes.
-- **SEO/Sharing**: Async `generateMetadata`; OpenGraph/Twitter cards; schema.org via `generateSchema`.
-- **Error/Loading States**: `error.tsx`, `not-found.tsx`; spinners/skeletons; retry logic.
-- **Conventions**: Named exports for components/utils; default for pages; PascalCase components; JSDoc props; conventional commits (`fix(components): improve TOC accessibility`).
+
+**From Codebase Analysis:**
+- Use `cn` from `lib/utils.ts` for Tailwind class merging (clsx + twMerge)
+- Export functional components with typed props (e.g., `TableOfContentsProps`)
+- Place interactive components in Client Components; keep static in Server Components
+- Responsive design: Mobile-first Tailwind (sm:, md:, lg: breakpoints)
+- Accessibility: Semantic elements (`<article>`, `<nav>`), `aria-label`, `role`
+- Forms: Use `react-hook-form` + Zod (inferred from validation inputs)
+- Blog UX: Sticky ads (`StickyHeaderAd`, `StickyFooterAd`), reading progress (`ReadingProgressBar`)
+- Performance: `calculateReadingTime` for post metadata, truncate excerpts
+- Testing: Snapshot tests for components; visual regression for layouts
+- Conventions: PascalCase components, kebab-case files, JSDoc for complex props
+
+**General:**
+- Always handle loading/error/empty states (e.g., Skeletons for posts)
+- Keyboard navigation for modals, accordions (e.g., `FAQAccordion`)
+- Optimize images: Next.js `<Image>` with `priority` for hero images
+- SEO: Meta components in layouts, structured data for posts
 
 ## Key Project Resources
-- [Documentation Index](../docs/README.md) - Central docs hub for schemas, APIs.
-- [Agent Handbook](../docs/agents-handbook.md) - Protocols for agent collaboration.
-- [AGENTS.md](../../AGENTS.md) - All agents, roles, handoff rules.
-- [Contributor Guide](../CONTRIBUTING.md) - PR process, linting, deployment.
-- [Next.js App Router Docs](https://nextjs.org/docs/app) - Pages, metadata, caching.
-- [Tailwind CSS Docs](https://tailwindcss.com/docs) - Responsive utilities.
-- [Contentful Rich Text](https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/rich-text) - Rendering guidelines.
+
+- [Utils (`lib/utils.ts`, `lib/validations.ts`)]: Shared helpers (classnames, reading time, slugify, form schemas)
+- [Components (`components/`)]: Reusable UI (TOC, ads, newsletters, cards, sidebars)
+- [App Pages (`app/`)]: Route-based layouts (blog, admin, login)
+- [AGENTS.md]: Multi-agent collaboration guidelines
+- [Contributor Guide]: Setup and deployment instructions
 
 ## Repository Starting Points
-| Directory | Description |
-|-----------|-------------|
-| `/app/` | Core Next.js pages: blog (`/blog/[slug]`), admin (`/admin/users`), login (`/login`); entry for page UIs and layouts. |
-| `/components/` | Reusable UI: `TrendingList`, `TableOfContents`, ads (`StickyHeaderAd`), newsletters, sidebar; primary focus. |
-| `/components/admin/` | Admin-specific: tables, forms for users/comments. |
-| `/lib/` | Utilities: `utils.ts` (slugify), `validations.ts` (Zod), `seo.ts`; import for shared logic. |
-| `/app/blog/` | Blog index, post views; rich text, TOC, related posts. |
-| `/app/admin/` | Dashboard, users/comments management; data tables. |
-| `/public/` | Assets: images, favicons; reference for `next/image`. |
+
+- `components/`: Core UI primitives and composites (e.g., `TableOfContents.tsx`, `NewsletterForm.tsx`)
+- `app/`: Next.js pages and layouts (e.g., `app/blog/[slug]/page.tsx`, `app/admin/posts/new/page.tsx`)
+- `lib/`: Utilities and validations (e.g., `lib/utils.ts`, `lib/validations.ts`)
+- `components/admin/`: Admin-specific UI (tables, forms for posts/users)
+- `app/admin/*`: Dashboard routes (SEO, GSC, comments, AI optimization)
 
 ## Key Files
-- [`components/TrendingList.tsx`](../components/TrendingList.tsx) - Trending blog posts list.
-- [`components/TableOfContents.tsx`](../components/TableOfContents.tsx) - Dynamic TOC from headings.
-- [`components/StickyHeaderAd.tsx`](../components/StickyHeaderAd.tsx) - Persistent top ad banner.
-- [`components/StickyFooterAd.tsx`](../components/StickyFooterAd.tsx) - Bottom ad with props.
-- [`components/SocialComments.tsx`](../components/SocialComments.tsx) - Embeddable comments section.
-- [`components/Sidebar.tsx`](../components/Sidebar.tsx) - Post sidebar with related/popular content.
-- [`components/ShareButtons.tsx`](../components/ShareButtons.tsx) - Social sharing buttons.
-- [`components/RelatedPosts.tsx`](../components/RelatedPosts.tsx) - Similar posts recommendations.
-- [`components/RecommendedContent.tsx`](../components/RecommendedContent.tsx) - Personalized content suggestions.
-- [`components/PostMeta.tsx`](../components/PostMeta.tsx) - Post metadata (author, date).
-- [`components/PopularPosts.tsx`](../components/PopularPosts.tsx) - Popular posts widget.
-- [`components/NewsletterForm.tsx`](../components/NewsletterForm.tsx) - Email signup form.
-- [`components/NewsletterCTALarge.tsx`](../components/NewsletterCTALarge.tsx) - Prominent newsletter CTA.
-- [`components/InlineNewsletter.tsx`](../components/InlineNewsletter.tsx) - Embedded signup.
-- [`components/InfoBox.tsx`](../components/InfoBox.tsx) - Highlight/alert boxes.
-- [`components/GatedContent.tsx`](../components/GatedContent.tsx) - Paywall/teaser content.
-- [`components/FeaturedImage.tsx`](../components/FeaturedImage.tsx) - Optimized hero images.
-- [`components/FeaturedArticleCard.tsx`](../components/FeaturedArticleCard.tsx) - Highlighted post cards.
-- [`components/FAQAccordion.tsx`](../components/FAQAccordion.tsx) - Collapsible FAQ.
-- [`components/FAQ.tsx`](../components/FAQ.tsx) - Static FAQ list.
+
+| File | Purpose |
+|------|---------|
+| `components/TableOfContents.tsx` | Generates TOC from headings; uses `TOCItem` type |
+| `components/StickyHeaderAd.tsx` / `StickyFooterAd.tsx` | Position:sticky ad slots with lazy-loading |
+| `components/Sidebar.tsx` | Aggregates widgets (TOC, related posts, newsletter, ads) |
+| `components/NewsletterForm.tsx` | Subscription form with validation |
+| `components/WebVitals.tsx` | Core Web Vitals tracking for performance |
+| `components/PostMeta.tsx` | Post metadata (date, reading time, author) using utils |
+| `lib/utils.ts` | Core utils: `cn`, `calculateReadingTime`, `formatDate`, `slugify` |
+| `lib/validations.ts` | Zod schemas: `LoginInput`, `RegisterInput`, `UpdateProfileInput` |
+| `app/blog/[slug]/page.tsx` | Single post layout integrating TOC, comments, sidebar |
+| `components/GatedContent.tsx` | Paywall/Teaser for premium content |
 
 ## Architecture Context
-### Utils (`/lib/`)
-Shared utilities for validation, text processing, spam prevention (8 key exports).
-- **Directories**: `lib/`
-- **Key Exports**:
-  | Symbol | File | Purpose |
-  |--------|------|---------|
-  | `LoginInput` | `lib/validations.ts` | Zod schema for login forms. |
-  | `RegisterInput` | `lib/validations.ts` | Zod schema for registration. |
-  | `UpdateProfileInput` | `lib/validations.ts` | Zod schema for profile updates. |
-  | `calculateReadingTime` | `lib/utils.ts` | Estimate post reading time. |
-  | `formatDate` | `lib/utils.ts` | Format dates for UI. |
-  | `slugify` | `lib/utils.ts` | Generate URL slugs. |
-  | `truncate` | `lib/utils.ts` | Shorten text excerpts. |
-  | `validateEmail`, `getClientIP`, `checkRateLimit` | `lib/spam-prevention.ts` | Form/spam guards. |
 
-### Components (`/components/`, `/app/`)
-UI layers for blog, admin, ads (20+ components).
-- **Directories**: `components/`, `components/admin/`, `app/blog/`, `app/admin/`
-- **Key Exports**:
-  | Symbol | File | Purpose |
-  |--------|------|---------|
-  | `TableOfContents` | `components/TableOfContents.tsx` | Heading-based navigation. |
-  | `StickyHeaderAd` | `components/StickyHeaderAd.tsx` | Responsive ad header. |
-  | `StickyFooterAd` | `components/StickyFooterAd.tsx` | Footer ad variant. |
-  | `SocialComments` | `components/SocialComments.tsx` | Comments integration. |
-  | `SignOutButton` | `components/SignOutButton.tsx` | Auth logout. |
-  | `ReadingProgressBar` | `components/ReadingProgressBar.tsx` | Scroll progress indicator. |
-  | `NewsletterForm` | `components/NewsletterForm.tsx` | Signup handling. |
-  | `InlineNewsletter` | `components/InlineNewsletter.tsx` | Inline CTA. |
-  | `Footer` | `components/Footer.tsx` | Site footer. |
-  | `ExitIntentPopup` | `components/ExitIntentPopup.tsx` | Exit modals. |
+### Utils Layer (`lib/`)
+- **Directories**: `lib/`, `lib/validations/`
+- **Key Exports** (10+): `cn`, `calculateReadingTime`, `formatDate`, `slugify`, `LoginInput`, `RegisterInput`
+- **Usage**: Imported everywhere for styling, text processing, forms
+
+### Components Layer (`components/`, `app/`)
+- **Directories**: `components/`, `app/blog/`, `app/admin/*`
+- **Key Exports** (20+ components): `TableOfContents`, `StickyHeaderAd`, `NewsletterForm`, `Sidebar`
+- **Props-heavy**: Typed interfaces (e.g., `TableOfContentsProps`, `SidebarProps`)
+- **Patterns**: Functional TSX, Tailwind, hooks for state (useState, useEffect)
+
+### Pages Layer (`app/`)
+- **Server-rendered routes**: Blog posts, admin dashboards
+- **Integrates**: Components + utils + data fetching (e.g., GSC via `lib/gsc-client.ts`)
 
 ## Key Symbols for This Agent
-| Symbol | Type | File | Usage |
-|--------|------|------|-------|
-| `TrendingListProps` | Interface | `components/TrendingList.tsx` | Props for trending posts. |
-| `TOCItem` | Type | `components/TableOfContents.tsx` | TOC heading item. |
-| `TableOfContentsProps` | Interface | `components/TableOfContents.tsx` | TOC configuration. |
-| `StickyHeaderAdProps` | Interface | `components/StickyHeaderAd.tsx` | Ad header props. |
-| `StickyFooterAdProps` | Interface | `components/StickyFooterAd.tsx` | Ad footer props. |
-| `SocialCommentsProps` | Interface | `components/SocialComments.tsx` | Comments props. |
-| `SidebarProps` | Interface | `components/Sidebar.tsx` | Sidebar content props. |
-| `ShareButtonsProps` | Interface | `components/ShareButtons.tsx` | Sharing config. |
-| `RelatedPostsProps` | Interface | `components/RelatedPosts.tsx` | Related posts data. |
-| `RecommendedPost` | Type | `components/RecommendedContent.tsx` | Single recommendation. |
-| `RecommendedContentProps` | Interface | `components/RecommendedContent.tsx` | Recommendations list. |
-| `PostMetaProps` | Interface | `components/PostMeta.tsx` | Post info display. |
-| `PopularPostsProps` | Interface | `components/PopularPosts.tsx` | Popular posts config. |
-| `NewsletterFormProps` | Interface | `components/NewsletterForm.tsx` | Form handlers. |
-| `NewsletterCTALargeProps` | Interface | `components/NewsletterCTALarge.tsx` | Large CTA props. |
-| `InlineNewsletterProps` | Interface | `components/InlineNewsletter.tsx` | Inline variant. |
-| `InfoBoxProps` | Interface | `components/InfoBox.tsx` | Alert/highlight props. |
-| `GatedContentProps` | Interface | `components/GatedContent.tsx` | Paywall state. |
-| `FeaturedImageProps` | Interface | `components/FeaturedImage.tsx` | Image optimization. |
-| `FeaturedArticleCardProps` | Interface | `components/FeaturedArticleCard.tsx` | Card layout. |
-| `FAQItem` | Type | `components/FAQAccordion.tsx` | Single FAQ entry. |
-| `FAQAccordionProps` | Interface | `components/FAQAccordion.tsx` | Accordion config. |
+
+- **`cn`** @ `lib/utils.ts`: Tailwind class merger; use in every component
+- **`TableOfContentsProps`** / **`TOCItem`** @ `components/TableOfContents.tsx`: For dynamic TOC
+- **`NewsletterFormProps`** @ `components/NewsletterForm.tsx`: Form handling
+- **`SidebarProps`** @ `components/Sidebar.tsx`: Widget aggregation
+- **`PostMetaProps`** @ `components/PostMeta.tsx`: SEO metadata rendering
+- **`GatedContentProps`** @ `components/GatedContent.tsx`: Content teasers
+- **`FAQSectionProps`** / **`FAQItem`** @ `components/FAQSection.tsx`: Accordion FAQs
+- **`calculateReadingTime`** @ `lib/utils.ts`: Blog post timing
+- **`LoginInput`** etc. @ `lib/validations.ts`: Auth forms
 
 ## Documentation Touchpoints
-- [README.md](../README.md) - Setup, env vars (Contentful, Clerk keys).
-- [`lib/validations.ts`](../lib/validations.ts) - Zod schemas for forms.
-- [`lib/utils.ts`](../lib/utils.ts) - Text/date utils reference.
-- Inline JSDoc in components (e.g., props interfaces).
-- [Contentful Schema](../docs/contentful-schema.md) - Post/entry types.
-- Component props docs in source; update `COMPONENTS.md` if exists.
-- [AGENTS.md](../../AGENTS.md) - Agent-specific notes.
+
+- `lib/utils.ts`: JSDoc for utils
+- Component prop interfaces: Inline TS docs
+- `app/layout.tsx`: Global layout patterns
+- Admin pages: Inline comments on data flows
+
+## Workflows for Common Tasks
+
+### 1. Creating a New Reusable Component
+1. Create `components/NewComponent.tsx`
+2. Define `interface NewComponentProps { ... }`
+3. Implement FC: `const NewComponent = ({ ... }: NewComponentProps) => { ... }`
+4. Use `cn()` for classes; import utils as needed
+5. Export default; add `"use client"` if interactive
+6. Test: Storybook or snapshot in `__tests__/`
+7. Usage: Import in `app/` pages
+
+### 2. Building a Blog Post Page (`app/blog/[slug]`)
+1. Fetch post data (server component)
+2. Compute meta: `formatDate`, `calculateReadingTime`
+3. Layout: `<article>` with `FeaturedImage`, `PostMeta`, content, `TableOfContents`
+4. Sidebar: `Sidebar` with related/popular posts, ads, newsletter
+5. Bottom: `SocialComments`, `ShareButtons`
+6. States: Skeleton loader, error boundary
+
+### 3. Form Implementation (e.g., Login/Register)
+1. Import schema: `LoginInput` from `lib/validations.ts`
+2. Use `useForm<LoginInput>(...)` from react-hook-form
+3. Client component: Handle submit, validation errors
+4. UI: Labels, error messages, loading spinner
+5. Accessibility: `aria-invalid`, focus management
+
+### 4. Admin Dashboard Component (e.g., Posts Table)
+1. `components/admin/Table.tsx` pattern
+2. Fetch data via Server Actions or RSC
+3. Responsive: Tailwind grid/table
+4. Actions: Modals for edit/new (`app/admin/posts/[id]/edit`)
+5. Search/filter: Client-side with `useState`
+
+### 5. Performance Optimization
+1. Lazy `<Image>`, `Suspense` for async components
+2. Memoize heavy lists (`RelatedPosts`, `PopularPosts`)
+3. Track with `WebVitals`
+4. Analyze bundle: `next build` + analyzer
+
+### 6. Accessibility Audit
+1. Run Lighthouse/Axe
+2. Check: `alt`, `aria-labelledby`, `role="button"`, focus outline
+3. Keyboard test: Tab through forms, accordions
+4. Screen reader: Semantic headings (`<h1>`-`<h6>`)
 
 ## Collaboration Checklist
-1. **Confirm Assumptions**: Analyze repo with `listFiles('components/**')`, `analyzeSymbols(components/TableOfContents.tsx)`; sync with backend on data shapes.
-2. **Plan Changes**: List impacted files/symbols; mock designs; branch `feat(components: new-sidebar)`.
-3. **Implement**: Build incrementally; test responsiveness (`npm run dev`), a11y (`npm run lint:a11y`); use `searchCode` for patterns.
-4. **Self-Review**: Lighthouse >90; screenshots/GIFs; update tests/Stories.
-5. **PR & Tag**: Open PR; @backend-agent for data, @qa-agent for e2e; link issues.
-6. **Update Docs**: Refresh this playbook (Key Files/Symbols); log learnings in `AGENTS.md`.
-7. **Deploy & Monitor**: Vercel preview; check bundle size, GA events.
+
+- [ ] Review Figma/requirements for new UI
+- [ ] Plan: Server vs Client components, props structure
+- [ ] Implement responsive/accessibility from day 1
+- [ ] Add all states (loading/error/empty/skeleton)
+- [ ] Cross-browser/device test (Chrome, Safari, mobile)
+- [ ] Measure perf: Core Web Vitals >90
+- [ ] Write tests: RTL, snapshots, a11y
+- [ ] Document props/usage in JSDoc
 
 ## Hand-off Notes
-Upon completion: Deliver PR with responsive components/pages, >95% a11y score, optimized bundles (<500KB gzipped), full test coverage. Risks: Mobile ad overlaps, Contentful renderer breaks on new nodeTypes, state hydration mismatches. Follow-ups: Backend verifies fetches; QA runs Cypress; performance agent audits CWV; monitor ads/newsletter CTR. PR: [insert PR link]. Next: State management refactor if contexts proliferate.
+
+- Verify deployment preview for visual diffs
+- Risks: Mobile responsiveness on admin tables, ad blocking impacts
+- Follow-up: Backend specialist for API integrations; SEO agent for meta tweaks
+
+## Related Resources
+
+- [../docs/README.md](./../docs/README.md)
+- [README.md](./README.md)
+- [../../AGENTS.md](./../../AGENTS.md)
+- [Backend Specialist Playbook](../backend-specialist/)
+- [Testing Agent Playbook](../testing-agent/)

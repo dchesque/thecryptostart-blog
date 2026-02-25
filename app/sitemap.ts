@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next'
-import { getAllPosts, getAllCategories } from '@/lib/contentful'
+import { getAllPosts, getAllCategories } from '@/lib/posts'
 
 /**
  * Dynamic sitemap for Crypto Academy Blog

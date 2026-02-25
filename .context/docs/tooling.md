@@ -1,156 +1,128 @@
-# Tooling & Productivity Guide
+## Tooling & Productivity Guide
 
-This guide covers essential tools, scripts, and workflows for developing the CryptoStartBlog project—a Next.js 14 App Router application with TypeScript, Prisma (PostgreSQL ORM), Contentful (headless CMS), and authentication via NextAuth. It emphasizes code quality, fast iteration, and consistent environments using Docker. Integrate with the [development workflow](../development-workflow.md) for daily use.
+This guide outlines the essential tools, scripts, automation setups, and configurations that streamline development for this Next.js blog platform. By following these recommendations, contributors can maintain code quality, ensure consistent workflows, and leverage productivity boosters like automated linting, database seeding, and SEO monitoring scripts.
+
+The project uses TypeScript, Prisma for database management, Tailwind CSS with shadcn/ui components, and Next.js App Router. Setups focus on fast iteration, error prevention, and deployment readiness.
 
 ## Required Tooling
 
-### Node.js (v18.17+; LTS v20 recommended)
-- **Purpose**: Runs Next.js dev server, builds, and pnpm scripts.
-- **Installation**: [nodejs.org](https://nodejs.org/) or `nvm install 20 && nvm use 20`.
-- **Verify**: `node -v`.
-- **Usage**: `pnpm dev` (HMR-enabled dev server at `http://localhost:3000`).
+- **Node.js** (v18+ required)
+  - Powers the Next.js runtime, build process, and scripts.
+  - Installation: Use [nvm](https://github.com/nvm-sh/nvm):
+    ```bash
+    nvm install 18
+    nvm use
+    ```
+  - Check `.nvmrc` in the root for the pinned version.
 
-### pnpm (v8+; preferred for monorepo-like efficiency)
-- **Purpose**: Dependency management; faster and more disk-efficient than npm/yarn.
-- **Installation**: `npm i -g pnpm` or `brew install pnpm`.
-- **Verify**: `pnpm -v`.
-- **Usage**:
+- **Package Manager** (pnpm recommended, npm/yarn supported)
+  - Manages dependencies like Next.js, Prisma, and Zod.
+  - Installation:
+    ```bash
+    # pnpm (fastest, uses lockfile)
+    curl -fsSL https://get.pnpm.io/install.sh | sh -
+
+    # Install deps
+    pnpm install
+    ```
+
+- **Prisma CLI** (included via devDependencies)
+  - Handles database migrations, seeding, and introspection.
+  - Installation: Auto-installed with `pnpm install`.
+  - Key commands:
+    ```bash
+    npx prisma generate     # Generate Prisma Client
+    npx prisma db push      # Sync schema to DB (dev)
+    npx prisma migrate dev  # Create and apply migrations
+    npx prisma studio       # Open DB GUI
+    ```
+
+- **Google Search Console API** (via lib/gsc-client.ts)
+  - Requires OAuth credentials for SEO analytics scripts.
+  - Setup: Follow [Google API Console](https://console.developers.google.com/) for service account; env vars: `GSC_CREDENTIALS_JSON`.
+
+## Recommended Automation
+
+**Pre-commit Hooks** (via Husky + lint-staged):
+- Automatically runs ESLint, Prettier formatting, and TypeScript checks before commits.
+- Commit messages enforced with commitlint (Conventional Commits format: `feat: add seo monitor`).
+- Setup (auto-runs on `pnpm install`):
   ```bash
-  pnpm install  # Installs from package.json/lockfile
-  pnpm add lodash  # Add dependency
+  pnpm dlx husky install
   ```
 
-### Docker & Docker Compose (v2.20+)
-- **Purpose**: Local PostgreSQL for Prisma; reproducible envs.
-- **Installation**: [Docker Desktop](https://www.docker.com/products/docker-desktop/).
-- **Verify**: `docker --version && docker compose version`.
-- **Usage**:
-  ```bash
-  docker compose up -d postgres  # Start DB (exposes port 5432)
-  docker compose down -v        # Stop + clear volumes
-  docker compose logs postgres  # View logs
-  ```
-- **Config**: See `docker-compose.yml` (Prisma DB with `DATABASE_URL` env).
+**Code Quality Commands**:
+```bash
+pnpm lint          # ESLint: strict rules for TS/JS/imports
+pnpm lint:fix      # Auto-fix lint issues
+pnpm format        # Prettier: format all files
+pnpm typecheck     # tsc --noEmit: full type checking
+pnpm check         # All-in-one: lint + format + typecheck
+```
 
-### Prisma CLI (v5+)
-- **Purpose**: Schema management, migrations, introspection, Studio GUI.
-- **Installation**: Included via `pnpm i -D prisma @prisma/client`; run `pnpm prisma generate`.
-- **Key Commands** (aliased in `package.json`):
-  | Script | Command | Purpose |
-  |--------|---------|---------|
-  | `pnpm db:push` | `prisma db push` | Sync schema to DB (dev/prod). |
-  | `pnpm db:generate` | `prisma generate` | Regen Prisma Client. |
-  | `pnpm db:migrate` | `prisma migrate dev` | Create migration. |
-  | `pnpm db:seed` | `prisma db seed` | Seed sample data (`prisma/seed.ts`). |
-  | `pnpm db:studio` | `prisma studio` | DB explorer at `http://localhost:5555`. |
-- **Cross-ref**: Prisma usage in API routes (e.g., `app/api/users/route.ts` uses `PrismaClientSingleton`).
+**Build & Test Automation**:
+```bash
+pnpm build         # Next.js production build + telemetry check
+pnpm test          # Vitest unit/integration tests
+pnpm test:watch    # Watch mode for TDD
+pnpm db:test       # Run test-db.ts: validate DB schema/connections
+pnpm db:seed       # prisma/seed.ts: populate dev DB with sample posts/authors/categories
+pnpm seo:monitor   # seo-monitor.ts: daily GSC analytics, broken links, SEO scores
+```
 
-### Contentful CLI (optional; for CMS admins)
-- **Purpose**: Manage spaces/envs; sync previews.
-- **Installation**: `npm i -g @contentful/cli`.
-- **Usage**:
-  ```bash
-  contentful login
-  contentful space env list --space-id $CONTENTFUL_SPACE_ID
-  ```
-- **Local Integration**: Set `CONTENTFUL_SPACE_ID`, `CONTENTFUL_ACCESS_TOKEN` in `.env.local`. Test queries via `lib/contentful.ts` functions like `getAllPosts()` or `getPostBySlug()`.
+**Watch Modes**:
+- `pnpm dev`: Next.js dev server with HMR, Tailwind JIT, Prisma acceleration.
+- `pnpm test:watch`: Interactive test runner.
 
-## Core Scripts (from `package.json`)
+**Custom Scripts**:
+- **SEO Monitoring** (`scripts/seo-monitor.ts`): Runs `runDailySEOMonitoring()` to fetch GSC data, check broken links (lib/broken-link-finder.ts), analyze SEO (lib/seo-analyzer.ts), and log AI optimization scores (lib/ai-optimization.ts). Schedule via cron: `0 2 * * * cd /path/to/repo && pnpm seo:monitor`.
+- **DB Testing** (`scripts/test-db.ts`): Validates Prisma connections and queries.
+- Integrate with [development-workflow.md](./development-workflow.md) for CI/CD pipelines.
 
-Run via `pnpm <script>`. Full list:
+## IDE / Editor Setup
+
+**VS Code Extensions** (see `.vscode/extensions.json`):
+- **ESLint** (@vscode-eslint): Real-time linting.
+- **Prettier - Code formatter** (esbenp.prettier-vscode): Auto-format on save.
+- **TypeScript Importer** / **TypeScript + JavaScript Language Features**: IntelliSense for types (e.g., BlogPost, AIOptimizationScore).
+- **Tailwind CSS IntelliSense** (bradlc.vscode-tailwindcss): Autocomplete for `cn()` utility classes.
+- **Prisma** (prisma.vscode-prisma): Schema visualization and query builder.
+- **Error Lens** (usernamehw.errorlens): Inline error/warning highlights.
+- **GitLens** (eamodio.gitlens): Advanced Git blame/history.
+
+**Workspace Settings** (`.vscode/settings.json`):
+- Formats on save, ESLint auto-fix, Tailwind suggestions.
+- Debug configs in `launch.json` for API routes (e.g., /api/admin/posts) and Next.js.
+
+**Key Snippets** (add to VS Code):
 ```json
+// prisma-query.jsonc
 {
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
-    "format": "prettier --write .",
-    "type-check": "tsc --noEmit",
-    "db:push": "prisma db push",
-    "db:generate": "prisma generate",
-    "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+  "Prisma Query": {
+    "prefix": "prisma",
+    "body": ["const ${1:data} = await prisma.${2:model}.findMany({", "\twhere: { $3 },", "});"]
   }
 }
 ```
-
-| Script | Purpose | Example |
-|--------|---------|---------|
-| `pnpm dev` | Dev server w/ Turbopack (add `--turbo`). | Auto-reloads; watches `app/`, `lib/`, `components/`. |
-| `pnpm build` | Production build + type-check. | Validates SEO (`lib/seo.ts`), Contentful fetches. |
-| `pnpm lint` / `pnpm lint:fix` | ESLint (TSX, Next.js rules). | Checks API routes (e.g., `app/api/comments/route.ts`). |
-| `pnpm format` | Prettier formatting. | Enforces style in `types/blog.ts`, utils. |
-| `pnpm type-check` | Isolated TSC. | Validates types like `BlogPost`, `UserWithRoles`. |
-
-## Git Hooks & Automation
-- **Husky + lint-staged**: Pre-commit runs ESLint/Prettier/TS on staged files.
-  - **Setup**: `pnpm dlx husky-init && pnpm lint-staged`.
-  - **Config**: `.husky/pre-commit` → `npx lint-staged`.
-- **VS Code Integration**: Tasks for `lint`, `build` (Ctrl+Shift+P > "Tasks: Run Task").
-
-## IDE Setup (VS Code Recommended)
-
-Install extensions:
-- **Tailwind CSS IntelliSense** (bradlc.tailwindcss-intellisense): Class autocomplete (used in components like `CategoryCard.tsx`).
-- **Prisma** (prisma.vscode): Schema autocomplete (`prisma/schema.prisma`).
-- **ESLint** (dbaeumer.vscode-eslint): Real-time linting.
-- **Prettier** (esbenp.prettier-vscode): Format on save.
-- **TypeScript Importer** (pmneo.tsimporter): Auto-imports (e.g., `lib/contentful.ts`).
-- **Error Lens** (usernamehw.errorlens): Inline errors.
-- **GitLens** (eamodio.gitlens): Commit history.
-
-**`.vscode/settings.json`**:
-```json
-{
-  "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
-  },
-  "typescript.suggest.autoImports": true,
-  "prisma.trace.server": "verbose"
-}
-```
-
-**Dev Container**: Use `.devcontainer/devcontainer.json` for one-click Docker + VS Code setup.
-
-## Environment & Secrets
-- **`.env.local` Template** (from `.env.example`):
-  ```
-  DATABASE_URL="postgresql://user:pass@localhost:5432/db"
-  NEXTAUTH_SECRET="..."
-  CONTENTFUL_SPACE_ID="..."
-  CONTENTFUL_ACCESS_TOKEN="..."
-  ```
-- **Rate Limiting/Spam**: Uses Upstash Redis (`REDIS_URL`); see `lib/rate-limit.ts`, `lib/spam-prevention.ts`.
 
 ## Productivity Tips
-- **Aliases** (`~/.zshrc` / `~/.bashrc`):
-  ```bash
-  alias dev="pnpm dev"
-  alias lintf="pnpm lint:fix && pnpm format"
-  alias dbp="pnpm db:push && pnpm db:generate"
-  alias dc="docker compose"
-  ```
-- **Workflow**:
-  1. `docker compose up -d postgres`
-  2. `pnpm db:push`
-  3. `pnpm dev`
-- **Testing Contentful**: Create `scripts/test-contentful.ts`:
-  ```ts
-  import { getAllPosts } from '@/lib/contentful';
-  async function test() {
-    const posts = await getAllPosts();
-    console.log(posts.length);
-  }
-  test();
-  ```
-  Run: `pnpm tsx scripts/test-contentful.ts`.
-- **Debugging**:
-  - API: Visit `/api/users`, `/api/comments`.
-  - Errors: Custom classes like `AppError`, `RateLimitError` in `lib/errors.ts`.
-  - Analytics: `lib/analytics.ts` for Web Vitals/Ads.
-- **Deployment**: Vercel (Next.js optimized); preview deploys auto-run `pnpm build`.
 
-For troubleshooting, check `lib/prisma.ts` (singleton client), `lib/permissions.ts` (roles), or open an issue. See [development-workflow.md](../development-workflow.md) for branching/CI.
+**Terminal Aliases** (add to `~/.zshrc` or `~/.bashrc`):
+```bash
+alias nr='pnpm run'
+alias nrd='pnpm run dev'
+alias nrb='pnpm run build'
+alias nrt='pnpm run test'
+alias nrdb='pnpm run db:seed'
+alias nrseo='pnpm run seo:monitor'
+alias clean='pnpm run clean && rm -rf .next node_modules/.cache'
+```
+
+**Workflow Shortcuts**:
+- **Full PR Check**: `pnpm check && pnpm build && pnpm test`.
+- **Local DB Reset**: `pnpm db:test && pnpm db:seed`.
+- **Hot Reload Debugging**: Use `pnpm dev` + VS Code debugger on port 3000.
+- **Env Management**: Copy `.env.example` to `.env.local`; use `direnv` for auto-loading.
+- **Containerized Dev** (optional): Docker Compose for Postgres + app (see `docker-compose.dev.yml` if present).
+
+For full workflows, see [development-workflow.md](./development-workflow.md).

@@ -1,106 +1,174 @@
-# Test Writer Agent Playbook
-
 ## Mission
 
-The Test Writer agent maintains codebase reliability by authoring, expanding, and refactoring comprehensive unit, integration, and edge-case tests. Engage this agent after new code is added, during refactors, or when coverage drops below 80%. It focuses on:
+This agent writes comprehensive tests and maintains test coverage standards for the CryptoStartBlog Next.js application.
 
-- Unit tests for pure utilities and validations in `lib/`.
-- Integration tests for API routes in `app/api/`.
-- Edge cases for auth, user management, comments, and spam prevention.
-- Ensuring test maintainability through mocks, schemas, and coverage reports.
+**When to engage:**
+- New feature testing (e.g., API routes in `app/api`)
+- Bug regression tests for controllers and utils
+- Test coverage improvements targeting low-coverage areas like `lib/` and `app/api/`
+- Test suite maintenance when refactoring utils or controllers
 
-Prioritize exported symbols from utils and controllers to support rapid iteration while minimizing regressions.
+**Testing approach:**
+- Test pyramid: prioritize unit tests for `lib/` utils, integration tests for API routes, minimal E2E for critical paths
+- Edge case coverage including invalid inputs (leverage Zod schemas like `LoginInput`)
+- Clear, maintainable tests using Vitest/Jest patterns (assume colocated `.test.ts` files)
+- Fast, reliable execution with mocking of external deps (DB, auth, external APIs)
 
 ## Responsibilities
 
-- Author unit tests for all exported functions and types in `lib/` (e.g., `calculateReadingTime`, `slugify`, `LoginInput`).
-- Create integration tests for API handlers (e.g., `GET /api/users`, `POST /api/auth/register`, `POST /api/comments`).
-- Test dynamic route generation like `generateStaticParams` in pages.
-- Validate Zod schemas with parse/fail scenarios using `RegisterInput`, `UpdateProfileInput`.
-- Mock external dependencies (NextAuth, DB queries, IP detection) for reproducible tests.
-- Refactor flaky or outdated tests; generate coverage reports with `vitest --coverage`.
-- Test spam prevention logic (`validateEmail`, `checkRateLimit`) with varied inputs.
-- Ensure tests cover admin routes (`app/api/admin/comments`) and user mutations (`PATCH /api/users/[id]`).
-
-Delegate E2E browser tests to specialized agents.
+- Write unit tests for utils in `lib/` (e.g., `calculateReadingTime`, `slugify`)
+- Create integration tests for API controllers (e.g., `app/api/users/route.ts` handlers: GET, POST)
+- Add E2E tests for critical workflows (e.g., auth/register, admin/post creation) using Playwright if configured
+- Identify and cover edge cases (e.g., invalid emails via `validateEmail`, spam prevention)
+- Maintain test suite performance: mock heavy ops like DB queries, external SEO/GSC APIs
+- Update tests when code changes (e.g., new validations in `lib/validations.ts`)
+- Improve test coverage for undertested controllers (e.g., admin routes, AI optimization)
+- Document testing patterns in test files and update `AGENTS.md`
 
 ## Best Practices
 
-- Use Vitest as the primary framework; structure tests with `describe` blocks per module and `test/it` for scenarios.
-- Follow AAA pattern: Arrange (setup mocks/data), Act (call function/handler), Assert (expect outcomes).
-- Leverage Zod schemas for test data: `const validData = LoginInput.parse({ email: 'test@example.com', password: 'pass' })`.
-- Mock strategies:
-  | Dependency | Mock Pattern |
-  |------------|--------------|
-  | NextAuth | `vi.mock('next-auth/jwt', () => ({ decode: vi.fn() }))` |
-  | DB/Prisma | `vi.mock('@/lib/db', () => ({ query: vi.fn().mockResolvedValue(mockData) }))` |
-  | Request | `new NextRequest('http://localhost/api/users', { headers: { 'x-forwarded-for': '1.2.3.4' } })` |
-- Name tests descriptively: `test('calculateReadingTime returns correct minutes for 500 words', () => { ... })`.
-- Cover branches: happy path, edge (empty/null inputs), errors (invalid email via `validateEmail`).
-- Async handling: `await expect(handler(req)).resolves.toMatchObject({ data: [...] })`.
-- Run tests: `npm test` or `vitest lib/utils.test.ts`; aim for 90%+ coverage, no globals.
-- Pure functions (e.g., `formatDate`, `truncate`): No mocks, exhaustive input ranges.
-- Maintainability: Use `beforeEach` for resets; snapshot sparingly for complex objects.
+Derived from codebase conventions (TypeScript, Zod validation, Next.js App Router):
+
+- **File Placement**: Colocate tests next to source files, e.g., `lib/utils.test.ts`, `app/api/users/route.test.ts`
+- **Test Naming**: Use descriptive names like `shouldCalculateReadingTimeCorrectlyForShortPost()`, `POST /api/users shouldReturn401ForInvalidInput()`
+- **Assertions**: Prefer `expect().toMatchObject()`, `expect().toBeDefined()` for partial matches; use Zod for schema validation in tests
+- **Mocking**: 
+  - Mock modules with `vi.mock('lib/db')` for DB ops
+  - Mock NextAuth with `vi.mock('next-auth/jwt')` for auth routes
+  - Use `vi.spyOn()` for utils like `cn`, `slugify`
+- **Coverage**: Aim for 80%+ on utils/controllers; test happy paths (valid `RegisterInput`), edges (empty strings, max lengths), errors (Zod issues)
+- **Isolation**: Tests must run independently; use `beforeEach(vi.clearAllMocks())`
+- **Patterns from Codebase**:
+  - Test exported handlers directly (e.g., `GET(request)` from route.ts)
+  - Validate inputs with schemas: `const result = schema.safeParse(input)`
+  - Handle async: `await expect(fn()).rejects.toThrow()`
+- Avoid flakiness: No real DB calls; mock all externalities (GSC analytics, SEO metrics)
 
 ## Key Project Resources
 
-- [Agent Handbook](../../AGENTS.md) – Agent collaboration protocols.
-- [Documentation Index](../docs/README.md) – Schemas, API specs.
-- [Main README](../README.md) – Setup and run instructions.
-- [Contributor Guide](../CONTRIBUTING.md) – PR standards including test requirements.
+- [Contributor Guide](../docs/contributor-guide.md) – Testing setup and CI details
+- [Agent Handbook](./../../AGENTS.md) – Cross-agent workflows
+- [Package.json Scripts](./package.json) – Run `vitest` or `jest --coverage`
+- [tsconfig.json](./tsconfig.json) – TypeScript config for tests
 
 ## Repository Starting Points
 
-- `lib/` – Utilities, validations, spam prevention; focus on 100% unit test coverage for exports.
-- `app/api/` – Controllers for users, auth, comments, admin; integration tests for all HTTP methods.
-- `app/` – Pages and dynamic routes; test metadata and param generation.
-- `scripts/` – DB query testers; extend for schema validation.
-- `__tests__/` or colocated `*.test.ts` – Existing tests; align new ones here.
+- **`app/api/`** – All controllers/API routes; primary focus for integration tests (users, comments, auth, admin, SEO)
+- **`lib/`** – Shared utils and validations; unit test priority (utils.ts, validations.ts, spam-prevention.ts)
+- **`tests/` or `__tests__/`** (if exists) – Global test utils/mocks; E2E setups
+- **`app/`** – Components and pages for component/integration tests
+- **`.github/workflows/`** – CI test configs to align coverage reports
 
 ## Key Files
 
-- `lib/validations.ts` – Zod schemas (`LoginInput`, `RegisterInput`, `UpdateProfileInput`); test parse/safeParse.
-- `lib/utils.ts` – Helpers (`calculateReadingTime`, `formatDate`, `slugify`, `truncate`); unit tests with real-world inputs.
-- `lib/spam-prevention.ts` – Rate limiting (`validateEmail`, `getClientIP`, `checkRateLimit`); mock IP headers.
-- `app/api/users/route.ts` – `GET` and `POST` handlers; test pagination and auth.
-- `app/api/auth/register/route.ts` – `POST` registration; validate inputs and conflicts.
-- `app/api/comments/route.ts` – `POST`/`GET`; test nesting and moderation.
-- `app/api/admin/comments/[id]/route.ts` – `PATCH`/`DELETE`; admin auth mocks.
+| File/Path | Purpose | Test Focus |
+|-----------|---------|------------|
+| `lib/utils.ts` | Core helpers: `cn`, `calculateReadingTime`, `slugify`, `truncate` | Unit tests for pure functions; edge cases (empty strings, long text) |
+| `lib/validations.ts` | Zod schemas: `LoginInput`, `RegisterInput`, `UpdateProfileInput` | Unit tests for schema validation; integration with controllers |
+| `lib/spam-prevention.ts` | `validateEmail` | Unit tests for email patterns, spam detection |
+| `app/api/users/route.ts` | GET/POST users | Integration: mock DB, test auth, inputs |
+| `app/api/auth/register/route.ts` | POST register | Integration: `RegisterInput` validation, DB insert mocks |
+| `app/api/admin/posts/[id]/route.ts` | Admin CRUD | Role-based access tests, error handling |
+| `app/api/seo/metrics/route.ts` | SEO analytics | Mock external APIs, response shaping |
+| `app/api/ai-optimization/scores/route.ts` | AI scores | Integration with external AI services (mock) |
 
 ## Architecture Context
 
-- **Utils** (`lib/`): 10+ symbols; pure functions and types; full unit tests, no external deps.
-- **Controllers** (`app/api/users`, `app/api/comments`, `app/api/auth`, `app/api/admin`): 10+ handlers; integration tests with request/response mocks; 5-8 symbols per route file.
+### Utils Layer
+- **Directories**: `lib/`, `lib/validations/`
+- **Key Exports** (10+ symbols): Pure functions and Zod types for testing
+  - Test individually: `calculateReadingTimeFromRichText` (rich text edges), `formatDate` (timezones)
+- **Test Strategy**: 100% unit coverage; no mocks needed for pure funcs
+
+### Controllers Layer
+- **Directories**: `app/api/users/`, `app/api/comments/`, `app/api/auth/`, `app/api/admin/*`, `app/api/seo/*`
+- **Key Exports** (20+ handlers): Route handlers (GET, POST, PATCH, DELETE)
+  - High complexity: Auth guards, DB ops, validations
+- **Test Strategy**: Integration tests mocking `next-auth`, Prisma/DB; simulate Request/Response
 
 ## Key Symbols for This Agent
 
-- `LoginInput` (type) @ `lib/validations.ts:20` – Test schema validation failures.
-- `RegisterInput` (type) @ `lib/validations.ts:21` – Parse with duplicate emails.
-- `calculateReadingTime` (function) @ `lib/utils.ts:1` – Vary word counts (0-5000).
-- `slugify` (function) @ `lib/utils.ts:14` – Special chars, lengths.
-- `validateEmail` (function) @ `lib/spam-prevention.ts:20` – Invalid formats, disposable domains.
-- `checkRateLimit` (function) @ `lib/spam-prevention.ts:34` – IP-based throttling.
-- `GET` (handler) @ `app/api/users/route.ts:15` – Authenticated lists.
-- `POST` (handler) @ `app/api/auth/register/route.ts:12` – Full flow with mocks.
+- **`LoginInput`, `RegisterInput`, `UpdateProfileInput`** (`lib/validations.ts`): Test schema parsing, errors
+- **`calculateReadingTime`, `slugify`** (`lib/utils.ts`): Edge inputs (0 words, special chars)
+- **`validateEmail`** (`lib/spam-prevention.ts`): Invalid domains, spam patterns
+- **Route Handlers** (e.g., `POST` in `app/api/comments/route.ts`): Full request lifecycle
+- **`cn`** (`lib/utils.ts`): Class merging with conditional logic
 
 ## Documentation Touchpoints
 
-- Reference and update `../README.md` for test commands and coverage thresholds.
-- Add JSDoc to test utilities in `scripts/test-query.js`.
-- Consult `../docs/README.md` for API contracts before testing.
-- Create/extend `./docs/testing.md` with new mock patterns.
-- Link tests to specs in PRs via `AGENTS.md` updates.
+- [Testing Guidelines](./docs/testing.md) – Update with new patterns
+- [API Docs](./docs/api.md) – Verify tests match spec
+- [AGENTS.md](./../../AGENTS.md) – Test-writer section for workflows
+
+## Workflows for Common Tasks
+
+### 1. Unit Testing Utils (e.g., `lib/utils.ts`)
+1. Create `lib/utils.test.ts` if missing
+2. Import: `import { calculateReadingTime } from './utils'`
+3. Write tests:
+   ```ts
+   it('should calculate reading time correctly for 500 words', () => {
+     expect(calculateReadingTime('text '.repeat(100))).toBe(2); // ~500 words
+   });
+   ```
+4. Cover edges: 0 words → 1min, rich text HTML stripping
+5. Run `vitest lib/utils.test.ts --coverage`
+
+### 2. Integration Testing API Routes (e.g., `app/api/users/route.ts`)
+1. Create `app/api/users/route.test.ts`
+2. Mock deps:
+   ```ts
+   vi.mock('lib/db');
+   vi.mock('next-auth/jwt', () => ({ getToken: vi.fn() }));
+   ```
+3. Test handlers:
+   ```ts
+   it('GET should return user list for admin', async () => {
+     const mockToken = { role: 'admin' };
+     // ... mock req.headers
+     const res = await GET(req);
+     expect(res.status).toBe(200);
+     expect(await res.json()).toMatchObject([{ id: 1 }]);
+   });
+   ```
+4. Test validations: Invalid `LoginInput` → 400
+5. Simulate errors: DB throw → 500
+
+### 3. Admin Route Testing (e.g., `app/api/admin/posts/route.ts`)
+1. Mock auth token with admin role
+2. Test CRUD: POST new post → validate `UpdateProfileInput` if related
+3. Edges: Unauthorized → 401, invalid slug → Zod error
+
+### 4. Coverage Improvement
+1. Run `vitest --coverage` to identify gaps
+2. Prioritize controllers >50% uncovered (e.g., GSC analytics)
+3. Add 5-10 tests per file, focusing on branches
+
+### 5. Regression for Bugs
+1. Reproduce bug in test (failing first)
+2. Fix code
+3. Make test pass + refactor
 
 ## Collaboration Checklist
 
-1. [ ] Confirm task with Engineer agent: "Generate tests for new `POST /api/comments` handler using `RegisterInput`."
-2. [ ] Gather context: Use `listFiles('**/*.ts')`, `analyzeSymbols('lib/utils.ts')`, `searchCode('export.*function')`.
-3. [ ] Write tests in colocated `*.test.ts`; run `vitest --run --coverage`.
-4. [ ] Fix failures, add edges; validate >90% coverage.
-5. [ ] Propose PR: Test-only changes, reference feature PR.
-6. [ ] Review feedback from Reviewer agent; iterate.
-7. [ ] Update `../../AGENTS.md` with new patterns (e.g., "Spam mocks via `getClientIP`").
+- [ ] Review changed files (utils/controllers) via PR diffs
+- [ ] Identify key scenarios: happy (valid inputs), edge (max/min), errors (Zod/DB)
+- [ ] Write 80%+ unit coverage for new utils
+- [ ] Add integration tests for all handlers in modified routes
+- [ ] Run full suite: `vitest --coverage --ui`
+- [ ] Verify no regressions in CI
+- [ ] Update docs with new mock patterns if complex
 
 ## Hand-off Notes
 
-Upon completion, deliver passing tests with coverage report. Risks: External API changes (mitigate with mocks). Follow-ups: Notify Engineer for integration; E2E agent for user flows; monitor CI for drift.
+- Coverage report: Link to updated thresholds met
+- New mocks: Document in `tests/mocks.ts` if shared
+- Follow-up: Performance agent to optimize slow tests; E2E agent for user flows
+
+## Related Resources
+
+- [../docs/README.md](./../docs/README.md)
+- [README.md](./README.md)
+- [../../AGENTS.md](./../../AGENTS.md)
+- [Feature Developer Playbook](./feature-developer.md)
+- [Refactor Agent Playbook](./refactor-agent.md)

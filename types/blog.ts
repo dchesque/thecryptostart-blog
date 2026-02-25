@@ -1,14 +1,4 @@
 /**
- * Blog Types & Interfaces
- * Crypto Academy - Educational Blog
- * 
- * TypeScript strict mode enabled
- * All interfaces for Contentful CMS integration
- */
-
-import type { Document } from '@contentful/rich-text-types'
-
-/**
  * Available blog categories
  * Used for filtering and navigation
  */
@@ -67,8 +57,8 @@ export interface BlogPost {
   slug: string
   /** Meta description / excerpt */
   description: string
-  /** Rich text content from Contentful */
-  content: Document
+  /** Rich text content from Markdown */
+  content: string
   /** Featured/hero image */
   featuredImage?: FeaturedImage
   /** Post author */
@@ -83,6 +73,37 @@ export interface BlogPost {
   updatedAt: string
   /** Estimated reading time in minutes */
   readingTime: number
+
+  // ═══════════════════════════════════════════
+  // NOVOS CAMPOS — SISTEMA DE CONTEÚDO PRÓPRIO
+  // ═══════════════════════════════════════════
+  wordCount?: number
+  isFeatured?: boolean
+  contentType?: string
+  difficulty?: string
+
+  seoTitle?: string
+  seoDescription?: string
+  seoImageUrl?: string
+  seoNoindex?: boolean
+  targetKeyword?: string
+  secondaryKeywords?: string[]
+  schemaType?: string
+  canonicalUrl?: string
+  lastReviewedAt?: string
+
+  faq?: any
+  howToSteps?: any
+  pros?: string[]
+  cons?: string[]
+
+  relatedPostsSlugs?: string[]
+  pillarPageSlug?: string
+  internalLinks?: any
+
+  adDensity?: string
+  monetizationDisabled?: boolean
+  sponsoredBy?: string
 }
 
 /**
@@ -123,55 +144,7 @@ export interface SearchOptions {
   limit?: number
 }
 
-/**
- * Contentful Entry Fields for BlogPost
- * Raw response structure from Contentful API
- */
-export interface ContentfulBlogPostFields {
-  title: string
-  slug: string
-  excerpt: string
-  content: Document
-  featuredImage?: {
-    fields: {
-      title: string
-      description?: string
-      file: {
-        url: string
-        details: {
-          image: {
-            width: number
-            height: number
-          }
-        }
-      }
-    }
-  }
-  author: any // Can be a string or a reference entry
-  authorSlug?: string
-  authorImage?: string
-  category: any // Can be a string/slug or a reference entry
-  tags?: string[]
-  publishDate?: string
-  readingTime?: number
-}
 
-/**
- * Contentful Entry System Metadata
- */
-export interface ContentfulSys {
-  id: string
-  createdAt: string
-  updatedAt: string
-}
-
-/**
- * Full Contentful Entry for BlogPost
- */
-export interface ContentfulBlogPost {
-  sys: ContentfulSys
-  fields: ContentfulBlogPostFields
-}
 
 /**
  * Category configuration with display info

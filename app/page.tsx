@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { getAllPosts, getAllCategories } from '@/lib/contentful'
+import { getAllPosts, getAllCategories } from '@/lib/posts'
 import FeaturedArticleCard from '@/components/FeaturedArticleCard'
 import BlogCardCompact from '@/components/BlogCardCompact'
 import CategoryCard from '@/components/CategoryCard'

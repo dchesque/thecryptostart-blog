@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import contentfulLoader from '@/lib/contentful-loader'
+
 import type { BlogPost } from '@/types/blog'
 import { getCategoryName } from '@/lib/constants'
 
@@ -46,7 +46,7 @@ export default function Sidebar({ recentPosts = [], popularPosts = [] }: Sidebar
                 {post.featuredImage ? (
                   <div className="relative w-20 h-20 flex-shrink-0 rounded overflow-hidden">
                     <Image
-                      loader={contentfulLoader}
+
                       src={post.featuredImage.url}
                       alt={post.featuredImage.title || post.title}
                       fill

@@ -1,8 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type { Document, Block } from '@contentful/rich-text-types'
-import { BLOCKS } from '@contentful/rich-text-types'
 
 interface TOCItem {
   id: string
@@ -11,23 +9,7 @@ interface TOCItem {
 }
 
 interface TableOfContentsProps {
-  content: Document
-}
-
-/**
- * Extract text from a rich text node
- */
-function extractText(node: Block): string {
-  if (!node.content) return ''
-
-  return node.content
-    .map((child: any) => {
-      if (child.nodeType === 'text') {
-        return child.value || ''
-      }
-      return ''
-    })
-    .join('')
+  content: string
 }
 
 /**
@@ -41,40 +23,37 @@ function slugify(text: string): string {
 }
 
 /**
- * Extract headings from Contentful rich text
+ * Extract headings from Markdown text
  */
-function extractHeadings(document: Document): TOCItem[] {
+function extractHeadings(content: string): TOCItem[] {
   const headings: TOCItem[] = []
   const seenIds = new Map<string, number>()
 
-  if (!document?.content) return headings
+  if (!content) return headings
 
-  document.content.forEach((node) => {
-    if (
-      node.nodeType === BLOCKS.HEADING_2 ||
-      node.nodeType === BLOCKS.HEADING_3
-    ) {
-      const text = extractText(node as Block)
-      if (text) {
-        let id = slugify(text)
+  const regex = /^(#{2,3})\s+(.+)$/gm
+  let match
 
-        // Handle duplicate IDs
-        if (seenIds.has(id)) {
-          const count = seenIds.get(id)! + 1
-          seenIds.set(id, count)
-          id = `${id}-${count}`
-        } else {
-          seenIds.set(id, 0)
-        }
+  while ((match = regex.exec(content)) !== null) {
+    const level = match[1].length as 2 | 3
+    const text = match[2].trim()
+    let id = slugify(text)
 
-        headings.push({
-          id,
-          text,
-          level: node.nodeType === BLOCKS.HEADING_2 ? 2 : 3,
-        })
-      }
+    // Handle duplicate IDs
+    if (seenIds.has(id)) {
+      const count = seenIds.get(id)! + 1
+      seenIds.set(id, count)
+      id = `${id}-${count}`
+    } else {
+      seenIds.set(id, 0)
     }
-  })
+
+    headings.push({
+      id,
+      text,
+      level,
+    })
+  }
 
   return headings
 }

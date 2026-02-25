@@ -1,6 +1,6 @@
 # Cursor Rules for The Crypto Start Blog
 
-Cursor rules in the `.cursor/rules/` directory customize the behavior of Cursor AI (powered by Anthropic's Claude) for this Next.js blog project. These rules provide rich context about the codebase, architecture, symbols, dependencies, and conventions, enabling accurate code generation, refactoring, debugging, and documentation.
+Cursor rules in the `.cursor/rules/` directory customize Cursor AI (powered by Anthropic's Claude) for this Next.js blog project. These rules provide rich context about the codebase, architecture, symbols, dependencies, and conventions to enable precise code generation, refactoring, debugging, and documentation.
 
 ## Setup and Usage
 
@@ -10,119 +10,153 @@ Cursor rules in the `.cursor/rules/` directory customize the behavior of Cursor 
 └── README.md          # Primary context file (this documentation)
 ```
 
-- **Auto-loaded**: Cursor automatically applies rules when the repo is open.
-- **Type**: `cursorrules` – Instructs Cursor to use this for codebase understanding.
-- **Source**: Generated/updated via analysis tools (e.g., `analyzeSymbols`, `searchCode`).
+- **Auto-loaded**: Cursor automatically loads rules when the repository is opened.
+- **Type**: `cursorrules` – Directs Cursor to use this for codebase comprehension.
+- **Source**: Auto-generated/updated via tools like `analyzeSymbols`, `searchCode`, `listFiles`.
 
 ### How Cursor Uses Rules
-1. **Context Injection**: The full README.md content is fed into AI prompts for chats, completions, and edits.
-2. **Tool Integration**: AI can "call" virtual tools like `readFile`, `listFiles`, `analyzeSymbols` to fetch real-time codebase info.
-3. **Precedence**: Rules override default behaviors for project-specific patterns (e.g., Contentful queries, SEO schemas, RBAC).
+1. **Context Injection**: Full README.md content is included in AI prompts for chats, autocompletions, and edits.
+2. **Tool Calls**: AI can invoke tools (`readFile`, `listFiles`, `analyzeSymbols`, `getFileStructure`, `searchCode`) for real-time insights.
+3. **Override Defaults**: Enforces project patterns (e.g., Prisma queries, SEO schemas, RBAC with `hasRole`).
 
-**Pro Tip**: Prefix queries with `@codebase` or reference symbols (e.g., "Refactor `getPostBySlug` using `transformPost`") for best results.
+**Pro Tip**: Use `@codebase` prefix or reference exports (e.g., "Optimize `analyzeSEO` in `lib/seo-analyzer.ts`") for optimal results.
 
 ## Key Contexts Provided
 
 ### Architecture
-- **Utils**: `lib/` (contentful.ts, seo.ts, utils.ts, permissions.ts)
-- **Controllers/API**: `app/api/` (users, comments, auth, admin)
-- **Components/Pages**: `components/`, `app/` (blog/[slug], admin/users, etc.)
-- **Data Flow**: Contentful (CMS) → Prisma (DB) → Next.js App Router
-- **Middleware**: Auth, rate limiting, CSRF (`middleware.ts`)
+- **Utils**: `lib/`, `lib/validations/` (utils.ts, posts.ts, seo-analyzer.ts, ai-optimization.ts, permissions.ts, rate-limit.ts)
+- **Controllers/API Routes**: `app/api/` (users/[id], comments, seo/metrics, gsc/analytics, auth/[...nextauth]/register, admin/{posts,comments,categories,authors}/[id])
+- **Components/Pages**: `app/` (login, guest-post-guidelines, blog/[slug]/clusters, admin/{users,seo,posts,gsc-dashboard,comments,categories,authors,ai-optimization}), `components/` (admin/, CategoryCard, CommentsList, FAQSection)
+- **Data Flow**: Prisma DB → `lib/posts.ts` queries → Next.js App Router
+- **Middleware**: Auth (NextAuth), rate limiting (`lib/rate-limit.ts`), spam prevention (`lib/spam-prevention.ts`)
 
-See full structure in [Repository Snapshot](#repository-snapshot).
+Full structure via `getFileStructure` tool.
 
 ### Public API (Key Exports)
-Over 90 exports for reuse:
+120+ reusable exports across modules:
+
 ```ts
-// Examples
-import { getPostBySlug, BlogPost, generateMetadata } from 'lib/contentful';
-import { calculateReadingTime, formatDate } from 'lib/utils';
-import { hasRole, hasPermission } from 'lib/permissions';
-import AppError, AuthenticationError from 'lib/errors';
+// Core Utils
+import { cn, calculateReadingTime, calculateReadingTimeFromRichText, formatDate, slugify, truncate } from 'lib/utils';
+
+// Posts & Content
+import { getAllPosts, getPostBySlug, getPostsByCategory, getRelatedPosts, BlogPost, BlogCategory, BlogMetadata } from 'lib/posts';
+
+// SEO & Analysis
+import { generateMetadata, generateSchema, analyzeSEO, AIOptimizationScore, calculateAIOptimizationScore } from 'lib/seo*'; // seo.ts, seo-analyzer.ts, ai-optimization.ts
+
+// Security & Auth
+import { hasPermission, hasRole, checkRateLimit, detectSpam } from 'lib/{permissions,spam-prevention,rate-limit}';
+import { AppError, AuthenticationError, AuthorizationError } from 'lib/errors';
+
+// Pages/Components
+import { AboutPage, BlogPage, AdminLayout } from 'app/{about,blog,admin}';
 ```
 
-Full list: `AboutPage`, `AdminDashboard`, `BlogPage`, `getAllPosts`, `generateSchema`, `checkRateLimit`, etc.
+Full list includes `analyzeForExpansion`, `createGSCClient`, `FAQSection`, `ExitIntentPopup`, API handlers (`GET`/`DELETE` routes), and more.
 
 ### Symbol Index
 
-#### Classes (5+)
-- `AppError`, `AuthenticationError`, `AuthorizationError`, `ValidationError`, `RateLimitError` (@ lib/errors.ts)
+#### Classes
+| Name | File | Purpose |
+|------|------|---------|
+| `GSCClient` | `lib/gsc-client.ts` | Google Search Console API client |
+| `AppError` | `lib/errors.ts` | Base app error |
+| `AuthenticationError` | `lib/errors.ts` | Auth failures |
+| `AuthorizationError` | `lib/errors.ts` | Permission denials |
+| `ValidationError` | `lib/errors.ts` | Input validation issues |
+| `RateLimitError` | `lib/errors.ts` | Rate limiting exceeded |
 
-#### Interfaces/Types (50+)
+#### Interfaces/Types (80+)
 | Category | Examples |
 |----------|----------|
-| Blog | `BlogPost`, `BlogCategory`, `BlogMetadata`, `ContentfulBlogPost` (@ types/blog.ts) |
-| Auth | `User`, `Session`, `UserWithRoles` (@ types/auth.ts) |
-| SEO | `SEOProps`, `MetadataInput` (@ types/index.ts, lib/seo.ts) |
-| UI | `CommentsListProps`, `TableOfContentsProps`, `NewsletterFormProps` (@ components/*) |
+| Blog | `BlogCategory`, `FeaturedImage`, `Author`, `BlogPost`, `BlogMetadata`, `PaginationOptions`, `CategoryConfig` (`types/blog.ts`) |
+| Auth | `User`, `Session`, `JWT`, `UserWithRoles` (`types/auth.ts`) |
+| SEO/AI | `SEOProps`, `SEOAnalysis`, `AIOptimizationScore`, `FAQItem`, `ExpansionOpportunity` (`lib/seo-*.ts`, `types/index.ts`) |
+| GSC | `GSCQuery`, `GSCPage`, `GSCAnalytics` (`lib/gsc-client.ts`) |
+| UI/Components | `TOCItem`, `FAQSectionProps`, `SidebarProps`, `NewsletterFormProps`, `RecommendedContentProps` (`components/*`) |
+| Validations | `AuthorInput`, `CategoryInput`, `PostInput` (`lib/validations/admin.ts`) |
 
-#### Functions (80+)
+#### Functions (100+)
 | Module | Key Functions |
 |--------|---------------|
-| Contentful | `getAllPosts`, `getPostBySlug`, `getPostsByCategory`, `getAllCategories` |
-| Utils/SEO | `calculateReadingTime`, `formatDate`, `slugify`, `generateMetadata`, `generateFAQSchema` |
-| Security | `checkRateLimit`, `detectSpam`, `generateCSRFToken`, `hasRole` |
-| Analytics | `sendWebVital`, `trackAdClick` |
-| API Routes | `GET`/`POST` handlers for users/comments |
+| Utils | `cn`, `calculateReadingTime*`, `formatDate`, `slugify` (`lib/utils.ts`) |
+| Posts | `getAllPosts`, `getPostBySlug`, `getRelatedPosts`, `searchPosts`, `transformPrismaPost` (`lib/posts.ts`) |
+| SEO/Analysis | `analyzeSEO`, `extractLinks`, `countImages`, `analyzeKeywordGap`, `analyzeForExpansion` (`lib/seo-analyzer.ts`, `keyword-research.ts`, `content-expander.ts`) |
+| AI/Optimization | `calculateAIOptimizationScore`, `extractQuickAnswer`, `countCitableSentences` (`lib/ai-optimization.ts`) |
+| Security | `checkRateLimit`, `detectSpam`, `getClientIP` (`lib/spam-prevention.ts`, `rate-limit.ts`) |
+| Permissions | `hasPermission`, `hasRole` (`lib/permissions.ts`) |
+| GSC | `createGSCClient` (`lib/gsc-client.ts`) |
+| Linking | `findLinkingOpportunities` (`lib/link-builder.ts`) |
 
 ### Key Dependencies & Relationships
-- **High Usage**: `components/SocialComments.tsx` (2 imports), `lib/seo.ts`, `lib/spam-prevention.ts`
-- **Patterns**: shadcn/ui components, Tailwind, Zod validation, NextAuth sessions.
-- **Cross-Refs**:
-  - `lib/contentful.ts` ← Used by `app/blog/[slug]/page.tsx`
-  - `lib/errors.ts` ← Thrown in API routes (e.g., `app/api/users/[id]/route.ts`)
+- **Top Imports**: `lib/spam-prevention.ts` (checkRateLimit), `lib/seo.ts` (generateMetadata), `components/SocialComments.tsx`, `scripts/seo-monitor.ts`
+- **Patterns**: shadcn/ui + Tailwind, Zod (`lib/validations/`), NextAuth, Prisma (`lib/prisma.ts`)
+- **Cross-References**:
+  - `lib/posts.ts` → Used in `app/blog/[slug]/page.tsx`, `app/blog/page.tsx`
+  - `lib/errors.ts` → Thrown in API routes (`app/api/admin/posts/[id]/route.ts`)
+  - `lib/ai-optimization.ts` → Integrated in admin AI pages
+  - High coupling: `app/admin/*` ↔ `lib/validations/admin.ts`
+
+Search patterns: `searchCode('getPostBySlug')` reveals 5+ usages.
 
 ### Conventions & Patterns
-- **Naming**: Kebab-case slugs, PascalCase components, camelCase functions.
-- **Errors**: Extend `AppError` for consistency.
-- **SEO**: Always call `generateMetadata` in pages.
-- **Auth**: Use `hasRole('admin')` for guards.
-- **Contentful**: Transform via `transformPost`; paginate with `PaginationOptions`.
-- **Testing**: Expand `__tests__/`, use Playwright for E2E.
+- **Naming**: Kebab-case slugs (`generateSlugFromTitle`), PascalCase components/pages, camelCase functions.
+- **Errors**: Extend `AppError`; throw in API routes.
+- **SEO**: Invoke `generateMetadata`/`generateSchema` in every page; use `analyzeSEO`.
+- **Auth/RBAC**: `hasRole('admin')` or `hasPermission()` guards in admin routes/components.
+- **Prisma/Data**: Use `transformPrismaPost`; paginate via `PaginationOptions`.
+- **Rate Limiting/Spam**: Wrap user inputs with `checkRateLimit`/`detectSpam`.
+- **AI/SEO Tools**: Integrate `AIOptimizationScore` in post editors.
+- **Testing**: `__tests__/`, Playwright E2E; utils like `countWords` for assertions.
+- **Admin**: CRUD via `app/api/admin/*`; Zod schemas in `lib/validations/admin.ts`.
 
 ## Updating & Maintaining Rules
 
-1. **Regenerate Context**:
+1. **Regenerate**:
    ```bash
-   # Run analysis (hypothetical script)
-   node scripts/analyze-codebase.js > .cursor/rules/README.md
+   # Use Cursor chat: "@codebase Regenerate .cursor/rules/README.md with latest analyzeSymbols"
+   # Or script: node scripts/analyze-codebase.js > .cursor/rules/README.md
    ```
 
-2. **Add Rules**:
-   - Create `.cursor/rules/[filename].md` for file-specific rules (e.g., `blog-page.md`).
-   - Example:
-     ```
-     # app/blog/[slug]/page.tsx Rules
-     - Always fetch related posts with getRelatedPosts
-     - Include TOC and ShareButtons
-     ```
+2. **File-Specific Rules**:
+   Create `.cursor/rules/lib-posts.md`:
+   ```
+   # lib/posts.ts Rules
+   - Always use getPostBySlug for dynamic routes
+   - Transform with transformPrismaPost
+   - Cache queries with revalidatePath
+   ```
 
-3. **Cursor Commands**:
-   - `Cmd+K`: Edit with rules context.
-   - `@docs`: Generate/update docs (e.g., "Generate documentation for lib/contentful.ts").
+3. **Cursor Features**:
+   - `Cmd+K`: Apply rules to edits.
+   - `@codebase`: Full context chat.
+   - `@docs`: "Document app/admin/posts/new/page.tsx"
 
 ## Relation to Project Docs
-- **docs/**: Human-readable guides (CONTENTFUL_SETUP.md, architecture.md).
-- **Rules**: AI-optimized subset + dynamic analysis.
-- **prompts/**: Custom prompts for doc generation (used by this task).
+- **docs/**: Guides (architecture.md, SETUP_DATABASE.md if applicable).
+- **Cursor Rules**: AI-focused, dynamic (150+ symbols, tracked deps).
+- **prompts/**: Docgen templates (used here).
 
 ## Troubleshooting
-| Issue | Fix |
-|-------|-----|
-| AI ignores context | Refresh Cursor, check `.cursor/rules/` load |
-| Outdated symbols | Re-analyze: Use `analyzeSymbols` tool in chat |
-| Missing imports | Reference "Public API" section |
-| Complex refactors | Provide file paths/symbols explicitly |
+| Issue | Solution |
+|-------|----------|
+| Context ignored | Reload repo in Cursor; verify `.cursor/rules/` |
+| Stale data | `@codebase Use analyzeSymbols on lib/` |
+| Import errors | Check "Public API"; search `searchCode('import .* from')` |
+| Refactors fail | Specify paths/symbols: "Refactor getAllPosts using PrismaSingleton" |
 
 ## Repository Snapshot
 ```
 .cursor/rules/
-├── README.md  # This file
-app/ lib/ components/ types/ prisma/ docs/ prompts/ public/
-middleware.ts next.config.mjs tailwind.config.ts package.json
+├── README.md
+app/ (api/, admin/, blog/)
+lib/ (posts.ts, seo-analyzer.ts, ai-optimization.ts, ...)
+components/ (admin/, FAQSection.tsx, ...)
+types/ (blog.ts, auth.ts)
+prisma/
+docs/ prompts/ public/ scripts/
+middleware.ts tsconfig.json package.json
 ```
 
-**Last Updated**: From codebase analysis (Public API: 92 exports, Symbols: 150+, Dependencies: tracked).
-
-For full project docs, see [docs index](../README.md) or root [README.md](../README.md). Contribute rules via PRs to `.cursor/rules/`.
+**Last Updated**: Codebase scan (Public API: 120+ exports, Symbols: 200+, Deps: 20+ tracked). See root [README.md](../README.md) or [docs index](../index.md). PR updates to `.cursor/rules/`.

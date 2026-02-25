@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getAllCategories } from '@/lib/contentful'
+import { getAllCategories } from '@/lib/posts'
 
 interface CategoryLinksProps {
     categorySlug?: string
