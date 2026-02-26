@@ -2,6 +2,9 @@
 
 ## [1.0.1] - 2026-02-26
 
+### Added
+- **Automation**: Implementado sistema de autenticação via API Key (`X-API-Key`) para permitir automação externa de artigos e gestão administrativa via endpoints REST.
+
 ### Fixed
 - **Build**: Resolvido erro de deploy removendo referências órfãs ao custom loader do Contentful no `next.config.mjs`.
 - **Compatibility**: Corrigidos erros de tipagem em múltiplas API Routes (`authors`, `categories`, `posts`) para suportar `params` assíncronos exigidos pelo Next.js 15+.
