@@ -7,7 +7,7 @@ Este guia descreve como integrar ferramentas externas (Python, n8n, Make, Script
 Todas as chamadas para endpoints administrativos (`/api/admin/*`) devem incluir a chave de API no cabeçalho (header) da requisição.
 
 - **Header**: `X-API-Key`
-- **Chave**: `zpS4QZeS0IbCfQzha2H+Fuiq+tiDP346BDfSH/tC48o=`
+- **Chave**: `[ENCRYPTION_KEY]`
 - **Base URL**: `https://thecryptostart.com` (ou seu domínio de produção)
 
 ---
@@ -96,7 +96,7 @@ Estes campos são usados tanto no `POST` quanto no `PUT`.
 ### 1. cURL (Terminal)
 ```bash
 curl -X POST https://thecryptostart.com/api/admin/posts \
-  -H "X-API-Key: zpS4QZeS0IbCfQzha2H+Fuiq+tiDP346BDfSH/tC48o=" \
+  -H "X-API-Key: [ENCRYPTION_KEY]" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Post via Automação",
@@ -114,7 +114,7 @@ import requests
 
 url = "https://thecryptostart.com/api/admin/posts"
 headers = {
-    "X-API-Key": "zpS4QZeS0IbCfQzha2H+Fuiq+tiDP346BDfSH/tC48o=",
+    "X-API-Key": "[ENCRYPTION_KEY]",
     "Content-Type": "application/json"
 }
 

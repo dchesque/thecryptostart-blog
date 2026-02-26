@@ -91,56 +91,66 @@ export function transformPrismaPost(
 export async function getAllPosts(
     options?: PaginationOptions & TagOptions
 ): Promise<BlogPost[]> {
-    const limit = options?.limit || 10
-    const skip = options?.skip || 0
+    try {
+        const limit = options?.limit || 10
+        const skip = options?.skip || 0
 
-    const where: any = {
-        status: 'PUBLISHED',
-        publishDate: {
-            lte: new Date(),
-        },
-    }
-
-    if (options?.category) {
-        where.category = {
-            slug: options.category
+        const where: any = {
+            status: 'PUBLISHED',
+            publishDate: {
+                lte: new Date(),
+            },
         }
-    }
 
-    if (options?.tags && options.tags.length > 0) {
-        where.tags = {
-            hasSome: options.tags
+        if (options?.category) {
+            where.category = {
+                slug: options.category
+            }
         }
+
+        if (options?.tags && options.tags.length > 0) {
+            where.tags = {
+                hasSome: options.tags
+            }
+        }
+
+        const posts = await prisma.post.findMany({
+            where,
+            include: {
+                author: true,
+                category: true,
+            },
+            orderBy: [
+                { publishDate: 'desc' },
+                { createdAt: 'desc' },
+            ],
+            take: limit,
+            skip: skip,
+        })
+
+        return posts.map(transformPrismaPost)
+    } catch (error) {
+        console.error('[lib/posts] Error fetching all posts:', error)
+        return []
     }
-
-    const posts = await prisma.post.findMany({
-        where,
-        include: {
-            author: true,
-            category: true,
-        },
-        orderBy: [
-            { publishDate: 'desc' },
-            { createdAt: 'desc' },
-        ],
-        take: limit,
-        skip: skip,
-    })
-
-    return posts.map(transformPrismaPost)
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
-    const post = await prisma.post.findUnique({
-        where: { slug },
-        include: {
-            author: true,
-            category: true,
-        },
-    })
+    try {
+        const post = await prisma.post.findUnique({
+            where: { slug },
+            include: {
+                author: true,
+                category: true,
+            },
+        })
 
-    if (!post) return null
-    return transformPrismaPost(post)
+        if (!post) return null
+        return transformPrismaPost(post)
+    } catch (error) {
+        console.error(`[lib/posts] Error fetching post by slug (${slug}):`, error)
+        return null
+    }
 }
 
 export async function getPostsByCategory(
@@ -155,77 +165,87 @@ export async function getRelatedPosts(
     categorySlug: string,
     limit: number = 3
 ): Promise<BlogPost[]> {
-    const currentPost = await prisma.post.findUnique({
-        where: { slug: currentSlug },
-        select: { relatedPostsSlugs: true }
-    })
+    try {
+        const currentPost = await prisma.post.findUnique({
+            where: { slug: currentSlug },
+            select: { relatedPostsSlugs: true }
+        })
 
-    // Priority to manually mapped related posts
-    if (currentPost && currentPost.relatedPostsSlugs.length > 0) {
-        const manualPosts = await prisma.post.findMany({
+        // Priority to manually mapped related posts
+        if (currentPost && currentPost.relatedPostsSlugs.length > 0) {
+            const manualPosts = await prisma.post.findMany({
+                where: {
+                    slug: { in: currentPost.relatedPostsSlugs },
+                    status: 'PUBLISHED',
+                },
+                include: {
+                    author: true,
+                    category: true,
+                },
+                take: limit,
+            })
+
+            if (manualPosts.length > 0) {
+                return manualPosts.map(transformPrismaPost)
+            }
+        }
+
+        // Fallback to latest in same category
+        const fallbackPosts = await prisma.post.findMany({
             where: {
-                slug: { in: currentPost.relatedPostsSlugs },
+                category: { slug: categorySlug },
+                slug: { not: currentSlug },
                 status: 'PUBLISHED',
             },
             include: {
                 author: true,
                 category: true,
             },
+            orderBy: { publishDate: 'desc' },
             take: limit,
         })
 
-        if (manualPosts.length > 0) {
-            return manualPosts.map(transformPrismaPost)
-        }
+        return fallbackPosts.map(transformPrismaPost)
+    } catch (error) {
+        console.error(`[lib/posts] Error fetching related posts for ${currentSlug}:`, error)
+        return []
     }
-
-    // Fallback to latest in same category
-    const fallbackPosts = await prisma.post.findMany({
-        where: {
-            category: { slug: categorySlug },
-            slug: { not: currentSlug },
-            status: 'PUBLISHED',
-        },
-        include: {
-            author: true,
-            category: true,
-        },
-        orderBy: { publishDate: 'desc' },
-        take: limit,
-    })
-
-    return fallbackPosts.map(transformPrismaPost)
 }
 
 export async function searchPosts(
     query: string,
     options?: SearchOptions
 ): Promise<BlogPost[]> {
-    const limit = options?.limit || 10
-    const searchTerms = query.split(' ').filter(word => word.length > 2).join(' | ')
+    try {
+        const limit = options?.limit || 10
+        const searchTerms = query.split(' ').filter(word => word.length > 2).join(' | ')
 
-    let posts: any[] = []
+        let posts: any[] = []
 
-    if (searchTerms.length > 0) {
-        // Prisma Full text search is experimental or DB specific. 
-        // Using a simpler fallback with contains
-        posts = await prisma.post.findMany({
-            where: {
-                status: 'PUBLISHED',
-                OR: [
-                    { title: { contains: query, mode: 'insensitive' } },
-                    { excerpt: { contains: query, mode: 'insensitive' } }
-                ]
-            },
-            include: {
-                author: true,
-                category: true,
-            },
-            take: limit,
-        })
+        if (searchTerms.length > 0) {
+            // Prisma Full text search is experimental or DB specific. 
+            // Using a simpler fallback with contains
+            posts = await prisma.post.findMany({
+                where: {
+                    status: 'PUBLISHED',
+                    OR: [
+                        { title: { contains: query, mode: 'insensitive' } },
+                        { excerpt: { contains: query, mode: 'insensitive' } }
+                    ]
+                },
+                include: {
+                    author: true,
+                    category: true,
+                },
+                take: limit,
+            })
+        }
+
+        return posts.map(transformPrismaPost)
+    } catch (error) {
+        console.error('[lib/posts] Error searching posts:', error)
+        return []
     }
-
-    return posts.map(transformPrismaPost)
 }
 
 export async function getAllPostSlugs(): Promise<string[]> {
@@ -268,51 +288,66 @@ export async function getAllCategories(): Promise<CategoryConfig[]> {
 }
 
 export async function getTotalPostsCount(categorySlug?: string): Promise<number> {
-    const where: any = {
-        status: 'PUBLISHED',
-        publishDate: {
-            lte: new Date(),
-        },
-    }
-
-    if (categorySlug) {
-        where.category = {
-            slug: categorySlug
+    try {
+        const where: any = {
+            status: 'PUBLISHED',
+            publishDate: {
+                lte: new Date(),
+            },
         }
-    }
 
-    return await prisma.post.count({ where })
+        if (categorySlug) {
+            where.category = {
+                slug: categorySlug
+            }
+        }
+
+        return await prisma.post.count({ where })
+    } catch (error) {
+        console.error('[lib/posts] Error fetching total posts count:', error)
+        return 0
+    }
 }
 
 export async function getFeaturedPosts(limit: number = 3): Promise<BlogPost[]> {
-    const posts = await prisma.post.findMany({
-        where: {
-            isFeatured: true,
-            status: 'PUBLISHED',
-            publishDate: { lte: new Date() }
-        },
-        include: {
-            author: true,
-            category: true,
-        },
-        orderBy: { publishDate: 'desc' },
-        take: limit,
-    })
+    try {
+        const posts = await prisma.post.findMany({
+            where: {
+                isFeatured: true,
+                status: 'PUBLISHED',
+                publishDate: { lte: new Date() }
+            },
+            include: {
+                author: true,
+                category: true,
+            },
+            orderBy: { publishDate: 'desc' },
+            take: limit,
+        })
 
-    return posts.map(transformPrismaPost)
+        return posts.map(transformPrismaPost)
+    } catch (error) {
+        console.error('[lib/posts] Error fetching featured posts:', error)
+        return []
+    }
 }
 
 export async function getPostsByPillar(pillarSlug: string): Promise<BlogPost[]> {
-    const posts = await prisma.post.findMany({
-        where: {
-            pillarPageSlug: pillarSlug,
-            status: 'PUBLISHED',
-        },
-        include: {
-            author: true,
-            category: true,
-        },
-        orderBy: { publishDate: 'desc' },
-    })
-    return posts.map(transformPrismaPost)
+    try {
+        const posts = await prisma.post.findMany({
+            where: {
+                pillarPageSlug: pillarSlug,
+                status: 'PUBLISHED',
+            },
+            include: {
+                author: true,
+                category: true,
+            },
+            orderBy: { publishDate: 'desc' },
+        })
+        return posts.map(transformPrismaPost)
+    } catch (error) {
+        console.error(`[lib/posts] Error fetching posts for pillar ${pillarSlug}:`, error)
+        return []
+    }
 }

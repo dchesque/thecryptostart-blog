@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2] - 2026-02-26
+
+### Fixed
+- **Build**: Resolvido erro de compilação bloqueante no `npm run build` ao adicionar resiliência (`try/catch`) nas consultas do Prisma que falhavam sem conexão de banco de dados no ambiente Docker.
+- **Admin**: Forçado o Server-Side Rendering (Dynamic Rendering) na rota `/admin` para evitar erros de uso do `auth()` no momento estático da compilação.
+- **Blog Clusters**: Garantida a revalidação estática (ISR) de conteúdos da página `/blog/clusters` na indisponibilidade do banco de dados na compilação.
+
 ## [1.0.1] - 2026-02-26
 
 ### Added
