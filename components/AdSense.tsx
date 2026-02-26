@@ -57,7 +57,7 @@ export default function AdSense({
     return (
       <div
         className={`ad-container overflow-hidden bg-gray-50 border border-gray-100 rounded-lg animate-pulse ${className}`}
-        style={{ minHeight: '100px', aspectRatio: format === 'vertical' ? '300/600' : format === 'horizontal' ? '728/90' : '16/9' }}
+        style={{ minHeight: '100px', ...(format === 'vertical' ? { aspectRatio: '300/600' } : format === 'horizontal' ? { aspectRatio: '728/90' } : {}) }}
       />
     )
   }
@@ -68,7 +68,7 @@ export default function AdSense({
   }
 
   return (
-    <div className={`ad-container overflow-hidden bg-gray-50 border border-gray-100 rounded-lg flex items-center justify-center ${className}`} style={{ minHeight: '100px', aspectRatio: format === 'vertical' ? '300/600' : format === 'horizontal' ? '728/90' : '16/9' }}>
+    <div className={`ad-container overflow-hidden bg-gray-50 border border-gray-100 rounded-lg flex items-center justify-center ${className}`} style={{ minHeight: '100px', ...(format === 'vertical' ? { aspectRatio: '300/600' } : format === 'horizontal' ? { aspectRatio: '728/90' } : {}) }}>
       <ins
         className="adsbygoogle"
         style={{ display: 'block', width: '100%', height: '100%' }}
