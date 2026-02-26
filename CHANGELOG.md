@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1] - 2026-02-26
+
+### Fixed
+- **Build**: Resolvido erro de deploy removendo referências órfãs ao custom loader do Contentful no `next.config.mjs`.
+- **Compatibility**: Corrigidos erros de tipagem em múltiplas API Routes (`authors`, `categories`, `posts`) para suportar `params` assíncronos exigidos pelo Next.js 15+.
+- **Security**: Limpeza de headers CSP removendo conexões desnecessárias ao Contentful.
+
 ## [1.0.0] - 2026-02-25
 
 ### Added

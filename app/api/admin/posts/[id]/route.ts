@@ -5,11 +5,12 @@ import { z } from 'zod'
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const post = await prisma.post.findUnique({
-            where: { id: params.id },
+            where: { id },
             include: {
                 category: { select: { id: true, name: true, slug: true } },
                 author: { select: { id: true, name: true, slug: true } }
@@ -29,14 +30,15 @@ export async function GET(
 
 export async function PUT(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const body = await req.json()
         const data = postSchema.parse(body)
 
         const post = await prisma.post.update({
-            where: { id: params.id },
+            where: { id },
             data
         })
 
@@ -52,11 +54,12 @@ export async function PUT(
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         await prisma.post.delete({
-            where: { id: params.id }
+            where: { id }
         })
 
         return new NextResponse(null, { status: 204 })

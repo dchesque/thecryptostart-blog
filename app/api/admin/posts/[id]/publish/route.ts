@@ -3,9 +3,10 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const body = await req.json()
         const { publish } = body
 
@@ -19,7 +20,7 @@ export async function POST(
         }
 
         const post = await prisma.post.update({
-            where: { id: params.id },
+            where: { id },
             data: dataToUpdate,
             select: { id: true, status: true, publishDate: true }
         })
