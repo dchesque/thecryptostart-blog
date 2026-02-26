@@ -229,32 +229,42 @@ export async function searchPosts(
 }
 
 export async function getAllPostSlugs(): Promise<string[]> {
-    const posts = await prisma.post.findMany({
-        where: {
-            status: 'PUBLISHED',
-        },
-        select: {
-            slug: true,
-        },
-    })
-    return posts.map((p: any) => p.slug)
+    try {
+        const posts = await prisma.post.findMany({
+            where: {
+                status: 'PUBLISHED',
+            },
+            select: {
+                slug: true,
+            },
+        })
+        return posts.map((p: any) => p.slug)
+    } catch (error) {
+        console.error('[lib/posts] Error fetching all post slugs:', error)
+        return [] // Return empty array to allow build to continue (pages will be generated on-demand)
+    }
 }
 
 export async function getAllCategories(): Promise<CategoryConfig[]> {
-    const categories = await prisma.category.findMany({
-        orderBy: [
-            { order: 'asc' },
-            { name: 'asc' }
-        ]
-    })
+    try {
+        const categories = await prisma.category.findMany({
+            orderBy: [
+                { order: 'asc' },
+                { name: 'asc' }
+            ]
+        })
 
-    return categories.map((cat: any) => ({
-        slug: cat.slug as any,
-        name: cat.name,
-        description: cat.description || '',
-        icon: cat.icon,
-        color: cat.color || undefined,
-    }))
+        return categories.map((cat: any) => ({
+            slug: cat.slug as any,
+            name: cat.name,
+            description: cat.description || '',
+            icon: cat.icon,
+            color: cat.color || undefined,
+        }))
+    } catch (error) {
+        console.error('[lib/posts] Error fetching all categories:', error)
+        return []
+    }
 }
 
 export async function getTotalPostsCount(categorySlug?: string): Promise<number> {
