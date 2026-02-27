@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.0.3] - 2026-02-27
+
+### Fixed
+- **API**: Corrigido problema de autenticação via API Key nos endpoints `/api/admin/*` causado por variável `ADMIN_API_KEY` ausente no runtime Docker.
+- **Docker**: Adicionada documentação explícita de variáveis de ambiente obrigatórias no estágio runner do Dockerfile.
+- **Docs**: Corrigida referência incorreta `[ENCRYPTION_KEY]` para `ADMIN_API_KEY` em `docs/API_AUTOMATION.md`.
+
+### Added
+- **API**: Novo endpoint `GET /api/health` para diagnóstico público de conexão, banco e variáveis de ambiente.
+- **API**: Adicionado logging de diagnóstico no middleware (`proxy.ts`) para facilitar debug de autenticação.
+- **Config**: Módulo `lib/env.ts` com validação de variáveis de ambiente no startup — emite `console.warn` com mensagens claras para variáveis ausentes.
+- **Config**: `ADMIN_API_KEY` adicionado ao `.env.example` como single source of truth para configuração.
+- **Docs**: Seção de Troubleshooting adicionada ao `docs/API_AUTOMATION.md` com exemplos de diagnóstico via cURL.
+
 ## [1.0.2] - 2026-02-26
 
 ### Fixed

@@ -14,9 +14,19 @@ export default auth((req) => {
 
   // API Admin Routes Protection (Session OR API Key)
   if (isApiAdminRoute) {
+    const envKeyExists = !!process.env.ADMIN_API_KEY
+
+    console.log(`[API Auth] Path: ${nextUrl.pathname}`)
+    console.log(`[API Auth] Session: ${isLoggedIn ? "YES" : "NO"}`)
+    console.log(`[API Auth] API Key received: ${apiKey ? apiKey.substring(0, 8) + "..." : "NONE"}`)
+    console.log(`[API Auth] ENV ADMIN_API_KEY defined: ${envKeyExists}`)
+    console.log(`[API Auth] API Key valid: ${isValidApiKey ? "YES" : "NO"}`)
+
     if (!isLoggedIn && !isValidApiKey) {
+      console.warn(`[API Auth] REJECTED — Unauthorized access to ${nextUrl.pathname}`)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
+
     return NextResponse.next()
   }
 

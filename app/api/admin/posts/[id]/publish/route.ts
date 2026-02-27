@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 
 export async function POST(
     req: NextRequest,
@@ -27,6 +28,12 @@ export async function POST(
 
         return NextResponse.json(post)
     } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+            return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+        }
+        if (error instanceof Prisma.PrismaClientInitializationError) {
+            return NextResponse.json({ error: 'Database connection failed' }, { status: 503 })
+        }
         console.error('API Error:', error)
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
     }

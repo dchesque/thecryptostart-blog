@@ -7,8 +7,10 @@ Este guia descreve como integrar ferramentas externas (Python, n8n, Make, Script
 Todas as chamadas para endpoints administrativos (`/api/admin/*`) devem incluir a chave de API no cabeçalho (header) da requisição.
 
 - **Header**: `X-API-Key`
-- **Chave**: `[ENCRYPTION_KEY]`
+- **Chave**: Valor da variável de ambiente `ADMIN_API_KEY` configurada no servidor
 - **Base URL**: `https://thecryptostart.com` (ou seu domínio de produção)
+
+> ⚠️ **EasyPanel/Docker**: A variável `ADMIN_API_KEY` deve estar configurada como variável de ambiente de **runtime** no serviço (EasyPanel → Variáveis de Ambiente), não apenas como build argument. No modo `standalone` do Next.js, variáveis server-side precisam estar disponíveis em runtime.
 
 ---
 
@@ -16,6 +18,8 @@ Todas as chamadas para endpoints administrativos (`/api/admin/*`) devem incluir 
 
 | Método | Endpoint | Descrição |
 | :--- | :--- | :--- |
+| **Diagnóstico** | | |
+| `GET` | `/api/health` | Health check público — valida app, banco e variáveis de ambiente. |
 | **Posts** | | |
 | `GET` | `/api/admin/posts` | Lista todos os posts (paginação via `?page=X&limit=Y`). |
 | `POST` | `/api/admin/posts` | **Cria um novo post.** |
@@ -96,7 +100,7 @@ Estes campos são usados tanto no `POST` quanto no `PUT`.
 ### 1. cURL (Terminal)
 ```bash
 curl -X POST https://thecryptostart.com/api/admin/posts \
-  -H "X-API-Key: [ENCRYPTION_KEY]" \
+  -H "X-API-Key: $ADMIN_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Post via Automação",
@@ -114,7 +118,7 @@ import requests
 
 url = "https://thecryptostart.com/api/admin/posts"
 headers = {
-    "X-API-Key": "[ENCRYPTION_KEY]",
+    "X-API-Key": "SUA_ADMIN_API_KEY",  # valor de ADMIN_API_KEY no servidor
     "Content-Type": "application/json"
 }
 
@@ -138,3 +142,45 @@ print(response.json())
 1. **Slug único**: O sistema exige que o `slug` seja único. Se tentar criar um com slug repetido, retornará erro.
 2. **Markdown**: O campo `content` suporta Markdown completo, incluindo imagens e links.
 3. **Publicação**: Se criar como `DRAFT`, use o endpoint `/publish` enviando `{"publish": true}` para colocar o artigo no ar.
+
+---
+
+## 🔧 Troubleshooting
+
+### Diagnóstico Rápido
+```bash
+# Verificar se o app está rodando e variáveis configuradas (sem autenticação necessária)
+curl https://thecryptostart.com/api/health
+# Esperado: { "status": "ok", "database": "connected", "env": { "ADMIN_API_KEY": true, ... } }
+```
+
+### Erro 401 — Unauthorized
+- Verifique se `ADMIN_API_KEY` está configurado nas variáveis de ambiente do servidor (EasyPanel → Environment Variables)
+- Verifique se o header está sendo enviado como `X-API-Key` (case-sensitive)
+- Verifique se o valor no header é **exatamente** igual ao configurado no servidor (sem espaços extras)
+- Use o endpoint `/api/health` para validar se a variável está definida: `"ADMIN_API_KEY": true`
+
+### Erro 500 — Internal Server Error
+- Verifique se `DATABASE_URL` está configurado e o banco está acessível
+- Use `/api/health` para validar a conexão com o banco: `"database": "connected"`
+- Verifique os logs do container: `docker logs <container_id>`
+
+### Testando a Conexão
+```bash
+# 1. Health check (sem autenticação)
+curl https://thecryptostart.com/api/health
+
+# 2. Testar autenticação com API Key válida
+curl -H "X-API-Key: SUA_CHAVE" https://thecryptostart.com/api/admin/posts?limit=1
+# Esperado: 200 com lista de posts
+
+# 3. Testar sem API Key (deve retornar 401)
+curl https://thecryptostart.com/api/admin/posts?limit=1
+
+# 4. Criar post de teste
+curl -X POST \
+  -H "X-API-Key: SUA_CHAVE" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Test","slug":"test-api","excerpt":"Test","content":"# Test","authorId":"UUID","categoryId":"UUID"}' \
+  https://thecryptostart.com/api/admin/posts
+```

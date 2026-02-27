@@ -12,6 +12,7 @@ import { SITE_CONFIG } from '@/lib/constants'
 import { Montserrat, Open_Sans } from 'next/font/google'
 import { AdSenseScript } from '@/components/AdSense'
 import { WebVitals } from '@/components/WebVitals'
+import '@/lib/env' // Validate required environment variables at startup
 
 const montserrat = Montserrat({
   subsets: ['latin'],

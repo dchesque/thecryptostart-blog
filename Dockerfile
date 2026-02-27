@@ -44,6 +44,27 @@ RUN apk add --no-cache libc6-compat openssl
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# ============================================================
+# RUNTIME ENVIRONMENT VARIABLES
+# These MUST be set via docker run -e, Docker Compose, or
+# EasyPanel "Environment Variables" — NOT hardcoded here.
+#
+# Required:
+#   DATABASE_URL          - PostgreSQL connection string
+#   AUTH_SECRET           - NextAuth.js secret (openssl rand -base64 32)
+#   NEXTAUTH_URL          - Public URL of the app (https://thecryptostart.com)
+#   ADMIN_API_KEY         - API Key for external automation (X-API-Key header)
+#   NEXT_PUBLIC_SITE_URL  - Public site URL
+#
+# Optional:
+#   GOOGLE_CLOUD_PROJECT_ID
+#   GOOGLE_SERVICE_ACCOUNT_EMAIL
+#   GOOGLE_PRIVATE_KEY
+#   NEXT_PUBLIC_GA4_ID
+#   NEXT_PUBLIC_ADSENSE_CLIENT_ID
+#   AUTH_TRUST_HOST=true  (required for EasyPanel/reverse-proxy setups)
+# ============================================================
+
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
