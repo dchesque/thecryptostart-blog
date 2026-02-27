@@ -81,11 +81,11 @@ export default function BlogCard({ post, variant = 'standard' }: BlogCardProps) 
             <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
               {post.author.image ? (
                 <Image
-
                   src={post.author.image}
                   alt={post.author.name}
                   width={20}
                   height={20}
+                  className="w-5 h-5 rounded-full object-cover"
                 />
               ) : (
                 <div className="w-5 h-5 rounded-full bg-crypto-primary flex items-center justify-center text-[8px]">

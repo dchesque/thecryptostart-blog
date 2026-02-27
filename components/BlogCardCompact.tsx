@@ -50,7 +50,6 @@ export default function BlogCardCompact({
                         <div className="w-6 h-6 rounded-full bg-gray-100 overflow-hidden border border-gray-200">
                             {post.author.image ? (
                                 <Image
-
                                     src={post.author.image}
                                     alt={post.author.name}
                                     width={24}
