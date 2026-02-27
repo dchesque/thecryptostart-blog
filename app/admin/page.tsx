@@ -7,7 +7,6 @@ import {
   MessageSquare,
   Activity,
   Plus,
-  ExternalLink,
   Search,
   Bot
 } from "lucide-react";
@@ -194,6 +193,17 @@ export default async function AdminDashboard() {
               </div>
               <h3 className="font-bold text-gray-900 group-hover:text-purple-600">Users</h3>
               <p className="text-xs text-gray-500 mt-1">Manage accounts & roles</p>
+            </Link>
+
+            <Link
+              href="/admin/posts"
+              className="p-6 bg-white border border-gray-100 rounded-2xl hover:border-gray-400 hover:shadow-lg transition-all group text-left"
+            >
+              <div className="w-10 h-10 bg-gray-50 text-gray-600 rounded-lg flex items-center justify-center mb-4 group-hover:bg-gray-700 group-hover:text-white transition-colors">
+                <FileText size={20} />
+              </div>
+              <h3 className="font-bold text-gray-900 group-hover:text-gray-700">Posts</h3>
+              <p className="text-xs text-gray-500 mt-1">Manage blog content</p>
             </Link>
           </div>
         </div>

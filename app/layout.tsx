@@ -1,13 +1,8 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
 import '../styles/globals.css'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
 import { AuthProvider } from '@/components/AuthProvider'
-import StickyHeaderAd from '@/components/StickyHeaderAd'
-import StickyFooterAd from '@/components/StickyFooterAd'
-import ReadingProgressBar from '@/components/ReadingProgressBar'
-import ExitIntentPopup from '@/components/ExitIntentPopup'
+import { PublicShell } from '@/components/PublicShell'
 import { SITE_CONFIG } from '@/lib/constants'
 import { Montserrat, Open_Sans } from 'next/font/google'
 import { AdSenseScript } from '@/components/AdSense'
@@ -150,23 +145,10 @@ export default function RootLayout({
           </a>
 
           <WebVitals />
-          <ReadingProgressBar />
-          <Header />
 
-          {/* Sticky Header Ad — desktop only, shows on scroll up */}
-          <StickyHeaderAd slot="header-ad" />
-
-          <main id="main-content" className="min-h-screen">
+          <PublicShell>
             {children}
-          </main>
-
-          <Footer />
-
-          {/* Sticky Footer Ad — mobile only */}
-          <StickyFooterAd slot="footer-ad" />
-
-          {/* Exit Intent Popup — Lead Generation */}
-          <ExitIntentPopup />
+          </PublicShell>
         </AuthProvider>
 
         {/* Google Analytics 4 */}

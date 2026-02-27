@@ -44,9 +44,24 @@ export default auth((req) => {
     }
   }
 
-  return NextResponse.next()
+  return NextResponse.next({
+    request: {
+      headers: new Headers({
+        ...Object.fromEntries(headers.entries()),
+        'x-pathname': nextUrl.pathname,
+      }),
+    },
+  })
 })
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*"]
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization)
+     * - favicon.ico, sitemap.xml, robots.txt
+     */
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
+  ],
 }
