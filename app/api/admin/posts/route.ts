@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { postSchema } from '@/lib/validations/admin'
-import { Prisma } from '@prisma/client'
+import { PrismaClientKnownRequestError, PrismaClientInitializationError } from '@prisma/client/runtime/library'
 import { z } from 'zod'
 
 export async function GET(req: NextRequest) {
@@ -61,7 +61,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
-        const body = await req.json()
+        let body: any
+        try {
+            body = await req.json()
+        } catch {
+            return NextResponse.json({ error: 'Invalid or empty JSON body' }, { status: 400 })
+        }
         const data = postSchema.parse(body)
 
         const [author, category] = await Promise.all([
@@ -86,15 +91,16 @@ export async function POST(req: NextRequest) {
         if (error instanceof z.ZodError) {
             return NextResponse.json({ error: (error as any).errors }, { status: 400 })
         }
-        if (error instanceof Prisma.PrismaClientKnownRequestError) {
-            if (error.code === 'P2002') {
+        if ((error as any) instanceof PrismaClientKnownRequestError) {
+            const e = error as PrismaClientKnownRequestError
+            if (e.code === 'P2002') {
                 return NextResponse.json({ error: 'Slug already exists' }, { status: 409 })
             }
-            if (error.code === 'P2003') {
+            if (e.code === 'P2003') {
                 return NextResponse.json({ error: 'Invalid relational reference (author/category)' }, { status: 400 })
             }
         }
-        if (error instanceof Prisma.PrismaClientInitializationError) {
+        if ((error as any) instanceof PrismaClientInitializationError) {
             return NextResponse.json({ error: 'Database connection failed' }, { status: 503 })
         }
         console.error('API Error:', error)

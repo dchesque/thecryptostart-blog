@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { postSchema } from '@/lib/validations/admin'
-import { Prisma } from '@prisma/client'
+import { PrismaClientKnownRequestError, PrismaClientInitializationError } from '@prisma/client/runtime/library'
 import { z } from 'zod'
 
 export async function GET(
@@ -35,7 +35,12 @@ export async function PUT(
 ) {
     try {
         const { id } = await params
-        const body = await req.json()
+        let body: any
+        try {
+            body = await req.json()
+        } catch {
+            return NextResponse.json({ error: 'Invalid or empty JSON body' }, { status: 400 })
+        }
         const data = postSchema.parse(body)
 
         const [author, category] = await Promise.all([
@@ -61,7 +66,7 @@ export async function PUT(
         if (error instanceof z.ZodError) {
             return NextResponse.json({ error: (error as any).errors }, { status: 400 })
         }
-        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error instanceof PrismaClientKnownRequestError) {
             if (error.code === 'P2025') {
                 return NextResponse.json({ error: 'Post not found' }, { status: 404 })
             }
@@ -72,7 +77,7 @@ export async function PUT(
                 return NextResponse.json({ error: 'Invalid relational reference (author/category)' }, { status: 400 })
             }
         }
-        if (error instanceof Prisma.PrismaClientInitializationError) {
+        if (error instanceof PrismaClientInitializationError) {
             return NextResponse.json({ error: 'Database connection failed' }, { status: 503 })
         }
         console.error('API Error:', error)
@@ -92,10 +97,10 @@ export async function DELETE(
 
         return new NextResponse(null, { status: 204 })
     } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
             return NextResponse.json({ error: 'Post not found' }, { status: 404 })
         }
-        if (error instanceof Prisma.PrismaClientInitializationError) {
+        if (error instanceof PrismaClientInitializationError) {
             return NextResponse.json({ error: 'Database connection failed' }, { status: 503 })
         }
         console.error('API Error:', error)
