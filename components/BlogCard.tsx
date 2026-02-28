@@ -43,8 +43,9 @@ export default function BlogCard({ post, variant = 'standard' }: BlogCardProps) 
   return (
     <article
       className={`
-        card-article group
+        card-article group overflow-hidden relative
         ${isLarge ? 'md:col-span-2 lg:col-span-2 shadow-4 border-crypto-primary/20 min-h-[450px]' : 'shadow-3 min-h-[400px]'}
+        ${bgImage === 'none' ? 'bg-gradient-to-br from-crypto-dark to-crypto-navy' : ''}
       `}
       style={{
         backgroundImage: bgImage !== 'none' ? `url(${bgImage})` : 'none',
@@ -52,7 +53,18 @@ export default function BlogCard({ post, variant = 'standard' }: BlogCardProps) 
         backgroundPosition: 'center'
       }}
     >
-      <Link href={`/blog/${post.slug}`} className="flex flex-col h-full justify-end">
+      {bgImage === 'none' && (
+        <div className="absolute inset-0 flex items-center justify-center opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none">
+          <span className="text-9xl filter blur-[2px]">
+            {post.category === 'bitcoin' ? '₿' :
+              post.category === 'ethereum' ? '💎' :
+                post.category === 'defi' ? '🏦' : '📖'}
+          </span>
+        </div>
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+
+      <Link href={`/blog/${post.slug}`} className="relative flex flex-col h-full justify-end p-6 z-10">
         {/* Category & Date */}
         <div className="flex justify-between items-start mb-auto">
           <span className={`badge ${badgeClass} shadow-lg`}>

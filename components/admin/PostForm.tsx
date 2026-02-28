@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Save, Loader2, ArrowLeft, Image as ImageIcon, Link as LinkIcon, Settings, DollarSign, LayoutTemplate } from "lucide-react";
+import { Save, Loader2, ArrowLeft, Image as ImageIcon, Link as LinkIcon, Settings, DollarSign, LayoutTemplate, Tag, Calendar } from "lucide-react";
 import { calculateWordCount, calculateReadingTime, generateSlugFromTitle } from "@/lib/posts";
 
 interface PostFormProps {
@@ -21,6 +21,9 @@ export function PostForm({ initialData }: PostFormProps) {
         content: initialData?.content || "",
         excerpt: initialData?.excerpt || "",
         featuredImageUrl: initialData?.featuredImageUrl || "",
+        featuredImageAlt: initialData?.featuredImageAlt || "",
+        featuredImageWidth: initialData?.featuredImageWidth || null,
+        featuredImageHeight: initialData?.featuredImageHeight || null,
         contentType: initialData?.contentType || "ARTICLE",
         categoryId: initialData?.categoryId || "",
         authorId: initialData?.authorId || "",
@@ -28,11 +31,23 @@ export function PostForm({ initialData }: PostFormProps) {
         // SEO
         seoTitle: initialData?.seoTitle || "",
         seoDescription: initialData?.seoDescription || "",
-        seoKeywords: initialData?.seoKeywords || "",
+        seoImageUrl: initialData?.seoImageUrl || "",
+        seoNoindex: initialData?.seoNoindex || false,
+        targetKeyword: initialData?.targetKeyword || "",
+        secondaryKeywords: initialData?.secondaryKeywords || [],
+        canonicalUrl: initialData?.canonicalUrl || "",
+        schemaType: initialData?.schemaType || "ARTICLE",
+
+        // Classifications
+        difficulty: initialData?.difficulty || "BEGINNER",
+        isFeatured: initialData?.isFeatured || false,
+        tags: initialData?.tags || [],
+        publishDate: initialData?.publishDate ? new Date(initialData.publishDate).toISOString().slice(0, 16) : "",
 
         // Monetization
-        isPremium: initialData?.isPremium || false,
-        requiredTier: initialData?.requiredTier || "FREE",
+        adDensity: initialData?.adDensity || "NORMAL",
+        monetizationDisabled: initialData?.monetizationDisabled || false,
+        sponsoredBy: initialData?.sponsoredBy || "",
     });
 
     const [stats, setStats] = useState({ words: 0, readingTime: 0 });
@@ -61,10 +76,9 @@ export function PostForm({ initialData }: PostFormProps) {
     useEffect(() => {
         // Auto update stats when content changes
         if (formData.content) {
-            setStats({
-                words: calculateWordCount(formData.content),
-                readingTime: calculateReadingTime(formData.content)
-            });
+            const words = calculateWordCount(formData.content);
+            const readingTime = calculateReadingTime(words);
+            setStats({ words, readingTime });
         } else {
             setStats({ words: 0, readingTime: 0 });
         }
@@ -98,7 +112,8 @@ export function PostForm({ initialData }: PostFormProps) {
                     ...formData,
                     wordCount: stats.words,
                     readingTime: stats.readingTime,
-                    status: initialData ? initialData.status : "DRAFT"
+                    status: initialData ? initialData.status : "DRAFT",
+                    publishDate: formData.publishDate ? new Date(formData.publishDate).toISOString() : null
                 }),
             });
 
@@ -266,17 +281,71 @@ export function PostForm({ initialData }: PostFormProps) {
                             </select>
                         </div>
 
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Content Type</label>
+                                <select
+                                    value={formData.contentType}
+                                    onChange={(e) => setFormData({ ...formData, contentType: e.target.value })}
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
+                                >
+                                    <option value="ARTICLE">Article</option>
+                                    <option value="GUIDE">Guide</option>
+                                    <option value="TUTORIAL">Tutorial</option>
+                                    <option value="GLOSSARY">Glossary</option>
+                                    <option value="REVIEW">Review</option>
+                                    <option value="NEWS">News</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
+                                <select
+                                    value={formData.difficulty}
+                                    onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
+                                >
+                                    <option value="BEGINNER">Beginner</option>
+                                    <option value="INTERMEDIATE">Intermediate</option>
+                                    <option value="ADVANCED">Advanced</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                            <input
+                                type="checkbox"
+                                id="isFeatured"
+                                checked={formData.isFeatured}
+                                onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
+                                className="w-4 h-4 text-crypto-primary bg-white border-gray-300 rounded focus:ring-crypto-primary"
+                            />
+                            <label htmlFor="isFeatured" className="text-sm font-medium text-gray-700 select-none cursor-pointer">
+                                Featured Post (Pinned)
+                            </label>
+                        </div>
+
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Content Type</label>
-                            <select
-                                value={formData.contentType}
-                                onChange={(e) => setFormData({ ...formData, contentType: e.target.value })}
+                            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                                <Tag className="w-4 h-4" /> Tags (comma separated)
+                            </label>
+                            <textarea
+                                value={formData.tags.join(", ")}
+                                onChange={(e) => setFormData({ ...formData, tags: e.target.value.split(",").map(t => t.trim()).filter(t => t !== "") })}
+                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all resize-none h-20 text-sm"
+                                placeholder="crypto, blockchain, future"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                                <Calendar className="w-4 h-4" /> Publish Date
+                            </label>
+                            <input
+                                type="datetime-local"
+                                value={formData.publishDate}
+                                onChange={(e) => setFormData({ ...formData, publishDate: e.target.value })}
                                 className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
-                            >
-                                <option value="article">Article</option>
-                                <option value="tutorial">Tutorial</option>
-                                <option value="report">Market Report</option>
-                            </select>
+                            />
                         </div>
                     </div>
 
@@ -296,12 +365,47 @@ export function PostForm({ initialData }: PostFormProps) {
                                 className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
                                 placeholder="https://..."
                             />
-                            {formData.featuredImageUrl && (
-                                <div className="mt-4 aspect-video bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
-                                    <img src={formData.featuredImageUrl} alt="Cover Preview" className="w-full h-full object-cover" />
-                                </div>
-                            )}
                         </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Image Alt Text</label>
+                            <input
+                                type="text"
+                                value={formData.featuredImageAlt}
+                                onChange={(e) => setFormData({ ...formData, featuredImageAlt: e.target.value })}
+                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
+                                placeholder="Describe the image..."
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Width</label>
+                                <input
+                                    type="number"
+                                    value={formData.featuredImageWidth || ""}
+                                    onChange={(e) => setFormData({ ...formData, featuredImageWidth: e.target.value ? parseInt(e.target.value) : null })}
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
+                                    placeholder="1200"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Height</label>
+                                <input
+                                    type="number"
+                                    value={formData.featuredImageHeight || ""}
+                                    onChange={(e) => setFormData({ ...formData, featuredImageHeight: e.target.value ? parseInt(e.target.value) : null })}
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
+                                    placeholder="630"
+                                />
+                            </div>
+                        </div>
+
+                        {formData.featuredImageUrl && (
+                            <div className="mt-4 aspect-video bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
+                                <img src={formData.featuredImageUrl} alt="Cover Preview" className="w-full h-full object-cover" />
+                            </div>
+                        )}
                     </div>
 
                     {/* SEO Settings */}
@@ -311,15 +415,28 @@ export function PostForm({ initialData }: PostFormProps) {
                             SEO Metadata
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">SEO Title</label>
-                            <input
-                                type="text"
-                                value={formData.seoTitle}
-                                onChange={(e) => setFormData({ ...formData, seoTitle: e.target.value })}
-                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
-                                placeholder={formData.title || "SEO Title"}
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">SEO Title</label>
+                                <input
+                                    type="text"
+                                    value={formData.seoTitle}
+                                    onChange={(e) => setFormData({ ...formData, seoTitle: e.target.value })}
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
+                                    placeholder={formData.title || "SEO Title"}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Target Keyword</label>
+                                <input
+                                    type="text"
+                                    value={formData.targetKeyword}
+                                    onChange={(e) => setFormData({ ...formData, targetKeyword: e.target.value })}
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
+                                    placeholder="main-keyword"
+                                />
+                            </div>
                         </div>
 
                         <div>
@@ -327,20 +444,72 @@ export function PostForm({ initialData }: PostFormProps) {
                             <textarea
                                 value={formData.seoDescription}
                                 onChange={(e) => setFormData({ ...formData, seoDescription: e.target.value })}
-                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all resize-none h-24 text-sm"
+                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all resize-none h-20 text-sm"
                                 placeholder={formData.excerpt || "Meta description..."}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Keywords</label>
-                            <input
-                                type="text"
-                                value={formData.seoKeywords}
-                                onChange={(e) => setFormData({ ...formData, seoKeywords: e.target.value })}
-                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
-                                placeholder="bitcoin, crypto, trading"
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Secondary Keywords (comma separated)</label>
+                            <textarea
+                                value={formData.secondaryKeywords.join(", ")}
+                                onChange={(e) => setFormData({ ...formData, secondaryKeywords: e.target.value.split(",").map(k => k.trim()).filter(k => k !== "") })}
+                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all resize-none h-20 text-sm"
+                                placeholder="crypto, bitcoin, guide"
                             />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">SEO Image URL</label>
+                                <input
+                                    type="url"
+                                    value={formData.seoImageUrl}
+                                    onChange={(e) => setFormData({ ...formData, seoImageUrl: e.target.value })}
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
+                                    placeholder="https://..."
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Canonical URL</label>
+                                <input
+                                    type="url"
+                                    value={formData.canonicalUrl}
+                                    onChange={(e) => setFormData({ ...formData, canonicalUrl: e.target.value })}
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
+                                    placeholder="https://..."
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-6">
+                            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                                <input
+                                    type="checkbox"
+                                    id="seoNoindex"
+                                    checked={formData.seoNoindex}
+                                    onChange={(e) => setFormData({ ...formData, seoNoindex: e.target.checked })}
+                                    className="w-4 h-4 text-crypto-primary bg-white border-gray-300 rounded focus:ring-crypto-primary"
+                                />
+                                <label htmlFor="seoNoindex" className="text-sm font-medium text-gray-700 select-none cursor-pointer">
+                                    Noindex (Prevent Indexing)
+                                </label>
+                            </div>
+
+                            <div className="flex-1 min-w-[200px]">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Schema Type</label>
+                                <select
+                                    value={formData.schemaType}
+                                    onChange={(e) => setFormData({ ...formData, schemaType: e.target.value })}
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
+                                >
+                                    <option value="ARTICLE">Article</option>
+                                    <option value="HOW_TO">How-to Guide</option>
+                                    <option value="REVIEW">Product Review</option>
+                                    <option value="NEWS_ARTICLE">News Article</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -351,33 +520,42 @@ export function PostForm({ initialData }: PostFormProps) {
                             Monetization
                         </div>
 
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Ad Density</label>
+                            <select
+                                value={formData.adDensity}
+                                onChange={(e) => setFormData({ ...formData, adDensity: e.target.value })}
+                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
+                            >
+                                <option value="LOW">Low</option>
+                                <option value="NORMAL">Normal</option>
+                                <option value="HIGH">High</option>
+                            </select>
+                        </div>
+
                         <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
                             <input
                                 type="checkbox"
-                                id="isPremium"
-                                checked={formData.isPremium}
-                                onChange={(e) => setFormData({ ...formData, isPremium: e.target.checked })}
+                                id="monetizationDisabled"
+                                checked={formData.monetizationDisabled}
+                                onChange={(e) => setFormData({ ...formData, monetizationDisabled: e.target.checked })}
                                 className="w-4 h-4 text-crypto-primary bg-white border-gray-300 rounded focus:ring-crypto-primary"
                             />
-                            <label htmlFor="isPremium" className="text-sm font-medium text-gray-700 select-none cursor-pointer">
-                                Premium Content
+                            <label htmlFor="monetizationDisabled" className="text-sm font-medium text-gray-700 select-none cursor-pointer">
+                                Disable Monetization
                             </label>
                         </div>
 
-                        {formData.isPremium && (
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Required Tier</label>
-                                <select
-                                    value={formData.requiredTier}
-                                    onChange={(e) => setFormData({ ...formData, requiredTier: e.target.value })}
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
-                                >
-                                    <option value="FREE">Free User</option>
-                                    <option value="PRO">Pro Tier</option>
-                                    <option value="VIP">VIP Tier</option>
-                                </select>
-                            </div>
-                        )}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Sponsored By</label>
+                            <input
+                                type="text"
+                                value={formData.sponsoredBy}
+                                onChange={(e) => setFormData({ ...formData, sponsoredBy: e.target.value })}
+                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
+                                placeholder="Brand name..."
+                            />
+                        </div>
                     </div>
                 </div>
             </div>

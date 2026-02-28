@@ -57,31 +57,106 @@ async function main() {
 
     if (!basicsCategory) throw new Error('Category crypto-basics not found')
 
-    // 3. Create Sample Post
-    const samplePost = await prisma.post.upsert({
-        where: { slug: 'welcome-to-thecryptostart' },
-        update: {},
-        create: {
+    // 3. Create Sample Posts
+    const postsToCreate = [
+        {
             title: 'Welcome to TheCryptoStart',
             slug: 'welcome-to-thecryptostart',
             excerpt: 'Your journey into crypto starts here. A fundamental guide for all beginners.',
-            content: '## What is TheCryptoStart?\n\nTheCryptoStart is your go-to resource for cryptocurrency education. We aim to make complex topics simple and accessible.\n\n## Getting Started\n\n1. Learn the basics\n2. Understand the risks\n3. Start small\n\n> Crypto is a marathon, not a sprint.\n\nHere is a simple example of a smart contract:\n\n```solidity\npragma solidity ^0.8.0;\n\ncontract HelloWorld {\n    string public greet = "Hello World!";\n}\n```\n\nEnjoy your journey!',
+            content: '## What is TheCryptoStart?\n\nTheCryptoStart is your go-to resource for cryptocurrency education. We aim to make complex topics simple and accessible.\n\n## Getting Started\n\n1. Learn the basics\n2. Understand the risks\n3. Start small\n\n> Crypto is a marathon, not a sprint.\n\nEnjoy your journey!',
             status: 'PUBLISHED',
             publishDate: new Date(),
+            featuredImageUrl: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1200&h=630&fit=crop',
+            featuredImageAlt: 'Welcome to TheCryptoStart - Crypto Education',
+            featuredImageWidth: 1200,
+            featuredImageHeight: 630,
             contentType: 'ARTICLE',
             difficulty: 'BEGINNER',
             isFeatured: true,
             readingTime: 2,
-            wordCount: 50,
+            wordCount: 150,
             targetKeyword: 'crypto basics',
-            categoryId: basicsCategory.id,
-            authorId: author.id,
-            tags: ['crypto', 'beginner', 'education']
+            categorySlug: 'crypto-basics',
         },
-    })
+        {
+            title: 'What is Bitcoin? A Complete Guide for Beginners',
+            slug: 'what-is-bitcoin-complete-guide',
+            excerpt: 'Learn the fundamentals of the world\'s first cryptocurrency and why it matters.',
+            content: 'Bitcoin is a decentralized digital currency, without a central bank or single administrator, that can be sent from user to user on the peer-to-peer bitcoin network without the need for intermediaries.\n\n### Key Features:\n- Decentralized\n- Limited Supply (21 million)\n- Transparent Ledger (Blockchain)\n\nBitcoin was invented by an unknown person or group of people using the name Satoshi Nakamoto in 2008.',
+            status: 'PUBLISHED',
+            publishDate: new Date(Date.now() - 86400000), // Yesterday
+            featuredImageUrl: 'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=1200&h=630&fit=crop',
+            featuredImageAlt: 'Bitcoin coins on a table',
+            featuredImageWidth: 1200,
+            featuredImageHeight: 630,
+            contentType: 'GUIDE',
+            difficulty: 'BEGINNER',
+            isFeatured: false,
+            readingTime: 3,
+            wordCount: 300,
+            targetKeyword: 'what is bitcoin',
+            categorySlug: 'bitcoin',
+        },
+        {
+            title: 'Understanding DeFi: Decentralized Finance Explained',
+            slug: 'understanding-defi-explained',
+            excerpt: 'Discover how blockchain technology is transforming traditional financial systems.',
+            content: 'Decentralized Finance (DeFi) is an emerging financial technology based on secure distributed ledgers similar to those used by cryptocurrencies.\n\nUnlike traditional banking, DeFi uses smart contracts on blockchains to provide financial services like lending, borrowing, and trading without traditional intermediaries.',
+            status: 'PUBLISHED',
+            publishDate: new Date(Date.now() - 172800000), // 2 days ago
+            featuredImageUrl: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=1200&h=630&fit=crop',
+            featuredImageAlt: 'Digital financial representation',
+            featuredImageWidth: 1200,
+            featuredImageHeight: 630,
+            contentType: 'ARTICLE',
+            difficulty: 'INTERMEDIATE',
+            isFeatured: true,
+            readingTime: 4,
+            wordCount: 450,
+            targetKeyword: 'defi explained',
+            categorySlug: 'defi',
+        },
+        {
+            title: 'How to Secure Your Crypto Wallet',
+            slug: 'how-to-secure-crypto-wallet',
+            excerpt: 'Practical tips and best practices to keep your digital assets safe from hackers.',
+            content: 'Securing your crypto wallet is the most important step in your crypto journey. Remember: Not your keys, not your coins.\n\n1. Use a hardware wallet\n2. Never share your recovery phrase\n3. Enable 2FA\n4. Be aware of phishing attacks',
+            status: 'PUBLISHED',
+            publishDate: new Date(Date.now() - 259200000), // 3 days ago
+            featuredImageUrl: 'https://images.unsplash.com/photo-1633265485768-306df35c82b6?w=1200&h=630&fit=crop',
+            featuredImageAlt: 'Cybersecurity lock representation',
+            featuredImageWidth: 1200,
+            featuredImageHeight: 630,
+            contentType: 'TUTORIAL',
+            difficulty: 'BEGINNER',
+            isFeatured: false,
+            readingTime: 5,
+            wordCount: 400,
+            targetKeyword: 'crypto security',
+            categorySlug: 'crypto-security',
+        }
+    ]
 
-    console.log(`Sample post created: ${samplePost.title}`)
+    for (const postData of postsToCreate) {
+        const category = await prisma.category.findUnique({
+            where: { slug: postData.categorySlug }
+        })
+        if (!category) continue
 
+        const { categorySlug, ...data } = postData
+        await prisma.post.upsert({
+            where: { slug: data.slug },
+            update: {},
+            create: {
+                ...data,
+                categoryId: category.id,
+                authorId: author.id,
+                tags: ['crypto', 'education', postData.categorySlug]
+            },
+        })
+    }
+
+    console.log(`Sample posts created.`)
     console.log('Seeding finished.')
 }
 
