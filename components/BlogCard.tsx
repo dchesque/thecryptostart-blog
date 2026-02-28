@@ -34,8 +34,11 @@ export default function BlogCard({ post, variant = 'standard' }: BlogCardProps) 
   const badgeClass = categoryStyles[post.category] || 'bg-crypto-navy'
   const isLarge = variant === 'large'
 
-  // Optimize background image based on card size
-  const bgImage = post.featuredImage?.url || 'none'
+  // Normalize the image URL (handle protocol-relative URLs like //images.ctfassets.net/...)
+  const rawImage = post.featuredImage?.url || 'none'
+  const bgImage = rawImage !== 'none'
+    ? (rawImage.startsWith('//') ? `https:${rawImage}` : rawImage)
+    : 'none'
 
   return (
     <article

@@ -28,6 +28,16 @@ export function generateSlugFromTitle(title: string): string {
 }
 
 /**
+ * Normalizes image URLs — handles Contentful protocol-relative URLs like //images.ctfassets.net/...
+ * Returns a proper https:// URL or undefined if src is falsy.
+ */
+function normalizeImageUrl(url: string | null | undefined): string | undefined {
+    if (!url) return undefined
+    if (url.startsWith('//')) return `https:${url}`
+    return url
+}
+
+/**
  * Transforma o post Prisma no tipo BlogPost do Blog antigo.
  */
 export function transformPrismaPost(
@@ -40,7 +50,7 @@ export function transformPrismaPost(
         description: post.excerpt,
         content: post.content,
         featuredImage: post.featuredImageUrl ? {
-            url: post.featuredImageUrl,
+            url: normalizeImageUrl(post.featuredImageUrl)!,
             title: post.featuredImageAlt || post.title,
             width: post.featuredImageWidth || 1200,
             height: post.featuredImageHeight || 630,
@@ -49,7 +59,7 @@ export function transformPrismaPost(
             name: post.author.name,
             slug: post.author.slug,
             bio: post.author.bio || undefined,
-            image: post.author.avatar || undefined,
+            image: normalizeImageUrl(post.author.avatar),
             twitter: post.author.socialLinks
                 ? (post.author.socialLinks as { twitter?: string }).twitter
                 : undefined,
@@ -97,9 +107,10 @@ export async function getAllPosts(
 
         const where: any = {
             status: 'PUBLISHED',
-            publishDate: {
-                lte: new Date(),
-            },
+            OR: [
+                { publishDate: null },
+                { publishDate: { lte: new Date() } },
+            ],
         }
 
         if (options?.category) {
@@ -291,9 +302,10 @@ export async function getTotalPostsCount(categorySlug?: string): Promise<number>
     try {
         const where: any = {
             status: 'PUBLISHED',
-            publishDate: {
-                lte: new Date(),
-            },
+            OR: [
+                { publishDate: null },
+                { publishDate: { lte: new Date() } },
+            ],
         }
 
         if (categorySlug) {
@@ -315,7 +327,10 @@ export async function getFeaturedPosts(limit: number = 3): Promise<BlogPost[]> {
             where: {
                 isFeatured: true,
                 status: 'PUBLISHED',
-                publishDate: { lte: new Date() }
+                OR: [
+                    { publishDate: null },
+                    { publishDate: { lte: new Date() } },
+                ],
             },
             include: {
                 author: true,
