@@ -20,8 +20,8 @@ export function PostForm({ initialData }: PostFormProps) {
         slug: initialData?.slug || "",
         content: initialData?.content || "",
         excerpt: initialData?.excerpt || "",
-        coverImage: initialData?.coverImage || "",
-        contentType: initialData?.contentType || "article",
+        featuredImageUrl: initialData?.featuredImageUrl || "",
+        contentType: initialData?.contentType || "ARTICLE",
         categoryId: initialData?.categoryId || "",
         authorId: initialData?.authorId || "",
 
@@ -291,15 +291,14 @@ export function PostForm({ initialData }: PostFormProps) {
                             <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image URL</label>
                             <input
                                 type="url"
-                                required
-                                value={formData.coverImage}
-                                onChange={(e) => setFormData({ ...formData, coverImage: e.target.value })}
+                                value={formData.featuredImageUrl}
+                                onChange={(e) => setFormData({ ...formData, featuredImageUrl: e.target.value })}
                                 className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-crypto-primary/20 focus:border-crypto-primary transition-all text-sm"
                                 placeholder="https://..."
                             />
-                            {formData.coverImage && (
+                            {formData.featuredImageUrl && (
                                 <div className="mt-4 aspect-video bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
-                                    <img src={formData.coverImage} alt="Cover Preview" className="w-full h-full object-cover" />
+                                    <img src={formData.featuredImageUrl} alt="Cover Preview" className="w-full h-full object-cover" />
                                 </div>
                             )}
                         </div>
