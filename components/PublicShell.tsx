@@ -1,4 +1,6 @@
-import { headers } from 'next/headers'
+'use client'
+
+import { usePathname } from 'next/navigation'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import StickyHeaderAd from '@/components/StickyHeaderAd'
@@ -9,10 +11,11 @@ import ExitIntentPopup from '@/components/ExitIntentPopup'
 /**
  * Wraps content with public site chrome (Header, Footer, Ads, etc.)
  * Only renders on non-admin and non-login routes.
+ * Uses usePathname() so this component is client-side only — no headers() call
+ * which would cause DYNAMIC_SERVER_USAGE on the entire layout tree.
  */
-export async function PublicShell({ children }: { children: React.ReactNode }) {
-    const headersList = await headers()
-    const pathname = headersList.get('x-pathname') || headersList.get('x-invoke-path') || ''
+export function PublicShell({ children }: { children: React.ReactNode }) {
+    const pathname = usePathname()
 
     const isAdminRoute = pathname.startsWith('/admin')
     const isLoginRoute = pathname.startsWith('/login')
