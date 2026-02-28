@@ -6,27 +6,26 @@
 import { createGSCClient, GSCAnalytics } from '@/lib/gsc-client'
 import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
+import { logRequest, logSuccess, logWarn, logError, createTimer } from '@/lib/logger'
 
-// Rate limit (opcional)
-const CACHE_TTL = 3600 // 1 hora em cache
+const PATH = '/api/gsc/analytics'
+const CACHE_TTL = 3600
 
 export async function GET() {
+    const t = createTimer()
+    logRequest('GET', PATH)
+
     try {
-        // Verificar auth
         const session = await auth()
 
-        // Deixar aberto para desenvolvimento se não houver sessão, mas em produção deve ser restrito
-        // No projeto atual, o admin é controlado pelo auth.ts
         if (!session?.user) {
+            logWarn({ method: 'GET', path: PATH, status: 401, extra: { reason: 'Unauthorized — no session' } })
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
         const gsc = createGSCClient()
-
-        // Buscar analytics
         const analytics = await gsc.getAnalytics()
 
-        // Adicionar metadata
         const response = {
             ...analytics,
             lastFetched: new Date().toISOString(),
@@ -38,14 +37,19 @@ export async function GET() {
             recommendations: generateRecommendations(analytics),
         }
 
-        // Cache com revalidation
+        logSuccess({
+            method: 'GET', path: PATH, durationMs: t.ms(), extra: {
+                topQueries: analytics.topQueries.length,
+                topPages: analytics.topPages.length,
+                avgPosition: analytics.avgPosition,
+            }
+        })
+
         return NextResponse.json(response, {
-            headers: {
-                'Cache-Control': `public, max-age=${CACHE_TTL}`,
-            },
+            headers: { 'Cache-Control': `public, max-age=${CACHE_TTL}` },
         })
     } catch (error) {
-        console.error('[GSC API Error]', error)
+        logError({ method: 'GET', path: PATH, error })
         return NextResponse.json(
             {
                 error: 'Failed to fetch GSC analytics',
@@ -59,7 +63,6 @@ export async function GET() {
 function generateRecommendations(analytics: GSCAnalytics) {
     const recommendations = []
 
-    // Recommendation 1: CTR optimization
     if (analytics.avgCTR < 0.05) {
         recommendations.push({
             priority: 'high',
@@ -69,7 +72,6 @@ function generateRecommendations(analytics: GSCAnalytics) {
         })
     }
 
-    // Recommendation 2: Position optimization
     if (analytics.avgPosition > 15) {
         recommendations.push({
             priority: 'high',
@@ -79,7 +81,6 @@ function generateRecommendations(analytics: GSCAnalytics) {
         })
     }
 
-    // Recommendation 3: High impression pages not ranking
     const highImpressionLowClick = analytics.topPages.filter(
         (p: any) => p.impressions > 100 && p.clicks < 5
     )

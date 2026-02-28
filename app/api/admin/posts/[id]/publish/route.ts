@@ -1,17 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { Prisma } from '@prisma/client'
+import { PrismaClientKnownRequestError, PrismaClientInitializationError } from '@prisma/client/runtime/library'
+import { logRequest, logSuccess, logWarn, logError, createTimer } from '@/lib/logger'
+
+const PATH = '/api/admin/posts/[id]/publish'
 
 export async function POST(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
+    const t = createTimer()
+    const { id } = await params
+
     try {
-        const { id } = await params
         const body = await req.json()
         const { publish } = body
+        logRequest('POST', PATH, { id, publish })
 
-        // publish is a boolean to indicating whether to publish or unpublish
+        // publish is a boolean indicating whether to publish or unpublish
         const status = publish ? 'PUBLISHED' : 'DRAFT'
 
         // Data contains also publishDate if it is moving to PUBLISHED
@@ -26,15 +32,18 @@ export async function POST(
             select: { id: true, status: true, publishDate: true }
         })
 
+        logSuccess({ method: 'POST', path: PATH, durationMs: t.ms(), extra: { id, status: post.status } })
         return NextResponse.json(post)
     } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
+            logWarn({ method: 'POST', path: PATH, status: 404, extra: { id, reason: 'Post not found' } })
             return NextResponse.json({ error: 'Post not found' }, { status: 404 })
         }
-        if (error instanceof Prisma.PrismaClientInitializationError) {
+        if (error instanceof PrismaClientInitializationError) {
+            logError({ method: 'POST', path: PATH, status: 503, error, extra: { id } })
             return NextResponse.json({ error: 'Database connection failed' }, { status: 503 })
         }
-        console.error('API Error:', error)
+        logError({ method: 'POST', path: PATH, error, extra: { id } })
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
     }
 }

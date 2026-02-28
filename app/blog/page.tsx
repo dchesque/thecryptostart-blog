@@ -10,8 +10,6 @@ import type { BlogCategory } from '@/types/blog'
 import type { Metadata } from 'next'
 import { SITE_CONFIG } from '@/lib/constants'
 
-// ISR: Revalidate every 5 minutes
-export const revalidate = 300
 
 export async function generateMetadata({ searchParams }: BlogPageProps): Promise<Metadata> {
   const { category } = await searchParams

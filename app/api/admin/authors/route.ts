@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { authorSchema } from '@/lib/validations/admin'
 import { z } from 'zod'
+import { logRequest, logSuccess, logWarn, logError, createTimer } from '@/lib/logger'
+
+const PATH = '/api/admin/authors'
 
 export async function GET(req: NextRequest) {
+    const t = createTimer()
     const { searchParams } = new URL(req.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
     const skip = (page - 1) * limit
+    logRequest('GET', PATH, { page, limit })
 
     try {
         const [authors, total] = await Promise.all([
@@ -24,6 +29,7 @@ export async function GET(req: NextRequest) {
             prisma.author.count()
         ])
 
+        logSuccess({ method: 'GET', path: PATH, durationMs: t.ms(), extra: { total, returned: authors.length } })
         return NextResponse.json({
             authors,
             pagination: {
@@ -33,26 +39,29 @@ export async function GET(req: NextRequest) {
             }
         })
     } catch (error) {
-        console.error('API Error:', error)
+        logError({ method: 'GET', path: PATH, error })
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
     }
 }
 
 export async function POST(req: NextRequest) {
+    const t = createTimer()
+    logRequest('POST', PATH)
+
     try {
         const body = await req.json()
         const data = authorSchema.parse(body)
 
-        const author = await prisma.author.create({
-            data
-        })
+        const author = await prisma.author.create({ data })
 
+        logSuccess({ method: 'POST', path: PATH, status: 201, durationMs: t.ms(), extra: { authorId: author.id } })
         return NextResponse.json(author, { status: 201 })
     } catch (error) {
         if (error instanceof z.ZodError) {
+            logWarn({ method: 'POST', path: PATH, status: 400, extra: { reason: 'Validation error', errors: (error as any).errors } })
             return NextResponse.json({ error: (error as any).errors }, { status: 400 })
         }
-        console.error('API Error:', error)
+        logError({ method: 'POST', path: PATH, error })
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
     }
 }

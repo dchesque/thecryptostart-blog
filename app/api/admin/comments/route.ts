@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-// import { auth } from '@/auth' // Assume auth exists
+import { logRequest, logSuccess, logWarn, logError, createTimer } from '@/lib/logger'
+
+const PATH = '/api/admin/comments'
 
 export async function GET(req: NextRequest) {
-    // const session = await auth()
-    // if (!session || session.user.role !== 'ADMIN') {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    // }
-
+    const t = createTimer()
     const { searchParams } = new URL(req.url)
     const status = searchParams.get('status')
     const page = parseInt(searchParams.get('page') || '1')
     const limit = 20
     const skip = (page - 1) * limit
+    logRequest('GET', PATH, { status, page })
 
     try {
         const whereClause: any = {}
@@ -33,6 +32,7 @@ export async function GET(req: NextRequest) {
             prisma.comment.count({ where: whereClause })
         ])
 
+        logSuccess({ method: 'GET', path: PATH, durationMs: t.ms(), extra: { total, returned: comments.length } })
         return NextResponse.json({
             comments,
             pagination: {
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
             }
         })
     } catch (error) {
-        console.error('Admin API Error:', error)
+        logError({ method: 'GET', path: PATH, error })
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
     }
 }

@@ -1,11 +1,17 @@
 import { getAllPosts } from '@/lib/posts'
 import { calculateAIOptimizationScore } from '@/lib/ai-optimization'
+import { logRequest, logSuccess, logError, createTimer } from '@/lib/logger'
+
+const PATH = '/api/ai-optimization/scores'
 
 /**
  * API Route to calculate AI Optimization Scores for all blog posts.
  * Used by the Admin Dashboard.
  */
 export async function GET() {
+    const t = createTimer()
+    logRequest('GET', PATH)
+
     try {
         const posts = await getAllPosts()
 
@@ -23,9 +29,10 @@ export async function GET() {
             }
         })
 
+        logSuccess({ method: 'GET', path: PATH, durationMs: t.ms(), extra: { postsAnalyzed: scores.length } })
         return Response.json(scores)
     } catch (error) {
-        console.error('Failed to calculate AI scores:', error)
+        logError({ method: 'GET', path: PATH, error })
         return Response.json(
             { error: 'Failed to calculate scores', details: error instanceof Error ? error.message : String(error) },
             { status: 500 }

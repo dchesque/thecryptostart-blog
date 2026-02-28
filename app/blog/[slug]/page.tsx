@@ -42,8 +42,6 @@ const PopularPosts = dynamic(() => import('@/components/PopularPosts'), {
 
 import { BLOG_CONFIG, CACHE_CONFIG, getCategoryName, SITE_CONFIG, getCategoryBySlug } from '@/lib/constants'
 
-// ISR: Dynamic revalidation from config (Hardcoded for Next.js build optimization)
-export const revalidate = 86400
 
 interface PostPageProps {
   params: Promise<{ slug: string }>
