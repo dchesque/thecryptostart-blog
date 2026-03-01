@@ -24,7 +24,9 @@ const nextConfig = {
   },
   experimental: {
     optimizeCss: false, // Pode ser ativado com 'critters' se necessário
-    serverBodySizeLimit: '10mb', // Permite posts com conteúdo longo (> 4MB padrão)
+    serverActions: {
+      bodySizeLimit: '10mb', // Permite posts com conteúdo longo (> 4MB padrão)
+    },
   },
   turbopack: {}, // Silencia erro do Next.js 16 com plugins Webpack
   compress: true,
