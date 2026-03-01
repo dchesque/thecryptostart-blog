@@ -19,6 +19,8 @@ export default function FeaturedImage({
     priority = false,
     className = '',
 }: FeaturedImageProps) {
+    if (!src) return null
+
     // Normalize URL (Contentful sometimes returns protocol-relative URLs)
     const normalizedSrc = src.startsWith('//') ? `https:${src}` : src
 

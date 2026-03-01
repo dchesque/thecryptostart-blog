@@ -317,13 +317,15 @@ export default async function PostPage({ params }: PostPageProps) {
                 className="mb-8"
               />
 
-              <FeaturedImage
-                src={post.featuredImage?.url || ''}
-                alt={post.title}
-                caption={post.featuredImage?.description}
-                priority
-                className="mb-8"
-              />
+              {post.featuredImage?.url && (
+                <FeaturedImage
+                  src={post.featuredImage.url}
+                  alt={post.title}
+                  caption={post.featuredImage?.description}
+                  priority
+                  className="mb-8"
+                />
+              )}
 
               {/* Ad Placement #1 - blog-top */}
               <div className="my-8 rounded-xl overflow-hidden bg-gray-50 min-h-[120px] flex items-center justify-center border border-gray-100">
