@@ -5,6 +5,7 @@ import CategoryCard from '@/components/CategoryCard'
 import PopularPosts from '@/components/PopularPosts'
 import CategoryLinks from '@/components/CategoryLinks'
 import AdSense from '@/components/AdSense'
+import Sidebar from '@/components/Sidebar'
 import { BLOG_CONFIG, getCategoryName } from '@/lib/constants'
 import type { BlogCategory } from '@/types/blog'
 import type { Metadata } from 'next'
@@ -170,42 +171,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
           </div>
 
           {/* Sidebar */}
-          <aside>
-            <div className="sticky top-24 space-y-10">
-              {/* Sidebar Ad 1 */}
-              <div className="rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 aspect-[300/600] flex items-center justify-center">
-                <AdSense slot="blog-sidebar-top" />
-              </div>
-
-              {/* Topics Card */}
-              <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
-                <h4 className="font-bold text-xs uppercase tracking-widest text-crypto-darker mb-6 flex items-center gap-2">
-                  <span className="w-1.5 h-4 bg-crypto-primary rounded-full"></span>
-                  Explore Topics
-                </h4>
-                <CategoryLinks categorySlug={category || ''} limit={8} />
-              </div>
-
-              {/* Sidebar Ad 2 */}
-              <div className="rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 aspect-[300/250] flex items-center justify-center">
-                <AdSense slot="blog-sidebar-middle" />
-              </div>
-
-              {/* Popular Articles */}
-              <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
-                <h4 className="font-bold text-xs uppercase tracking-widest text-crypto-darker mb-6 flex items-center gap-2">
-                  <span className="w-1.5 h-4 bg-crypto-primary rounded-full"></span>
-                  Most Read
-                </h4>
-                <PopularPosts categorySlug={category || ''} limit={4} />
-              </div>
-
-              {/* Sidebar Ad 3 */}
-              <div className="rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 aspect-[300/600] flex items-center justify-center">
-                <AdSense slot="blog-sidebar-bottom" />
-              </div>
-            </div>
-          </aside>
+          <Sidebar categories={categories} recentPosts={posts} />
         </div>
 
         {/* Categories Section (Secondary Grid) */}

@@ -9,13 +9,20 @@ import { getCategoryName } from '@/lib/constants'
 interface SidebarProps {
   recentPosts?: BlogPost[]
   popularPosts?: BlogPost[]
+  categories?: { slug: string; name: string; icon?: string }[]
+  className?: string
 }
 
 /**
  * Sidebar component for blog pages
  * Shows recent and popular posts
  */
-export default function Sidebar({ recentPosts = [], popularPosts = [] }: SidebarProps) {
+export default function Sidebar({
+  recentPosts = [],
+  popularPosts = [],
+  categories,
+  className = ''
+}: SidebarProps) {
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', {
       month: 'short',
@@ -24,8 +31,17 @@ export default function Sidebar({ recentPosts = [], popularPosts = [] }: Sidebar
     })
   }
 
+  const fallbackCategories: { slug: string; name: string; icon?: string }[] = [
+    { slug: 'bitcoin', name: getCategoryName('bitcoin'), icon: '₿' },
+    { slug: 'ethereum', name: getCategoryName('ethereum'), icon: 'Ξ' },
+    { slug: 'defi', name: getCategoryName('defi'), icon: '🏦' },
+    { slug: 'crypto-basics', name: getCategoryName('crypto-basics'), icon: '📚' },
+    { slug: 'investing-and-strategy', name: getCategoryName('investing-and-strategy'), icon: '📈' },
+    { slug: 'crypto-security', name: getCategoryName('crypto-security'), icon: '🛡️' }
+  ]
+
   return (
-    <aside className="space-y-8">
+    <aside className={`space-y-8 ${className}`}>
       {/* Recent Posts */}
       {recentPosts.length > 0 && (
         <section>
@@ -46,7 +62,6 @@ export default function Sidebar({ recentPosts = [], popularPosts = [] }: Sidebar
                 {post.featuredImage ? (
                   <div className="relative w-20 h-20 flex-shrink-0 rounded overflow-hidden">
                     <Image
-
                       src={post.featuredImage.url}
                       alt={post.featuredImage.title || post.title}
                       fill
@@ -140,13 +155,16 @@ export default function Sidebar({ recentPosts = [], popularPosts = [] }: Sidebar
           Categories
         </h3>
         <div className="flex flex-wrap gap-2">
-          {['bitcoin', 'ethereum', 'defi', 'crypto-basics', 'investing-and-strategy', 'crypto-security'].map((category) => (
+          {(categories || fallbackCategories).map((category) => (
             <Link
-              key={category}
-              href={`/blog?category=${category}`}
+              key={category.slug}
+              href={`/blog?category=${category.slug}`}
               className="px-4 py-2 rounded-full text-sm font-medium bg-crypto-darker border border-crypto-primary/10 text-gray-300 hover:border-crypto-primary hover:text-white transition-all duration-300"
             >
-              {getCategoryName(category as any)}
+              <span className="flex items-center gap-2">
+                {category.icon && <span className="text-base">{category.icon}</span>}
+                {category.name}
+              </span>
             </Link>
           ))}
         </div>

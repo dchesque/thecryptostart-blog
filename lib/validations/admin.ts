@@ -31,6 +31,9 @@ export const postSchema = z.object({
     status: z.nativeEnum(PostStatus).default(PostStatus.DRAFT),
     authorId: z.string().min(1, "Author is required"),
     categoryId: z.string().min(1, "Category is required"),
+    publishDate: z.coerce.date().optional().nullable(),
+    wordCount: z.coerce.number().int().default(0),
+    readingTime: z.coerce.number().int().default(0),
 
     // SEO Block
     seoTitle: z.string().optional().nullable(),

@@ -24,6 +24,7 @@ import PostMeta from '@/components/PostMeta'
 import FeaturedImage from '@/components/FeaturedImage'
 import CompactTableOfContents from '@/components/CompactTableOfContents'
 import CategoryLinks from '@/components/CategoryLinks'
+import Sidebar from '@/components/Sidebar'
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 
@@ -430,44 +431,7 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
 
             {/* RIGHT: Sidebar (Desktop Only) */}
-            <aside className="hidden lg:block">
-              <div className="sticky top-24 space-y-8">
-                {/* Sidebar Ad 1 */}
-                <div className="rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 aspect-[300/600] flex items-center justify-center">
-                  <AdSense slot="blog-sidebar-top" />
-                </div>
-
-                {/* TOC Compact (Secondary) */}
-                <CompactTableOfContents
-                  headings={extractHeadingsFromMarkdown(post.content)}
-                  variant="compact"
-                />
-
-                {/* Related Categories */}
-                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-4">
-                  <h4 className="font-bold text-sm mb-4 uppercase tracking-widest text-crypto-navy">More Categories</h4>
-                  <CategoryLinks categorySlug={post.category} limit={6} />
-                </div>
-
-                {/* Sidebar Ad 2 */}
-                <div className="rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 aspect-[300/250] flex items-center justify-center">
-                  <AdSense slot="blog-sidebar-middle" />
-                </div>
-
-                {/* Popular Posts */}
-                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-4">
-                  <h4 className="font-bold text-sm mb-4 uppercase tracking-widest text-crypto-navy">Popular Now</h4>
-                  <Suspense fallback={<div className="h-40 bg-gray-50 rounded-2xl animate-pulse" />}>
-                    <PopularPosts categorySlug={post.category} limit={3} />
-                  </Suspense>
-                </div>
-
-                {/* Final Sidebar Ad */}
-                <div className="rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 aspect-[300/600] flex items-center justify-center">
-                  <AdSense slot="blog-sidebar-bottom" />
-                </div>
-              </div>
-            </aside>
+            <Sidebar categories={categories} recentPosts={relatedPosts} className="hidden lg:block" />
           </div>
         </div>
       </article>
