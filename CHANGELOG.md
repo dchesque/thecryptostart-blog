@@ -1,4 +1,13 @@
 # Changelog
+激
+## [1.0.3] - 2026-03-13
+
+### Added
+- **Monetização**: Adicionado arquivo `public/ads.txt` para autorização e verificação de propriedade no Google AdSense.
+
+### Changed
+- **Configuração**: Adicionada a variável `NODE_ENV` ao arquivo `.env.example` para facilitar a gestão de ambientes.
+
 
 ## [1.0.3] - 2026-02-27
 
