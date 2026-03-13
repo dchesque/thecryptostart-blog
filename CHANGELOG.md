@@ -1,5 +1,10 @@
 # Changelog
-激
+
+## [1.0.4] - 2026-03-13
+
+### Fixed
+- **Build**: Corrigido erro de duplicidade de propriedades em `lib/api-error.ts` que impedia o build de produção no Next.js 16/TS 5+.
+
 ## [1.0.3] - 2026-03-13
 
 ### Added

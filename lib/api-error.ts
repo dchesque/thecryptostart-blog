@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { Prisma } from '@prisma/client'
 
 type KnownError = Prisma.PrismaClientKnownRequestError
@@ -30,9 +30,9 @@ export function handleApiError(error: unknown, entity: string) {
                 logError(entity, error)
                 return NextResponse.json(
                     {
+                        ...baseMeta,
                         error: `${entity} already exists with the same unique values`,
                         code: 'CONFLICT',
-                        ...baseMeta,
                     },
                     { status: 409 }
                 )
@@ -59,9 +59,9 @@ export function handleApiError(error: unknown, entity: string) {
                 logError(entity, error)
                 return NextResponse.json(
                     {
+                        ...baseMeta,
                         error: 'Database error',
                         code: error.code,
-                        ...baseMeta,
                     },
                     { status: 500 }
                 )
