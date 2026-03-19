@@ -63,6 +63,9 @@ export function transformPrismaPost(
             twitter: post.author.socialLinks
                 ? (post.author.socialLinks as { twitter?: string }).twitter
                 : undefined,
+            linkedin: post.author.socialLinks
+                ? (post.author.socialLinks as { linkedin?: string }).linkedin
+                : undefined,
         },
         category: post.category.slug as any,
         tags: post.tags,

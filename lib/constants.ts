@@ -102,6 +102,12 @@ export const ADSENSE_SLOTS = {
   'blog-sidebar-top': 'xxxxxxxxxxxx',
   'blog-sidebar-middle': 'xxxxxxxxxxxx',
   'blog-sidebar-bottom': 'xxxxxxxxxxxx',
+  // New Semantic Article Slots
+  'article-sidebar-top': 'xxxxxxxxxxxx',
+  'article-sidebar-bottom': 'xxxxxxxxxxxx',
+  'article-in-content-top': 'xxxxxxxxxxxx',
+  'article-in-content-mid': 'xxxxxxxxxxxx',
+  'article-in-content-bottom': 'xxxxxxxxxxxx',
   // Homepage
   'homepage-hero': 'xxxxxxxxxxxx',
   'homepage-top': 'xxxxxxxxxxxx',

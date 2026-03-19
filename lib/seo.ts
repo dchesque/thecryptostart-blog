@@ -91,7 +91,14 @@ interface SchemaInput {
   url: string
   publishedAt: string
   modifiedAt?: string
-  author: string
+  author: {
+    name: string
+    image?: string
+    jobTitle?: string
+    twitter?: string
+    linkedin?: string
+    url?: string
+  }
   image?: string
 }
 
@@ -111,7 +118,10 @@ export function generateSchema(input: SchemaInput) {
     dateModified: modifiedAt || publishedAt,
     author: {
       '@type': 'Person',
-      name: author,
+      name: author.name,
+      image: author.image,
+      jobTitle: author.jobTitle || 'Crypto Expert',
+      url: author.url,
     },
     publisher: {
       '@type': 'Organization',
@@ -132,13 +142,21 @@ export function generateSchema(input: SchemaInput) {
  * Generate AI-optimized Article JSON-LD schema
  * Extends the basic schema with signals that AI models (ChatGPT, Claude, Perplexity) search for.
  */
-export function generateAIOptimizedArticleSchema(input: SchemaInput & {
+export function generateAIOptimizedArticleSchema(input: Omit<SchemaInput, 'author'> & {
+  author: SchemaInput['author'];
   quickAnswer?: string;
   keywords?: string[];
   tags?: string[];
   readingTime?: number;
 }) {
-  const baseSchema = generateSchema(input);
+  const baseSchema = generateSchema(input as SchemaInput);
+  const { author } = input;
+
+  const authorSocials = [
+    author.twitter,
+    author.linkedin,
+    author.url,
+  ].filter(Boolean) as string[];
 
   return {
     ...baseSchema,
@@ -151,12 +169,11 @@ export function generateAIOptimizedArticleSchema(input: SchemaInput & {
     // Enhanced Person Schema for Authority (E-E-A-T)
     author: {
       ...baseSchema.author,
-      jobTitle: 'Crypto Expert',
       worksFor: {
         '@type': 'Organization',
         name: SITE_CONFIG.name,
       },
-      sameAs: [
+      sameAs: authorSocials.length > 0 ? authorSocials : [
         SITE_CONFIG.social.twitter,
         SITE_CONFIG.social.github,
         SITE_CONFIG.social.linkedin,

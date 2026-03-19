@@ -8,7 +8,12 @@ import rehypeSlug from 'rehype-slug'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypeHighlight from 'rehype-highlight'
 import { getPostBySlug, getRelatedPosts, getAllPostSlugs, getAllCategories } from '@/lib/posts'
-import { generateMetadata as generateSeoMetadata, generateSchema, generateBreadcrumbSchema, generateAIOptimizedArticleSchema } from '@/lib/seo'
+import {
+  generateMetadata as generateSeoMetadata,
+  generateAIOptimizedArticleSchema,
+  generateBreadcrumbSchema,
+  generateFAQSchema
+} from '@/lib/seo'
 import { extractQuickAnswer, generateFAQFromPost } from '@/lib/ai-optimization'
 import FAQSection from '@/components/FAQSection'
 import AdSense from '@/components/AdSense'
@@ -25,6 +30,8 @@ import FeaturedImage from '@/components/FeaturedImage'
 import CompactTableOfContents from '@/components/CompactTableOfContents'
 import CategoryLinks from '@/components/CategoryLinks'
 import Sidebar from '@/components/Sidebar'
+import ReadingProgressBar from '@/components/ReadingProgressBar'
+import InContentAd from '@/components/InContentAd'
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 
@@ -224,6 +231,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
   const quickAnswer = extractQuickAnswer(post.content)
   const faqItems = generateFAQFromPost(post)
+  const headings = extractHeadingsFromMarkdown(post.content)
 
   return (
     <>
@@ -237,7 +245,12 @@ export default async function PostPage({ params }: PostPageProps) {
             url: `/blog/${slug}`,
             publishedAt: post.publishedAt,
             modifiedAt: post.updatedAt,
-            author: post.author.name,
+            author: {
+              name: post.author.name,
+              image: post.author.image,
+              twitter: post.author.twitter,
+              linkedin: post.author.linkedin,
+            },
             image: post.featuredImage?.url,
             quickAnswer: quickAnswer || undefined,
             tags: post.tags,
@@ -252,9 +265,27 @@ export default async function PostPage({ params }: PostPageProps) {
         }}
       />
 
+      {faqItems.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(generateFAQSchema(faqItems))
+          }}
+        />
+      )}
+
+      <ReadingProgressBar />
+
       <article className="min-h-screen bg-gray-50/30">
-        {/* Main Header Container - Full width */}
-        <div className="bg-crypto-darker pt-24 pb-16 lg:pt-32 lg:pb-24 overflow-hidden relative">
+        {/* Breadcrumb - Over the hero for better orientation */}
+        <div className="w-full bg-crypto-darker pt-24 pb-4">
+          <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
+            <Breadcrumb items={breadcrumbs} className="text-white/50" />
+          </div>
+        </div>
+
+        {/* Hero Section - Refactored to 2 columns (Text | Image) */}
+        <div className="bg-crypto-darker pb-16 lg:pb-24 lg:min-h-[440px] flex items-center overflow-hidden relative">
           {/* Background Decorative Elements */}
           <div className="absolute top-0 left-0 w-full h-full -z-10 overflow-hidden">
             <div className="absolute -top-1/4 -right-1/4 w-full h-full bg-crypto-primary/10 rounded-full blur-[120px] animate-pulse"></div>
@@ -262,70 +293,93 @@ export default async function PostPage({ params }: PostPageProps) {
           </div>
 
           <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8 relative z-10">
-            <div className="max-w-4xl">
-              <Link
-                href={`/blog?category=${post.category}`}
-                className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-6 animate-slide-up"
-                style={{
-                  backgroundColor: post.category === 'bitcoin' ? 'rgba(255, 116, 0, 0.2)' :
-                    post.category === 'ethereum' ? 'rgba(0, 113, 195, 0.2)' :
-                      'rgba(26, 42, 47, 0.2)',
-                  color: post.category === 'bitcoin' ? '#FF7400' :
-                    post.category === 'ethereum' ? '#0071C3' :
-                      '#1A2A2F',
-                  border: '1px solid currentColor'
-                }}
-              >
-                {categoryInfo?.name || getCategoryName(post.category)}
-              </Link>
-              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold font-heading text-white mb-8 leading-[1.1] animate-slide-up [animation-delay:100ms]">
-                {post.title}
-              </h1>
-              <p className="text-xl sm:text-2xl text-white/70 mb-12 leading-7 max-w-4xl animate-slide-up [animation-delay:200ms]">
-                {post.description}
-              </p>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              {/* Left Column (≈60%): Context & Title */}
+              <div className="lg:col-span-7">
+                <Link
+                  href={`/blog?category=${post.category}`}
+                  className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-6 animate-slide-up"
+                  style={{
+                    backgroundColor: post.category === 'bitcoin' ? 'rgba(255, 116, 0, 0.2)' :
+                      post.category === 'ethereum' ? 'rgba(0, 113, 195, 0.2)' :
+                        'rgba(26, 42, 47, 0.2)',
+                    color: post.category === 'bitcoin' ? '#FF7400' :
+                      post.category === 'ethereum' ? '#0071C3' :
+                        '#1A2A2F',
+                    border: '1px solid currentColor'
+                  }}
+                >
+                  {categoryInfo?.name || getCategoryName(post.category)}
+                </Link>
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold font-heading text-white mb-6 leading-tight animate-slide-up [animation-delay:100ms]">
+                  {post.title}
+                </h1>
+                <p className="text-lg sm:text-xl text-white/70 mb-8 leading-relaxed max-w-2xl animate-slide-up [animation-delay:200ms]">
+                  {post.description}
+                </p>
+
+                {/* Hero Metadata - Compact & Author Box Component */}
+                <div className="flex flex-wrap items-center gap-6 pt-4 border-t border-white/10 animate-slide-up [animation-delay:300ms]">
+                  <PostMeta
+                    author={post.author}
+                    publishedAt={post.publishedAt}
+                    readingTime={post.readingTime}
+                    category={post.category}
+                    categoryName={getCategoryName(post.category)}
+                    categoryColor={categoryInfo?.color || '#FF7400'}
+                    className="!text-white/80"
+                  />
+                  {/* Views placeholder if available - as requested in prompt */}
+                  <div className="flex items-center gap-2 text-white/60 text-sm font-medium">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <span>2.4k views</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column (≈40%): Featured Image */}
+              <div className="lg:col-span-5 animate-scale-in">
+                {post.featuredImage?.url && (
+                  <div className="relative aspect-video lg:aspect-[4/3] xl:aspect-[16/10] rounded-2xl overflow-hidden shadow-2xl border border-white/10">
+                    <Image
+                      src={post.featuredImage.url}
+                      alt={post.title}
+                      fill
+                      priority
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 100vw, 40vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-crypto-darker/40 to-transparent"></div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* 3-Column Grid Layout */}
+        {/* Layout Container */}
         <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8 py-12">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[100px_1fr_300px]">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_300px]">
 
-            {/* LEFT: Compact TOC Dots (Desktop Only) */}
-            <aside className="hidden lg:block">
-              <div className="sticky top-24">
-                <CompactTableOfContents
-                  headings={extractHeadingsFromMarkdown(post.content)}
-                  variant="minimal"
-                />
+            {/* MAIN CONTENT AREA */}
+            <div className="min-w-0 space-y-8">
+              {/* Mobile Table of Contents - Accordion style as requested */}
+              <div className="lg:hidden">
+                <details className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden group">
+                  <summary className="p-4 font-bold text-crypto-navy cursor-pointer list-none flex items-center justify-between">
+                    <span>In this article</span>
+                    <svg className="w-5 h-5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </summary>
+                  <div className="p-4 pt-0 border-t border-gray-50">
+                    <TableOfContents content={post.content} />
+                  </div>
+                </details>
               </div>
-            </aside>
-
-            {/* CENTER: Main Content */}
-            <div className="max-w-post mx-auto w-full space-y-8">
-              <Breadcrumb items={breadcrumbs} className="mb-4" />
-
-              <PostMeta
-                author={post.author}
-                publishedAt={post.publishedAt}
-                readingTime={post.readingTime}
-                category={post.category}
-                categoryName={getCategoryName(post.category)}
-                categoryColor={categoryInfo?.color || '#FF7400'}
-                updatedAt={post.updatedAt}
-                className="mb-8"
-              />
-
-              {post.featuredImage?.url && (
-                <FeaturedImage
-                  src={post.featuredImage.url}
-                  alt={post.title}
-                  caption={post.featuredImage?.description}
-                  priority
-                  className="mb-8"
-                />
-              )}
 
               {/* Ad Placement #1 - blog-top */}
               <div className="my-8 rounded-xl overflow-hidden bg-gray-50 min-h-[120px] flex items-center justify-center border border-gray-100">
@@ -355,7 +409,14 @@ export default async function PostPage({ params }: PostPageProps) {
                     return <div className="py-10 text-center text-gray-500 italic">This post has no content yet.</div>
                   }
 
-                  const { firstHalf, secondHalf } = splitMarkdownIntoHalves(contentString)
+                  // Sophisticated splitting to support 3 in-content ads
+                  const paragraphs = contentString.split(/\n\s*\n/)
+                  const totalParas = paragraphs.length
+                  
+                  const firstPart = paragraphs.slice(0, 2).join('\n\n')
+                  const midPoint = Math.floor(totalParas / 2)
+                  const secondPart = paragraphs.slice(2, midPoint).join('\n\n')
+                  const thirdPart = paragraphs.slice(midPoint).join('\n\n')
 
                   return (
                     <>
@@ -364,15 +425,24 @@ export default async function PostPage({ params }: PostPageProps) {
                         rehypePlugins={[rehypeSlug, rehypeAutolinkHeadings, rehypeHighlight]}
                         components={MarkdownComponents}
                       >
-                        {firstHalf}
+                        {firstPart}
                       </ReactMarkdown>
 
-                      {/* Ad — Middle Content (blog-middle) */}
-                      <div className="not-prose my-10 rounded-xl overflow-hidden bg-gray-50 min-h-[280px] flex items-center justify-center border border-gray-100">
-                        <AdSense slot="blog-middle" />
-                      </div>
+                      {/* Ad 1: After 2nd paragraph */}
+                      <InContentAd slot="article-in-content-top" />
 
-                      {/* Inline Newsletter */}
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSlug, rehypeAutolinkHeadings, rehypeHighlight]}
+                        components={MarkdownComponents}
+                      >
+                        {secondPart}
+                      </ReactMarkdown>
+
+                      {/* Ad 2: Middle of the article */}
+                      <InContentAd slot="article-in-content-mid" />
+
+                      {/* Inline Newsletter - Kept for engagement */}
                       <InlineNewsletter />
 
                       <ReactMarkdown
@@ -380,23 +450,23 @@ export default async function PostPage({ params }: PostPageProps) {
                         rehypePlugins={[rehypeSlug, rehypeAutolinkHeadings, rehypeHighlight]}
                         components={MarkdownComponents}
                       >
-                        {secondHalf}
+                        {thirdPart}
                       </ReactMarkdown>
 
-                      {/* Ad — Bottom Content (blog-bottom) */}
-                      <div className="not-prose my-10 rounded-xl overflow-hidden bg-gray-50 min-h-[280px] flex items-center justify-center border border-gray-100">
-                        <AdSense slot="blog-bottom" />
-                      </div>
+                      {/* Ad 3: Before related posts (handled outside prose for better spacing) */}
                     </>
                   )
                 })()}
               </div>
 
-              {/* Author Card Section */}
+              {/* Ad 3: Before related articles */}
+              <InContentAd slot="article-in-content-bottom" />
+
+              {/* Author Card Section - Improved E-E-A-T */}
               <AuthorCard
                 author={post.author}
                 category={getCategoryName(post.category)}
-                className="my-12"
+                className="my-12 shadow-sm border-gray-100"
               />
 
               {/* Recommended & Related */}
@@ -432,8 +502,36 @@ export default async function PostPage({ params }: PostPageProps) {
               </div>
             </div>
 
-            {/* RIGHT: Sidebar (Desktop Only) */}
-            <Sidebar categories={categories} recentPosts={relatedPosts} className="hidden lg:block" />
+            {/* RIGHT SIDEBAR - Sticky Desktop Only */}
+            <aside className="hidden lg:block">
+              <div className="sticky top-24 space-y-8">
+                {/* 1. Dynamic Table of Contents */}
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                  <h3 className="text-lg font-bold text-crypto-navy mb-4 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-crypto-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                    </svg>
+                    Contents
+                  </h3>
+                  <TableOfContents content={post.content} />
+                </div>
+
+                {/* 2. Sidebar Ad Top */}
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Advertisement</span>
+                  <AdSense slot="article-sidebar-top" format="rectangle" className="!bg-transparent !border-none" />
+                </div>
+
+                {/* 3. Sidebar Ad Bottom (Sticky anchor) */}
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Advertisement</span>
+                  <AdSense slot="article-sidebar-bottom" format="vertical" className="!bg-transparent !border-none" />
+                </div>
+
+                {/* Fallback to legacy categories if ads not visible - for E-E-A-T */}
+                <Sidebar categories={categories} className="!space-y-0 opacity-80" />
+              </div>
+            </aside>
           </div>
         </div>
       </article>

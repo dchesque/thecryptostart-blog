@@ -42,6 +42,8 @@ export interface Author {
   image?: string
   /** Twitter handle (without @) */
   twitter?: string
+  /** LinkedIn profile URL */
+  linkedin?: string
 }
 
 /**
