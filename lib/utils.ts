@@ -10,11 +10,6 @@ export function calculateReadingTime(text: string): number {
   return Math.ceil(words / 200) // 200 words per minute
 }
 
-export function calculateReadingTime(text: string): number {
-  const words = text.trim().split(/\s+/).filter(Boolean).length
-  return Math.ceil(words / 200) // 200 words per minute
-}
-
 export function formatDate(date: string): string {
   return new Date(date).toLocaleDateString('en-US', {
     year: 'numeric',
