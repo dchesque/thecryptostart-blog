@@ -112,6 +112,9 @@ export const ADSENSE_SLOTS = {
   'homepage-trending-ad': 'xxxxxxxxxxxx',
   'homepage-faq-ad': 'xxxxxxxxxxxx',
   'homepage-newsletter-top': 'xxxxxxxxxxxx',
+  'homepage-leaderboard': 'xxxxxxxxxxxx',
+  'homepage-in-content': 'xxxxxxxxxxxx',
+  'homepage-sidebar': 'xxxxxxxxxxxx',
   // Global
   'header-ad': 'xxxxxxxxxxxx',
   'footer-ad': 'xxxxxxxxxxxx',

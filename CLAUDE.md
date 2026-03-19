@@ -65,7 +65,7 @@ For Docker: `docker-compose up`
 | **SEO/Perf** | Metadata API, Schema.org, Sitemap | next-seo patterns, Core Web Vitals optimized |
 
 - **Pages**: Home (`/`), Blog (`/blog`), Post (`/blog/[slug]`), Admin (`/admin`), About (`/about`), Login (`/login`)
-- **Key Libs**: `lib/posts.ts` (Data layer), `lib/seo.ts` (structured data), `lib/permissions.ts` (RBAC)
+- **Key Libs**: `lib/posts.ts` (Data layer), `lib/seo.ts` (structured data), `lib/permissions.ts` (RBAC), `components/GoogleCMP.tsx` (Privacy/Consent Mode v2)
 - **Middleware**: Auth guards, rate limiting (`middleware.ts`)
 
 See [Architecture Notes](./architecture.md) for diagrams and ADRs.

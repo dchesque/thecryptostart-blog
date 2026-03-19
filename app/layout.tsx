@@ -6,6 +6,7 @@ import { PublicShell } from '@/components/PublicShell'
 import { SITE_CONFIG } from '@/lib/constants'
 import { Montserrat, Open_Sans } from 'next/font/google'
 import { AdSenseScript } from '@/components/AdSense'
+import GoogleCMP from '@/components/GoogleCMP'
 import { WebVitals } from '@/components/WebVitals'
 import '@/lib/env' // Validate required environment variables at startup
 
@@ -131,6 +132,7 @@ export default function RootLayout({
             }),
           }}
         />
+        <GoogleCMP />
         <AdSenseScript />
       </head>
 
