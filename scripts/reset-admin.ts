@@ -10,9 +10,15 @@ const prisma = new PrismaClient()
 
 // CONFIGURAÇÃO DO RESET
 const ADMIN_EMAIL = 'admin@thecryptostart.com'
-const NEW_PASSWORD = 'admin_secure_2026' // ⚠️ Mude após o primeiro login no painel!
+const NEW_PASSWORD = process.env.RESET_PASSWORD
 
 async function main() {
+    if (!NEW_PASSWORD) {
+        console.error('❌ ERRO: Defina a variável de ambiente RESET_PASSWORD antes de rodar o script.')
+        console.log('Exemplo: RESET_PASSWORD=minhasenha123 npx ts-node scripts/reset-admin.ts')
+        process.exit(1)
+    }
+
     console.log('🛡️ Iniciando reset de senha administrativa...')
 
     const hashedPassword = await hash(NEW_PASSWORD, 12)
