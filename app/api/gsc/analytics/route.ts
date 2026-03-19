@@ -23,7 +23,25 @@ export async function GET() {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        const gsc = createGSCClient()
+        // Try/catch separado para inicialização do cliente GSC.
+        // Erros de credencial retornam 503 (serviço indisponível) com dica clara,
+        // não 500 genérico que dificulta o diagnóstico.
+        let gsc
+        try {
+            gsc = createGSCClient()
+        } catch (credError) {
+            const message = credError instanceof Error ? credError.message : 'Credenciais GSC inválidas ou ausentes'
+            logError({ method: 'GET', path: PATH, error: credError })
+            return NextResponse.json(
+                {
+                    error: 'GSC credentials not configured',
+                    message,
+                    hint: 'Verifique GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_PRIVATE_KEY e GOOGLE_CLOUD_PROJECT_ID no EasyPanel. Use /api/gsc/health para diagnóstico detalhado.',
+                },
+                { status: 503 }
+            )
+        }
+
         const analytics = await gsc.getAnalytics()
 
         const response = {

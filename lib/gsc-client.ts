@@ -1,6 +1,17 @@
 /**
  * Google Search Console API Client
  * Conecta com GSC usando Service Account
+ *
+ * IMPORTANTE — deploy Docker/EasyPanel:
+ * Configure GOOGLE_PRIVATE_KEY no EasyPanel de UMA das formas:
+ *
+ * Opção A (recomendada): usar \n como texto literal no valor da variável
+ *   GOOGLE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n
+ *
+ * Opção B: copiar a chave com quebras de linha reais (alguns painéis aceitam)
+ *
+ * ⚠️ NÃO use aspas duplas ao redor do valor no EasyPanel.
+ * O código aplica .replace(/\\n/g, '\n') automaticamente.
  */
 
 import { google } from 'googleapis'
@@ -38,13 +49,37 @@ export class GSCClient {
     constructor(siteUrl: string) {
         this.siteUrl = siteUrl
 
-        // Usar credentials do Google Cloud via variáveis de ambiente
+        // Validar variáveis obrigatórias antes de instanciar o cliente
+        if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL) {
+            throw new Error('[GSCClient] GOOGLE_SERVICE_ACCOUNT_EMAIL não configurado')
+        }
+        if (!process.env.GOOGLE_PRIVATE_KEY) {
+            throw new Error('[GSCClient] GOOGLE_PRIVATE_KEY não configurado')
+        }
+        if (!process.env.GOOGLE_CLOUD_PROJECT_ID) {
+            throw new Error('[GSCClient] GOOGLE_CLOUD_PROJECT_ID não configurado')
+        }
+
+        // Processar a private key de forma robusta para Docker/EasyPanel.
+        // O Docker/EasyPanel pode entregar a variável com escape duplo (\\n) ou
+        // com os \n já como texto literal — normalize ambos os casos.
+        const processedKey = (process.env.GOOGLE_PRIVATE_KEY)
+            .replace(/\\\\n/g, '\n') // escape triplo (raro, por segurança)
+            .replace(/\\n/g, '\n')   // escape duplo → newline real
+            .trim()
+
+        if (!processedKey.startsWith('-----BEGIN PRIVATE KEY-----')) {
+            console.error(
+                '[GSCClient] ⚠️ GOOGLE_PRIVATE_KEY parece malformada. ' +
+                'Verifique o formato no EasyPanel (veja comentário no topo deste arquivo).'
+            )
+        }
+
         const auth = new google.auth.GoogleAuth({
             projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
             credentials: {
                 client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-                // Tratar quebras de linha na private key que podem ser corrompidas no .env
-                private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+                private_key: processedKey,
             },
             scopes: ['https://www.googleapis.com/auth/webmasters.readonly'],
         })
