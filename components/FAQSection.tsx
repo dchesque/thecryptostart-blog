@@ -27,24 +27,6 @@ export default function FAQSection({
 
     return (
         <section className={`my-16 ${className}`}>
-            {/* Schema.org FAQPage JSON-LD */}
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{
-                    __html: JSON.stringify({
-                        '@context': 'https://schema.org',
-                        '@type': 'FAQPage',
-                        'mainEntity': items.map(item => ({
-                            '@type': 'Question',
-                            'name': item.question,
-                            'acceptedAnswer': {
-                                '@type': 'Answer',
-                                'text': item.answer,
-                            },
-                        })),
-                    }),
-                }}
-            />
 
             {/* Visual Design */}
             <div className="bg-white rounded-3xl p-8 lg:p-12 border border-gray-100 shadow-xl shadow-gray-200/50">

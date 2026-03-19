@@ -28,7 +28,7 @@ export function generateSlugFromTitle(title: string): string {
 }
 
 /**
- * Normalizes image URLs — handles Contentful protocol-relative URLs like //images.ctfassets.net/...
+ * Normalizes image URLs.
  * Returns a proper https:// URL or undefined if src is falsy.
  */
 function normalizeImageUrl(url: string | null | undefined): string | undefined {
@@ -38,7 +38,7 @@ function normalizeImageUrl(url: string | null | undefined): string | undefined {
 }
 
 /**
- * Transforma o post Prisma no tipo BlogPost do Blog antigo.
+ * Transforma o post Prisma no tipo BlogPost.
  */
 export function transformPrismaPost(
     post: (Post & { author: Author; category: Category })

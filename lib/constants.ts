@@ -46,7 +46,7 @@ export const BLOG_CONFIG = {
   excerptLength: 160,
   /** Average reading speed (words per minute) */
   readingSpeed: 200,
-  /** Available categories with display info (deprecated: use getAllCategories() from lib/contentful) */
+  /** Available categories with display info */
   categories: [] as const satisfies readonly CategoryConfig[],
 } as const
 
@@ -131,7 +131,7 @@ export const ADSENSE_SLOTS = {
 
 
 /**
- * Helper to get category by slug (deprecated: use categories from getAllCategories())
+ * Helper to get category by slug
  */
 export function getCategoryBySlug(slug: string): CategoryConfig | undefined {
   return (BLOG_CONFIG.categories as readonly CategoryConfig[]).find(cat => cat.slug === slug)

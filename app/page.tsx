@@ -72,7 +72,7 @@ export default async function Homepage() {
       />
 
       {/* 1. HERO SECTION (High Impact) */}
-      <section className="pt-32 pb-20 md:pt-48 md:pb-32 bg-gradient-to-r from-crypto-darker to-crypto-navy text-white relative overflow-hidden">
+      <section className="pt-24 pb-12 md:pt-32 md:pb-20 bg-gradient-to-r from-crypto-darker to-crypto-navy text-white relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 right-0 w-[1000px] h-[1000px] bg-crypto-primary/10 rounded-full blur-[160px] -mr-80 -mt-80" />
           <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-crypto-secondary/5 rounded-full blur-[120px] -ml-40 -mb-40" />

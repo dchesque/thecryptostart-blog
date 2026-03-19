@@ -138,18 +138,16 @@ export default async function AdminDashboard() {
         <div className="lg:col-span-2 space-y-6">
           <h2 className="text-lg font-bold text-gray-900">Quick Actions</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <a
-              href={`https://app.contentful.com/spaces/${process.env.NEXT_PUBLIC_CONTENTFUL_SPACE_ID}/entries?contentTypeId=blogPost`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/admin/posts/new"
               className="p-6 bg-white border border-gray-100 rounded-2xl hover:border-blue-500 hover:shadow-lg transition-all group text-left"
             >
               <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                 <Plus size={20} />
               </div>
               <h3 className="font-bold text-gray-900 group-hover:text-blue-600">New Post</h3>
-              <p className="text-xs text-gray-500 mt-1">Create content in Contentful</p>
-            </a>
+              <p className="text-xs text-gray-500 mt-1">Create new blog content</p>
+            </Link>
 
             <Link
               href="/admin/comments"

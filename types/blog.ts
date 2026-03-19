@@ -13,10 +13,10 @@ export type BlogCategory =
   | 'investing-and-strategy'
 
 /**
- * Featured image from Contentful Assets
+ * Featured image for blog post
  */
 export interface FeaturedImage {
-  /** Full URL to the image (Contentful CDN) */
+  /** Full URL to the image */
   url: string
   /** Image title/alt text */
   title: string
@@ -48,10 +48,10 @@ export interface Author {
 
 /**
  * Main BlogPost interface
- * Represents a single blog article from Contentful
+ * Represents a single blog article
  */
 export interface BlogPost {
-  /** Contentful entry ID */
+  /** Unique entry ID */
   id: string
   /** Post title */
   title: string

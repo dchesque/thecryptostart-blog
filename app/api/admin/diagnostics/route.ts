@@ -12,8 +12,18 @@ import { prisma } from '@/lib/prisma'
 export async function GET() {
     try {
         const session = await auth()
-        if (!session?.user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        
+        // Suporte a API Key para diagnóstico via terminal/browser externo
+        const { searchParams } = new URL(NextResponse.next().url)
+        const apiKeyParam = searchParams.get('key')
+        const apiKeyHeader = NextResponse.next().headers.get('x-api-key')
+        const isValidApiKey = (apiKeyParam === process.env.ADMIN_API_KEY) || (apiKeyHeader === process.env.ADMIN_API_KEY)
+
+        if (!session?.user && !isValidApiKey) {
+            return NextResponse.json({ 
+                error: 'Unauthorized', 
+                message: 'Você precisa estar logado como admin ou fornecer a ADMIN_API_KEY via header x-api-key ou query param ?key=' 
+            }, { status: 401 })
         }
 
         // --- Diagnóstico do Banco de Dados ---

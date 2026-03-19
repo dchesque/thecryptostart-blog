@@ -84,7 +84,6 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
 /**
  * Rich text rendering options
- * Configures how Contentful rich text is rendered
  */
 function slugify(text: string): string {
   return text

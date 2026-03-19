@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.2] - 2026-03-19 — Limpeza Contentful + Hidratação + Hero
+
+### Added
+- **Auth**: Suporte a `ADMIN_API_KEY` via query param (`?key=`) ou header (`x-api-key`) nas rotas de diagnóstico e health check.
+
+### Changed
+- **UI**: Hero da homepage reduzido de `pt-48` para `pt-32` no desktop, tornando a dobra inicial mais próxima do conteúdo.
+- **Limpeza**: Remoção total do legacy do Contentful (scripts de inspeção, pasta contentful/, comentários e tipos obsoletos).
+
+### Fixed
+- **React #310**: Corrigido erro de hidratação na página do artigo (`FAQSection` injetando JSON-LD redundante em Client Component).
+
 ## [1.3.1] - 2026-03-19 — Correções Críticas: Homepage + GSC 500
 
 ### Fixed
