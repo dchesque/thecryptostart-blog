@@ -152,7 +152,6 @@ export default function RootLayout({
             // but for cleaner code we can just call it before the return.
             return null;
           })()}
-          {/* @ts-expect-error Server Component */}
           <PublicShellWrapper>
             {children}
           </PublicShellWrapper>
