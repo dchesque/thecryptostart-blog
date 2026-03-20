@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.9] - 2026-03-20
+### Fixed
+- **Homepage**: Corrigido desaparecimento dos posts na página inicial causado por redundância de conexões com o banco de dados.
+- **Performance**: Implementado `cache()` do React em `lib/posts.ts` para deduplicar queries ao Prisma em uma mesma requisição.
+- **Layout**: Simplificação do `RootLayout` removendo wrappers desnecessários e otimizando o carregamento de categorias globais.
+
+
 ## [1.3.8] - 2026-03-20
 ### Added
 - **Menus Dinâmicos**: O menu superior (Header) e o rodapé (Footer) agora são 100% dinâmicos, buscando as categorias diretamente do banco de dados Prisma em vez de usar links estáticos.

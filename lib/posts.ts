@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { BlogPost, PaginationOptions, TagOptions, SearchOptions, CategoryConfig } from '@/types/blog'
 import { Post, Author, Category } from '@prisma/client'
+import { cache } from 'react'
 
 /**
  * Funções auxiliares para cálculos e tratamento
@@ -101,9 +102,9 @@ export function transformPrismaPost(
 /**
  * API Data Layer
  */
-export async function getAllPosts(
+export const getAllPosts = cache(async (
     options?: PaginationOptions & TagOptions
-): Promise<BlogPost[]> {
+): Promise<BlogPost[]> => {
     try {
         const limit = options?.limit || 10
         const skip = options?.skip || 0
@@ -147,9 +148,9 @@ export async function getAllPosts(
         console.error('[lib/posts] Error fetching all posts:', error)
         return []
     }
-}
+})
 
-export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
+export const getPostBySlug = cache(async (slug: string): Promise<BlogPost | null> => {
     try {
         const post = await prisma.post.findUnique({
             where: { slug },
@@ -165,7 +166,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
         console.error(`[lib/posts] Error fetching post by slug (${slug}):`, error)
         return null
     }
-}
+})
 
 export async function getPostsByCategory(
     categorySlug: string,
@@ -279,7 +280,7 @@ export async function getAllPostSlugs(): Promise<string[]> {
     }
 }
 
-export async function getAllCategories(): Promise<CategoryConfig[]> {
+export const getAllCategories = cache(async (): Promise<CategoryConfig[]> => {
     try {
         const categories = await prisma.category.findMany({
             orderBy: [
@@ -299,7 +300,7 @@ export async function getAllCategories(): Promise<CategoryConfig[]> {
         console.error('[lib/posts] Error fetching all categories:', error)
         return []
     }
-}
+})
 
 export async function getTotalPostsCount(categorySlug?: string): Promise<number> {
     try {
@@ -324,7 +325,7 @@ export async function getTotalPostsCount(categorySlug?: string): Promise<number>
     }
 }
 
-export async function getFeaturedPosts(limit: number = 3): Promise<BlogPost[]> {
+export const getFeaturedPosts = cache(async (limit: number = 3): Promise<BlogPost[]> => {
     try {
         const posts = await prisma.post.findMany({
             where: {
@@ -348,7 +349,7 @@ export async function getFeaturedPosts(limit: number = 3): Promise<BlogPost[]> {
         console.error('[lib/posts] Error fetching featured posts:', error)
         return []
     }
-}
+})
 
 export async function getPostsByPillar(pillarSlug: string): Promise<BlogPost[]> {
     try {

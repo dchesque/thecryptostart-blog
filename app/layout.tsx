@@ -83,12 +83,14 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   const ga4Id = process.env.NEXT_PUBLIC_GA4_ID
+  const { getAllCategories } = await import('@/lib/posts')
+  const categories = await getAllCategories()
 
   return (
     <html lang="en-US" className="scroll-smooth">
@@ -147,14 +149,9 @@ export default function RootLayout({
           </a>
 
           <WebVitals />
-          {(() => {
-            // Note: We use a sync-like await inside the layout as it is a Server Component
-            // but for cleaner code we can just call it before the return.
-            return null;
-          })()}
-          <PublicShellWrapper>
+          <PublicShell categories={categories}>
             {children}
-          </PublicShellWrapper>
+          </PublicShell>
         </AuthProvider>
 
         {/* Google Analytics 4 */}
@@ -181,10 +178,4 @@ export default function RootLayout({
       </body>
     </html>
   )
-}
-
-async function PublicShellWrapper({ children }: { children: React.ReactNode }) {
-  const { getAllCategories } = await import('@/lib/posts')
-  const categories = await getAllCategories()
-  return <PublicShell categories={categories}>{children}</PublicShell>
 }
