@@ -13,8 +13,10 @@ import AdSense from '@/components/AdSense'
 import { SITE_CONFIG, CACHE_CONFIG } from '@/lib/constants'
 import { generateWebsiteSchema, generateOrganizationSchema } from '@/lib/seo'
 
-// ISR: Dynamic revalidation from config (Hardcoded for Next.js build optimization)
-export const revalidate = 3600
+import { unstable_noStore as noStore } from 'next/cache'
+
+// Always fetch fresh data in production for debugging
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: `Crypto for Beginners — Bitcoin, Ethereum & DeFi Guides | ${SITE_CONFIG.name}`,
@@ -22,6 +24,7 @@ export const metadata: Metadata = {
 }
 
 export default async function Homepage() {
+  noStore()
   const [allPosts, categories] = await Promise.all([
     getAllPosts({ limit: 20 }),
     getAllCategories(),
