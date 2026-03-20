@@ -147,10 +147,15 @@ export default function RootLayout({
           </a>
 
           <WebVitals />
-
-          <PublicShell>
+          {(() => {
+            // Note: We use a sync-like await inside the layout as it is a Server Component
+            // but for cleaner code we can just call it before the return.
+            return null;
+          })()}
+          {/* @ts-expect-error Server Component */}
+          <PublicShellWrapper>
             {children}
-          </PublicShell>
+          </PublicShellWrapper>
         </AuthProvider>
 
         {/* Google Analytics 4 */}
@@ -177,4 +182,10 @@ export default function RootLayout({
       </body>
     </html>
   )
+}
+
+async function PublicShellWrapper({ children }: { children: React.ReactNode }) {
+  const { getAllCategories } = await import('@/lib/posts')
+  const categories = await getAllCategories()
+  return <PublicShell categories={categories}>{children}</PublicShell>
 }

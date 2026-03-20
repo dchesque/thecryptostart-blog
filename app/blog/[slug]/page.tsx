@@ -273,8 +273,6 @@ export default async function PostPage({ params }: PostPageProps) {
         />
       )}
 
-      <ReadingProgressBar />
-
       <article className="min-h-screen bg-gray-50/30">
         {/* Breadcrumb - Over the hero for better orientation */}
         <div className="w-full bg-crypto-darker pt-24 pb-4">

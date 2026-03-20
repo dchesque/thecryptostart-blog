@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { SITE_CONFIG } from '@/lib/constants'
+import { CategoryConfig } from '@/types/blog'
 
-export default function Footer() {
+export default function Footer({ categories = [] }: { categories?: CategoryConfig[] }) {
   return (
     <footer className="bg-crypto-navy border-t border-white/10 text-white">
       <div className="max-w-7xl mx-auto px-8 py-12">
@@ -28,9 +29,21 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4 text-crypto-primary">Categories</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/blog?category=bitcoin" className="text-white/80 hover:text-crypto-primary transition">Bitcoin</Link></li>
-              <li><Link href="/blog?category=ethereum" className="text-white/80 hover:text-crypto-primary transition">Ethereum</Link></li>
-              <li><Link href="/blog?category=crypto-security" className="text-white/80 hover:text-crypto-primary transition">Security</Link></li>
+              {categories.length > 0 ? (
+                categories.map((cat) => (
+                  <li key={cat.slug}>
+                    <Link href={`/blog?category=${cat.slug}`} className="text-white/80 hover:text-crypto-primary transition">
+                      {cat.name}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                <>
+                  <li><Link href="/blog?category=bitcoin" className="text-white/80 hover:text-crypto-primary transition">Bitcoin</Link></li>
+                  <li><Link href="/blog?category=ethereum" className="text-white/80 hover:text-crypto-primary transition">Ethereum</Link></li>
+                  <li><Link href="/blog?category=crypto-security" className="text-white/80 hover:text-crypto-primary transition">Security</Link></li>
+                </>
+              )}
             </ul>
           </div>
 

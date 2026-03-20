@@ -228,6 +228,18 @@ model SpamLog {
   @@index([ipAddress])
 }
 
+model SystemLog {
+  id        String   @id @default(cuid())
+  level     String   // INFO, WARN, ERROR
+  source    String   // Ex: "Auth", "GSC", "PostAPI"
+  message   String   @db.Text
+  data      Json?    // Detalhes adicionais (opcional)
+  createdAt DateTime @default(now())
+
+  @@index([level])
+  @@index([source])
+}
+
 enum CommentStatus {
   PENDING
   APPROVED

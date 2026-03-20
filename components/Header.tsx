@@ -1,10 +1,8 @@
-'use client'
-
-import Link from 'next/link'
 import { useState } from 'react'
 import { SITE_CONFIG } from '@/lib/constants'
+import { CategoryConfig } from '@/types/blog'
 
-export default function Header() {
+export default function Header({ categories = [] }: { categories?: CategoryConfig[] }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
@@ -20,18 +18,26 @@ export default function Header() {
 
         {/* Desktop Nav */}
         <div className="hidden lg:flex items-center space-x-10">
-          <Link href="/blog?category=bitcoin" className="text-crypto-charcoal hover:text-crypto-primary font-bold text-sm uppercase tracking-widest transition-all">
-            Bitcoin
-          </Link>
-          <Link href="/blog?category=ethereum" className="text-crypto-charcoal hover:text-crypto-primary font-bold text-sm uppercase tracking-widest transition-all">
-            Ethereum
-          </Link>
-          <Link href="/blog?category=defi" className="text-crypto-charcoal hover:text-crypto-primary font-bold text-sm uppercase tracking-widest transition-all">
-            DeFi
-          </Link>
-          <Link href="/blog?category=crypto-security" className="text-crypto-charcoal hover:text-crypto-primary font-bold text-sm uppercase tracking-widest transition-all">
-            Security
-          </Link>
+          {categories.slice(0, 4).length > 0 ? (
+            categories.slice(0, 4).map((cat) => (
+              <Link 
+                key={cat.slug}
+                href={`/blog?category=${cat.slug}`} 
+                className="text-crypto-charcoal hover:text-crypto-primary font-bold text-sm uppercase tracking-widest transition-all"
+              >
+                {cat.name}
+              </Link>
+            ))
+          ) : (
+            <>
+              <Link href="/blog?category=bitcoin" className="text-crypto-charcoal hover:text-crypto-primary font-bold text-sm uppercase tracking-widest transition-all">
+                Bitcoin
+              </Link>
+              <Link href="/blog?category=ethereum" className="text-crypto-charcoal hover:text-crypto-primary font-bold text-sm uppercase tracking-widest transition-all">
+                Ethereum
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Search & Subscribe */}
@@ -68,8 +74,17 @@ export default function Header() {
       {mobileMenuOpen && (
         <div className="absolute top-full left-0 right-0 bg-white border-b border-gray-100 p-4 space-y-4 md:hidden animate-fade-in shadow-lg">
           <Link href="/blog" className="block text-crypto-charcoal hover:text-crypto-primary py-2 font-medium">
-            Blog
+            All Articles
           </Link>
+          {categories.map((cat) => (
+            <Link 
+              key={cat.slug}
+              href={`/blog?category=${cat.slug}`} 
+              className="block text-crypto-charcoal hover:text-crypto-primary py-2 font-medium"
+            >
+              {cat.name}
+            </Link>
+          ))}
           <Link href="/about" className="block text-crypto-charcoal hover:text-crypto-primary py-2 font-medium">
             About
           </Link>

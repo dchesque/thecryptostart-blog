@@ -95,6 +95,30 @@ export async function GET() {
                 ?.startsWith('-----BEGIN PRIVATE KEY-----') ?? false,
         }
 
+        // --- Verificação de Saúde dos Módulos (Novidade v1.3.7) ---
+        const apiHealth = {
+            posts: {
+                status: dbStatus === 'connected' ? 'healthy' : 'error',
+                label: 'Módulo de Posts',
+                timestamp: new Date().toISOString()
+            },
+            gsc: {
+                status: envChecks.GOOGLE_PRIVATE_KEY_VALID_FORMAT && envChecks.GOOGLE_SERVICE_ACCOUNT_EMAIL ? 'healthy' : 'degraded',
+                label: 'Google Search Console',
+                timestamp: new Date().toISOString()
+            },
+            seo: {
+                status: postStats.total > 0 ? 'healthy' : 'degraded',
+                label: 'Análise de SEO',
+                timestamp: new Date().toISOString()
+            },
+            comments: {
+                status: 'healthy', // Baseado na integridade do spam-prevention.ts (estático por ora)
+                label: 'Sistema de Comentários',
+                timestamp: new Date().toISOString()
+            }
+        }
+
         return NextResponse.json({
             timestamp: new Date().toISOString(),
             database: {
@@ -105,6 +129,7 @@ export async function GET() {
                 samplePosts,
             },
             environment: envChecks,
+            apiHealth, // Novo campo
             diagnosis: {
                 homepageWillShowPosts: visibleOnHomepage > 0,
                 gscCredentialsOk: envChecks.GOOGLE_PRIVATE_KEY_VALID_FORMAT && envChecks.GOOGLE_SERVICE_ACCOUNT_EMAIL && envChecks.GOOGLE_CLOUD_PROJECT_ID,

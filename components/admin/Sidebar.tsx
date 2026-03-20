@@ -9,6 +9,7 @@ import {
     Bot,
     BarChart,
     Search,
+    Activity,
     ArrowLeft,
     LogOut,
     Settings,
@@ -77,6 +78,11 @@ export function AdminSidebar({ userRoles, userName, userImage }: SidebarProps) {
             href: "/admin/users",
             label: "Users",
             icon: Users,
+        });
+        links.push({
+            href: "/admin/diagnostics",
+            label: "Diagnostics & Status",
+            icon: Activity,
         });
     }
 

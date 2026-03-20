@@ -4,6 +4,7 @@
  *
  * Format: [METHOD] /path | STATUS | Xms | message
  */
+import { prisma } from './prisma'
 
 type LogLevel = 'info' | 'warn' | 'error' | 'debug'
 
@@ -38,8 +39,18 @@ export function logRequest(method: string, path: string, extra?: Record<string, 
     if (extra && Object.keys(extra).length > 0) {
         console.log(msg, extra)
     } else {
-        console.log(msg)
+        console.log(msg);
     }
+
+    // Persist to DB (asynchronous, non-blocking for the request)
+    (prisma as any).systemLog.create({
+        data: {
+            level: 'INFO',
+            source: 'API',
+            message: msg,
+            data: extra ? (extra as any) : undefined
+        }
+    }).catch((err: any) => console.error('[Logger] Failed to persist log:', err));
 }
 
 /**
@@ -47,7 +58,17 @@ export function logRequest(method: string, path: string, extra?: Record<string, 
  */
 export function logSuccess({ method, path, status = 200, durationMs, extra }: ApiLogOptions) {
     const duration = durationMs !== undefined ? ` | ${durationMs}ms` : ''
-    console.log(`${label(method, path)} ✓ ${status}${duration}`, extra ?? '')
+    const msg = `${label(method, path)} ✓ ${status}${duration}`;
+    console.log(msg, extra ?? '');
+
+    (prisma as any).systemLog.create({
+        data: {
+            level: 'INFO',
+            source: 'API',
+            message: msg,
+            data: extra ? (extra as any) : undefined
+        }
+    }).catch((err: any) => console.error('[Logger] Failed to persist log:', err));
 }
 
 /**
@@ -55,7 +76,17 @@ export function logSuccess({ method, path, status = 200, durationMs, extra }: Ap
  */
 export function logWarn({ method, path, status, extra }: ApiLogOptions) {
     const statusStr = status ? ` ${status}` : ''
-    console.warn(`${label(method, path)} ⚠${statusStr}`, extra ?? '')
+    const msg = `${label(method, path)} ⚠${statusStr}`;
+    console.warn(msg, extra ?? '');
+
+    (prisma as any).systemLog.create({
+        data: {
+            level: 'WARN',
+            source: 'API',
+            message: msg,
+            data: extra ? (extra as any) : undefined
+        }
+    }).catch((err: any) => console.error('[Logger] Failed to persist log:', err));
 }
 
 /**
@@ -63,8 +94,42 @@ export function logWarn({ method, path, status, extra }: ApiLogOptions) {
  */
 export function logError({ method, path, status = 500, error, extra }: ApiLogOptions) {
     const errStr = formatError(error)
-    console.error(`${label(method, path)} ✗ ${status} | ${errStr}`, extra ?? '')
+    const msg = `${label(method, path)} ✗ ${status} | ${errStr}`;
+    console.error(msg, extra ?? '');
+
+    (prisma as any).systemLog.create({
+        data: {
+            level: 'ERROR',
+            source: 'API',
+            message: msg,
+            data: {
+                ...(extra as any || {}),
+                error: errStr
+            }
+        }
+    }).catch((err: any) => console.error('[Logger] Failed to persist log:', err));
 }
+
+/**
+ * Objeto logger centralizado para uso em qualquer parte do sistema (incluindo middlewares).
+ */
+export const logger = {
+    info(source: string, message: string, data?: any) {
+        return (prisma as any).systemLog.create({
+            data: { level: 'INFO', source, message, data: data || undefined }
+        }).catch((err: any) => console.error('[Logger] Info failed:', err));
+    },
+    warn(source: string, message: string, data?: any) {
+        return (prisma as any).systemLog.create({
+            data: { level: 'WARN', source, message, data: data || undefined }
+        }).catch((err: any) => console.error('[Logger] Warn failed:', err));
+    },
+    error(source: string, message: string, data?: any) {
+        return (prisma as any).systemLog.create({
+            data: { level: 'ERROR', source, message, data: data || undefined }
+        }).catch((err: any) => console.error('[Logger] Error failed:', err));
+    }
+};
 
 /**
  * Creates a timer. Call start() before the operation, then done() to get elapsed ms.

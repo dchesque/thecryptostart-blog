@@ -1,6 +1,7 @@
 import { auth } from "@/auth"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { logger } from "@/lib/logger"
 
 export default auth((req) => {
   const { nextUrl, headers } = req
@@ -16,14 +17,17 @@ export default auth((req) => {
   if (isApiAdminRoute) {
     const envKeyExists = !!process.env.ADMIN_API_KEY
 
-    console.log(`[API Auth] Path: ${nextUrl.pathname}`)
-    console.log(`[API Auth] Session: ${isLoggedIn ? "YES" : "NO"}`)
-    console.log(`[API Auth] API Key received: ${apiKey ? apiKey.substring(0, 8) + "..." : "NONE"}`)
-    console.log(`[API Auth] ENV ADMIN_API_KEY defined: ${envKeyExists}`)
-    console.log(`[API Auth] API Key valid: ${isValidApiKey ? "YES" : "NO"}`)
+    const logData = {
+        session: isLoggedIn ? "YES" : "NO",
+        apiKey: apiKey ? apiKey.substring(0, 8) + "..." : "NONE",
+        envKeyExists,
+        isValidApiKey: isValidApiKey ? "YES" : "NO"
+    }
+
+    logger.info("Auth", `Access to ${nextUrl.pathname}`, logData)
 
     if (!isLoggedIn && !isValidApiKey) {
-      console.warn(`[API Auth] REJECTED — Unauthorized access to ${nextUrl.pathname}`)
+      logger.warn("Auth", `REJECTED — Unauthorized access to ${nextUrl.pathname}`, logData)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 

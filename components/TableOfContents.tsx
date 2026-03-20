@@ -76,14 +76,11 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
     setHeadings(items)
   }, [content])
 
-  if (!mounted) return null
-
   useEffect(() => {
     if (headings.length === 0) return
 
     const observer = new IntersectionObserver(
       (entries) => {
-        // Find the intersection that is most "active" (at the top of the viewport)
         const visibleHeadings = entries
           .filter(entry => entry.isIntersecting)
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
@@ -107,6 +104,8 @@ export default function TableOfContents({ content }: TableOfContentsProps) {
 
     return () => observer.disconnect()
   }, [headings])
+
+  if (!mounted) return null
 
   if (headings.length < 2) {
     return null

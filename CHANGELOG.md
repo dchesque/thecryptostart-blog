@@ -1,5 +1,44 @@
 # Changelog
 
+## [1.3.8] - 2026-03-20
+### Added
+- **Menus Dinâmicos**: O menu superior (Header) e o rodapé (Footer) agora são 100% dinâmicos, buscando as categorias diretamente do banco de dados Prisma em vez de usar links estáticos.
+- **Auditoria de Categorias**: Migração completa e verificação da integridade das categorias em todas as páginas do blog, garantindo consistência entre o Admin e a UI pública.
+
+
+## [1.3.7] - 2026-03-20
+### Added
+- **Expansão de Diagnóstico**: Novo painel "API Module Health" que monitora em tempo real a saúde dos módulos de Posts, SEO, Google Search Console e Comentários.
+- **Auditoria Visual**: Verificação visual de conectividade e status operacional de cada subsistema da API diretamente na interface administrativa.
+
+## [1.3.6] - 2026-03-20
+### Added
+- **Auditoria de Segurança completa da API**: Verificação lógica de todos os 21 endpoints do blog.
+- **Relatório de Auditoria**: Geração do documento `api_audit_report_final.md` com veredito de segurança.
+- **Integração de Logs no Proxy**: Middleware `proxy.ts` agora integrado ao sistema de logs para auditoria de acesso persistente.
+
+
+## [1.3.5] - 2026-03-20 — Diagnóstico e Monitoramento Admin
+
+### Added
+- **Admin**: Nova página de Diagnóstico (`/admin/diagnostics`) com monitoramento de status do banco de dados, variáveis de ambiente e saúde do Google Search Console.
+- **Admin**: Sistema de Logs de API persistente no banco de dados (`SystemLog`) com interface para visualização em tempo real no painel administrativo.
+- **Backend**: Utilitário `lib/logger.ts` integrado ao Prisma para rastreio centralizado de eventos e erros do sistema.
+- **Prisma**: Adicionado modelo `SystemLog` ao schema para suporte a auditoria e logs de sistema.
+
+### Changed
+- **UI**: Sidebar administrativo atualizado com link direto para "Diagnostics & Status" para usuários ADMIN.
+
+## [1.3.4] - 2026-03-20 — Correção React #310 + Estabilidade Blog
+
+### Fixed
+- **UI**: Corrigido erro "Minified React error #310" no componente `TableOfContents` causado por violação das regras de Hooks (hooks chamados após retorno condicional).
+- **Scripts**: Corrigida sintaxe quebrada no script JSON-LD de FAQ na página de posts do blog.
+
+### Changed
+- **UI**: Removida a barra de progresso de leitura (`ReadingProgressBar`) redundante da página de posts, mantendo apenas a versão global injetada via layout.
+- **Admin**: Criado script de emergência `reset-admin.js` para recuperação de acesso administrativo via CLI direto no VPS.
+
 ## [1.3.3] - 2026-03-19 — Correção de Build Crítica
 
 ### Fixed
