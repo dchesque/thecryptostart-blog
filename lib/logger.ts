@@ -5,6 +5,9 @@
  * Format: [METHOD] /path | STATUS | Xms | message
  */
 import { prisma } from './prisma'
+import { cache } from 'react'
+
+let tableMissingErrorLogged = false
 
 type LogLevel = 'info' | 'warn' | 'error' | 'debug'
 
@@ -127,7 +130,14 @@ export const logger = {
     error(source: string, message: string, data?: any) {
         return (prisma as any).systemLog.create({
             data: { level: 'ERROR', source, message, data: data || undefined }
-        }).catch((err: any) => console.error('[Logger] Error failed:', err));
+        }).catch((err: any) => {
+            if (err.code === 'P2021' && !tableMissingErrorLogged) {
+                console.error('[Logger] SystemLog table missing. Persistent logging disabled.')
+                tableMissingErrorLogged = true
+            } else if (err.code !== 'P2021') {
+                console.error('[Logger] Error failed:', err)
+            }
+        });
     }
 };
 

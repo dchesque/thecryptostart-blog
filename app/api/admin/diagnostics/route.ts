@@ -9,14 +9,14 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
         const session = await auth()
         
         // Suporte a API Key para diagnóstico via terminal/browser externo
-        const { searchParams } = new URL(NextResponse.next().url)
+        const { searchParams } = new URL(request.url)
         const apiKeyParam = searchParams.get('key')
-        const apiKeyHeader = NextResponse.next().headers.get('x-api-key')
+        const apiKeyHeader = request.headers.get('x-api-key')
         const isValidApiKey = (apiKeyParam === process.env.ADMIN_API_KEY) || (apiKeyHeader === process.env.ADMIN_API_KEY)
 
         if (!session?.user && !isValidApiKey) {
@@ -56,6 +56,14 @@ export async function GET() {
                 status: p.status,
                 publishDate: p.publishDate ? p.publishDate.toISOString() : null,
             }))
+
+            // Verifica se a tabela de logs existe
+            try {
+                await (prisma as any).systemLog.count()
+                postStats.logsTable = 1
+            } catch (e) {
+                postStats.logsTable = 0
+            }
         } catch (err) {
             dbStatus = 'error'
             dbError = err instanceof Error ? err.message : 'Erro desconhecido'

@@ -13,11 +13,17 @@ export async function GET(request: Request) {
         const limit = parseInt(searchParams.get('limit') || '50')
         const level = searchParams.get('level')
 
-        const logs = await (prisma as any).systemLog.findMany({
-            where: level ? { level } : {},
-            orderBy: { createdAt: 'desc' },
-            take: limit,
-        })
+        let logs = []
+        try {
+            logs = await (prisma as any).systemLog.findMany({
+                where: level ? { level } : {},
+                orderBy: { createdAt: 'desc' },
+                take: limit,
+            })
+        } catch (err) {
+            console.warn('[LogsAPI] SystemLog table might be missing:', err instanceof Error ? err.message : err)
+            // Retorna vazio em vez de 500 se a tabela não existir
+        }
 
         return NextResponse.json(logs)
     } catch (error) {

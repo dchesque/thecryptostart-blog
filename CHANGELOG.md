@@ -1,6 +1,12 @@
 # Changelog
 
-## [1.3.9] - 2026-03-20
+## [1.4.0] - 2026-03-20
+### Fixed
+- **APIs**: Corrigido erro 500 na rota de diagnóstico (uso indevido de NextResponse.next()).
+- **Logs**: Tratamento para a ausência da tabela `SystemLog` em produção, evitando que o sistema trave.
+- **Diagnostics**: Adicionada verificação de integridade da tabela de logs no painel administrativo.
+- **Debugging**: Adicionados logs de depuração em `lib/posts.ts` para investigar renderização de posts em produção.
+
 ### Fixed
 - **Homepage**: Corrigido desaparecimento dos posts na página inicial causado por redundância de conexões com o banco de dados.
 - **Performance**: Implementado `cache()` do React em `lib/posts.ts` para deduplicar queries ao Prisma em uma mesma requisição.
