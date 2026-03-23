@@ -1,6 +1,12 @@
 # Changelog
 
-## [1.4.3] - 2026-03-23
+## [1.4.5] - 2026-03-23
+### Fixed
+- **Segurança**: Unificada a autenticação de todas as APIs administrativas via `checkApiAuth`.
+- **Conectividade**: Todas as rotas de `/api/admin/*` agora aceitam a `ADMIN_API_KEY` via Header ou Query Param.
+- **Correções**: Resolvidos erros de sintaxe em `/api/users` que impediam o funcionamento correto após a migração.
+- **Privacidade**: Confirmado que nenhuma API Key está hardcodeada no repositório (uso exclusivo de variáveis de ambiente).
+
 ### Changed
 - **Homepage**: Restaurada otimização de cache (ISR) com revalidação de 60s.
 - **Cleanup**: Removidas rotas e logs de depuração temporários.

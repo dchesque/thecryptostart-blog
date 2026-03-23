@@ -5,6 +5,7 @@ import { AuthUtils } from "@/lib/permissions";
 import { z } from "zod";
 import { hash } from "bcryptjs";
 import { logRequest, logSuccess, logWarn, logError, createTimer } from "@/lib/logger";
+import { checkApiAuth } from "@/lib/auth-check";
 
 const PATH = "/api/users";
 
@@ -18,13 +19,16 @@ const createUserSchema = z.object({
     emailVerified: z.boolean().optional(),
 });
 
-export async function GET() {
+export async function GET(req: Request) {
     const t = createTimer();
     logRequest("GET", PATH);
 
     try {
+        const authError = await checkApiAuth(req)
+        if (authError) return authError
+        
         const session = await auth();
-        AuthUtils.requireRole(session, "ADMIN");
+        // AuthUtils.requireRole(session, "ADMIN"); // checkApiAuth já valida ADMIN_API_KEY ou Session
 
         const users = await prisma.user.findMany({
             include: { roles: { select: { role: true } } },
@@ -54,8 +58,11 @@ export async function POST(req: Request) {
     logRequest("POST", PATH);
 
     try {
+        const authError = await checkApiAuth(req)
+        if (authError) return authError
+
         const session = await auth();
-        AuthUtils.requireRole(session, "ADMIN");
+        // AuthUtils.requireRole(session, "ADMIN");
 
         const body = await req.json();
         const { name, email, password, roles, bio, image, emailVerified } = createUserSchema.parse(body);

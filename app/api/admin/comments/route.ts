@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { logRequest, logSuccess, logWarn, logError, createTimer } from '@/lib/logger'
+import { checkApiAuth } from '@/lib/auth-check'
 
 const PATH = '/api/admin/comments'
 
 export async function GET(req: NextRequest) {
+    const authError = await checkApiAuth(req)
+    if (authError) return authError
+
     const t = createTimer()
     const { searchParams } = new URL(req.url)
     const status = searchParams.get('status')

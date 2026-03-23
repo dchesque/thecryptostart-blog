@@ -8,23 +8,14 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { checkApiAuth } from '@/lib/auth-check'
 
 export async function GET(request: Request) {
     try {
-        const session = await auth()
+        const authError = await checkApiAuth(request)
+        if (authError) return authError
         
-        // Suporte a API Key para diagnóstico via terminal/browser externo
         const { searchParams } = new URL(request.url)
-        const apiKeyParam = searchParams.get('key')
-        const apiKeyHeader = request.headers.get('x-api-key')
-        const isValidApiKey = (apiKeyParam === process.env.ADMIN_API_KEY) || (apiKeyHeader === process.env.ADMIN_API_KEY)
-
-        if (!session?.user && !isValidApiKey) {
-            return NextResponse.json({ 
-                error: 'Unauthorized', 
-                message: 'Você precisa estar logado como admin ou fornecer a ADMIN_API_KEY via header x-api-key ou query param ?key=' 
-            }, { status: 401 })
-        }
 
         // --- Diagnóstico do Banco de Dados ---
         let dbStatus = 'unknown'

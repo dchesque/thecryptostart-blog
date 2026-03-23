@@ -3,8 +3,12 @@ import { prisma } from '@/lib/prisma'
 import { authorSchema } from '@/lib/validations/admin'
 import { handleApiError } from '@/lib/api-error'
 import { z } from 'zod'
+import { checkApiAuth } from '@/lib/auth-check'
 
 export async function GET(req: NextRequest) {
+    const authError = await checkApiAuth(req)
+    if (authError) return authError
+
     const { searchParams } = new URL(req.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
@@ -39,6 +43,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+    const authError = await checkApiAuth(req)
+    if (authError) return authError
+
     try {
         const body = await req.json()
         const data = authorSchema.parse(body)

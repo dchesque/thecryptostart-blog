@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { checkApiAuth } from '@/lib/auth-check'
 
 export async function GET(request: Request) {
     try {
-        const session = await auth()
-        if (!session?.user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-        }
+        const authError = await checkApiAuth(request)
+        if (authError) return authError
 
         const { searchParams } = new URL(request.url)
         const limit = parseInt(searchParams.get('limit') || '50')
