@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.5.0] - 2026-03-23
+### Added
+- **Organização**: Criadas pastas `docs/technical` e `docs/archive` para melhor estrutura do projeto.
+- **Documentação**: Novo `README.md` centralizado e `API_AUTOMATION_GUIDE.md` atualizado com autenticação unificada (v1.4.5).
+
+### Removed
+- **Contentful**: Remoção completa de todos os arquivos, scripts e configurações legadas do Contentful.
+- **Legado**: Removidos scripts de inspeção (`scripts/deep-inspect*`) e documentos obsoletos.
+
+
 ## [1.4.5] - 2026-03-23
 ### Fixed
 - **Segurança**: Unificada a autenticação de todas as APIs administrativas via `checkApiAuth`.

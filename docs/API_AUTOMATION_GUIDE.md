@@ -6,28 +6,26 @@ Este guia descreve como integrar ferramentas externas (Python, n8n, Make, Script
 
 ## 🛡️ Autenticação e Segurança
 
-### 1. API Key (Endpoints `/api/admin/*`)
-Endpoints sob o prefixo `/api/admin/*` aceitam autenticação via **API Key** OU **sessão NextAuth**.
+### 1. API Key (Endpoints `/api/admin/*` e `/api/users`)
+Endpoints administrativos aceitam autenticação unificada via **API Key** OU **sessão NextAuth**.
 
-- **Header**: `X-API-Key`
-- **Chave**: Valor da variável de ambiente `ADMIN_API_KEY` configurada no servidor
+- **Header**: `x-api-key` (Sugerido) ou `X-API-Key`
+- **Chave**: Valor da variável de ambiente `ADMIN_API_KEY` configurada no servidor.
+- **Query Param**: `?key=SUA_CHAVE` (Também aceito para testes rápidos).
 - **Base URL**: `https://thecryptostart.com`
 
-> ⚠️ **EasyPanel/Docker**: A variável `ADMIN_API_KEY` deve estar configurada como variável de ambiente de **runtime** (EasyPanel → Environment Variables), não apenas como build argument. No modo `standalone` do Next.js, variáveis server-side precisam estar disponíveis em runtime.
+> 🛡️ **Segurança**: Todas as rotas administrativas utilizam o utilitário `checkApiAuth` (v1.4.5), que valida a chave contra a variável de ambiente, garantindo que nenhum segredo esteja no código.
 
-### 2. Sessão NextAuth (Endpoints `/api/users`, `/api/gsc/*`)
-Alguns endpoints **não estão sob `/api/admin/`** e por isso **não aceitam API Key**. Eles exigem sessão autenticada via NextAuth (cookies de sessão no browser). Esses endpoints só podem ser usados via painel admin no browser ou por ferramentas que mantenham a sessão.
+### 2. Tabela de Permissões Unificada
 
-| Endpoint | Autenticação | Role Necessária |
+| Endpoint | Autenticação | Role/Necessário |
 | :--- | :--- | :--- |
-| `/api/admin/*` | API Key **OU** Sessão | — |
-| `/api/users` | Sessão **apenas** | `ADMIN` |
-| `/api/users/[id]` | Sessão **apenas** | `ADMIN` |
-| `/api/gsc/analytics` | Sessão **apenas** | Qualquer usuário autenticado |
-| `/api/health` | Nenhuma (público) | — |
-| `/api/comments` (GET/POST) | Nenhuma (público) | — |
-| `/api/seo/metrics` | Nenhuma (público) | — |
-| `/api/ai-optimization/scores` | Nenhuma (público) | — |
+| `/api/admin/*` | API Key **OU** Sessão | Admin/Editor |
+| `/api/users` | API Key **OU** Sessão | Admin |
+| `/api/admin/logs` | API Key **OU** Sessão | Admin |
+| `/api/gsc/analytics` | Sessão **apenas** | Autenticado |
+| `/api/health` | Pública | — |
+| `/api/comments` (GET/POST) | Pública (Anti-spam) | — |
 
 ---
 
@@ -74,16 +72,14 @@ Alguns endpoints **não estão sob `/api/admin/`** e por isso **não aceitam API
 | `PATCH` | `/api/admin/comments/[id]` | 🔑 | Altera status (`APPROVED`, `REJECTED`, `SPAM`). |
 | `DELETE` | `/api/admin/comments/[id]` | 🔑 | Deleta comentário e suas respostas. |
 
-### 5. Usuários e Administração — 🔒 Sessão Apenas (ADMIN)
-
-> ⚠️ Estes endpoints **não aceitam API Key**. Exigem sessão autenticada com role `ADMIN`.
+### 5. Usuários e Administração — 🔑 API Key ou Sessão (ADMIN)
 
 | Método | Endpoint | Descrição |
 | :--- | :--- | :--- |
 | `GET` | `/api/users` | Lista usuários/administradores do sistema. |
-| `POST` | `/api/users` | Cria um novo usuário com roles. |
-| `PATCH` | `/api/users/[id]` | Atualiza um usuário existente (nome, email, roles, senha). |
-| `DELETE` | `/api/users/[id]` | Remove um usuário (não pode deletar a si mesmo). |
+| `POST` | `/api/users` | Cria um novo usuário com roles (requer senha hash no db). |
+| `PATCH` | `/api/users/[id]` | Atualiza um usuário existente. |
+| `DELETE` | `/api/users/[id]` | Remove um usuário. |
 
 ### 6. Diagnóstico — Público
 

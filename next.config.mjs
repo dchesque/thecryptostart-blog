@@ -8,10 +8,6 @@ const nextConfig = {
     // loaderFile: './lib/contentful-loader.ts',
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'images.ctfassets.net',
-      },
-      {
         // Allow any external HTTPS domain (for author avatars from any URL)
         protocol: 'https',
         hostname: '**',

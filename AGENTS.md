@@ -19,14 +19,12 @@
 - Confirm the built artefacts in `dist/` match the new source changes.
 
 ## Repository map
-- `app/` — explain what lives here and when agents should edit it.
-- `AUTH_ARCHITECTURE.md/` — explain what lives here and when agents should edit it.
-- `auth.ts/` — explain what lives here and when agents should edit it.
-- `CHANGELOG.md/` — explain what lives here and when agents should edit it.
-- `components/` — explain what lives here and when agents should edit it.
-- `CONTENTFUL_SETUP.md/` — explain what lives here and when agents should edit it.
-- `CORE_WEB_VITALS.md/` — explain what lives here and when agents should edit it.
-- `data/` — explain what lives here and when agents should edit it.
+- `app/` — Camada de rotas e componentes Next.js (App Router).
+- `AUTH_ARCHITECTURE.md/` — Detalhes da implementação do NextAuth.
+- `CHANGELOG.md/` — Registro de versões e mudanças.
+- `components/` — Componentes UI reutilizáveis (Vanilla CSS).
+- `CORE_WEB_VITALS.md/` — Estratégias de performance.
+- `data/` — Dados estáticos ou sementes de banco.
 
 ## AI Context References
 - Documentation index: `.context/docs/README.md`

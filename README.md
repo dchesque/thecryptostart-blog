@@ -159,6 +159,19 @@ The app can be deployed to any platform that supports Next.js:
 - Railway
 - Render
 
+# The Crypto Start — Blog Engine v1.5.0
+
+> Plataforma de conteúdo em Next.js 15+ com foco em SEO, performance e automação via API.
+
+## 📚 Documentação
+
+Dúvidas sobre o projeto? Consulte os novos guias:
+- [🚀 Guia de Automação via API](file:///c:/Workspace/thecryptostartblog/docs/API_AUTOMATION_GUIDE.md) — Connect Python, scripts e n8n.
+- [🛠️ Especificações Técnicas](file:///c:/Workspace/thecryptostartblog/docs/technical/) — Arquitetura e Infra.
+- [📁 Arquivo Histórico](file:///c:/Workspace/thecryptostartblog/docs/archive/) — Fases anteriores.
+
+## 🚀 Tecnologias
+
 ## Project Structure
 
 ```
