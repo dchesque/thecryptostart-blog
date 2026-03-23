@@ -143,7 +143,6 @@ export const getAllPosts = cache(async (
             skip: skip,
         })
 
-        console.log(`[lib/posts] getAllPosts: found ${posts.length} posts. Query where:`, JSON.stringify(where))
         return posts.map(transformPrismaPost)
     } catch (error) {
         console.error('[lib/posts] Error fetching all posts:', error)
@@ -290,7 +289,6 @@ export const getAllCategories = cache(async (): Promise<CategoryConfig[]> => {
             ]
         })
 
-        console.log(`[lib/posts] getAllCategories: found ${categories.length} categories.`)
         return categories.map((cat: any) => ({
             slug: cat.slug as any,
             name: cat.name,
@@ -346,7 +344,6 @@ export const getFeaturedPosts = cache(async (limit: number = 3): Promise<BlogPos
             take: limit,
         })
 
-        console.log(`[lib/posts] getFeaturedPosts: found ${posts.length} posts.`)
         return posts.map(transformPrismaPost)
     } catch (error) {
         console.error('[lib/posts] Error fetching featured posts:', error)

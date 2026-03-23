@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.3] - 2026-03-23
+### Changed
+- **Homepage**: Restaurada otimização de cache (ISR) com revalidação de 60s.
+- **Cleanup**: Removidas rotas e logs de depuração temporários.
+- **Verification**: Conexão de API validada em produção com sucesso via subagente.
+
+
 ## [1.4.0] - 2026-03-20
 ### Fixed
 - **APIs**: Corrigido erro 500 na rota de diagnóstico (uso indevido de NextResponse.next()).
