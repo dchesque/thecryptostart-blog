@@ -5,13 +5,12 @@ import { ArrowRight } from 'lucide-react'
 import { getAllPosts, getAllCategories } from '@/lib/posts'
 import FeaturedArticleCard from '@/components/FeaturedArticleCard'
 import BlogCardCompact from '@/components/BlogCardCompact'
-import CategoryCard from '@/components/CategoryCard'
 import TrendingList from '@/components/TrendingList'
 import FAQAccordion from '@/components/FAQAccordion'
 import NewsletterCTALarge from '@/components/NewsletterCTALarge'
 import MarketSnapshot from '@/components/MarketSnapshot'
 
-import { SITE_CONFIG } from '@/lib/constants'
+import { SITE_CONFIG, getCategoryName } from '@/lib/constants'
 import { generateWebsiteSchema, generateOrganizationSchema } from '@/lib/seo'
 
 export const revalidate = 61
@@ -24,21 +23,22 @@ export const metadata: Metadata = {
 
 export default async function Homepage() {
   const [allPosts, categories] = await Promise.all([
-    getAllPosts({ limit: 24 }),
+    getAllPosts({ limit: 30 }),
     getAllCategories(),
   ])
 
   const featured = allPosts[0]
-  const editorPicks = allPosts.slice(1, 4)
-  const latestPosts = allPosts.slice(4, 10)
-  const trending = allPosts.slice(10, 15)
+  const editorPicks = allPosts.slice(1, 5)
+  const latestPosts = allPosts.slice(5, 13)
+  const trending = allPosts.slice(13, 19)
+  const moreReads = allPosts.slice(19, 25)
 
-  // Topic hubs: 4 most populated categories with their latest 3 posts
+  // Topic hubs: up to 4 categories × 4 posts each
   const topicHubs = categories
-    .map((cat) => {
-      const items = allPosts.filter((p) => p.category === cat.slug).slice(0, 3)
-      return { category: cat, items }
-    })
+    .map((cat) => ({
+      category: cat,
+      items: allPosts.filter((p) => p.category === cat.slug).slice(0, 4),
+    }))
     .filter((hub) => hub.items.length >= 2)
     .slice(0, 4)
 
@@ -85,7 +85,7 @@ export default async function Homepage() {
       />
 
       {/* ============================================================
-       *  HERO — editorial, light, balanced
+       *  HERO — preserved (editorial, light, balanced)
        * ============================================================ */}
       <section className="border-b border-line">
         <div className="container-hub pt-16 pb-12 md:pt-24 md:pb-20">
@@ -113,21 +113,15 @@ export default async function Homepage() {
             <aside className="lg:col-span-5 lg:pl-6 lg:border-l lg:border-line">
               <div className="space-y-1.5 text-sm">
                 <div className="flex items-baseline gap-3">
-                  <span className="num font-bold text-3xl text-ink">
-                    50k+
-                  </span>
+                  <span className="num font-bold text-3xl text-ink">50k+</span>
                   <span className="text-ink-mute">readers learning every month</span>
                 </div>
                 <div className="flex items-baseline gap-3">
-                  <span className="num font-bold text-3xl text-ink">
-                    {allPosts.length}+
-                  </span>
+                  <span className="num font-bold text-3xl text-ink">{allPosts.length}+</span>
                   <span className="text-ink-mute">in-depth guides published</span>
                 </div>
                 <div className="flex items-baseline gap-3">
-                  <span className="num font-bold text-3xl text-ink">
-                    {categories.length}
-                  </span>
+                  <span className="num font-bold text-3xl text-ink">{categories.length}</span>
                   <span className="text-ink-mute">curated topic streams</span>
                 </div>
               </div>
@@ -146,177 +140,194 @@ export default async function Homepage() {
       </section>
 
       {/* ============================================================
-       *  LEAD STORY + EDITOR PICKS
+       *  FRONT PAGE — lead + editor picks + market data, all in one
+       *  dense band (was three separate sections before)
        * ============================================================ */}
       {featured && (
         <section className="border-b border-line">
-          <div className="container-hub py-16 md:py-20">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
-              <div className="lg:col-span-8">
-                <span className="eyebrow">The lead</span>
-                <div className="mt-6">
-                  <FeaturedArticleCard post={featured} />
+          <div className="container-hub py-10 md:py-12">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
+              <div className="lg:col-span-7">
+                <div className="flex items-center gap-3 mb-5">
+                  <span className="eyebrow">The lead</span>
+                  <div className="flex-1 h-px bg-line" />
                 </div>
+                <FeaturedArticleCard post={featured} />
               </div>
 
-              <aside className="lg:col-span-4 lg:pl-8 lg:border-l lg:border-line">
-                <div className="flex items-center gap-3 mb-6">
+              <aside className="lg:col-span-5 lg:pl-10 lg:border-l lg:border-line">
+                <div className="flex items-center gap-3 mb-4">
                   <span className="eyebrow-mute">Editor picks</span>
                   <div className="flex-1 h-px bg-line" />
                 </div>
-                <div className="space-y-7">
+                <ol className="divide-y divide-line">
                   {editorPicks.map((post) => (
-                    <BlogCardCompact key={post.id} post={post} variant="minimal" />
+                    <li key={post.id} className="py-4 first:pt-0 last:pb-0">
+                      <BlogCardCompact post={post} variant="horizontal" />
+                    </li>
                   ))}
-                </div>
+                </ol>
               </aside>
+            </div>
+
+            <div className="mt-10 pt-10 border-t border-line">
+              <MarketSnapshot />
             </div>
           </div>
         </section>
       )}
 
       {/* ============================================================
-       *  MARKET SNAPSHOT — finance-flavored data band
-       * ============================================================ */}
-      <section className="border-b border-line">
-        <div className="container-hub py-14 md:py-16">
-          <MarketSnapshot />
-        </div>
-      </section>
-
-      {/* ============================================================
-       *  LATEST GRID
+       *  LATEST — dense 2-col horizontal list (was 3-col card grid)
        * ============================================================ */}
       {latestPosts.length > 0 && (
         <section className="border-b border-line">
-          <div className="container-hub py-16 md:py-20">
-            <div className="flex items-end justify-between gap-6 mb-10">
-              <div className="max-w-xl">
+          <div className="container-hub py-10 md:py-12">
+            <div className="flex items-end justify-between gap-6 mb-7">
+              <div>
                 <span className="eyebrow">Latest</span>
-                <h2 className="mt-2 section-title">Fresh from the desk</h2>
-                <p className="mt-3 text-ink-mute">
-                  Just-published explainers, security checklists and market notes.
-                </p>
+                <h2 className="mt-1 section-title">Fresh from the desk</h2>
               </div>
               <Link href="/blog" className="btn-link hidden sm:inline-flex">
                 All articles <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-              {latestPosts.map((post) => (
-                <BlogCardCompact key={post.id} post={post} />
-              ))}
-            </div>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-0">
+              {latestPosts.map((post, idx) => {
+                // Top border on every item except the first row (so the
+                // 2-col grid still reads like clean horizontal rules).
+                const isTopRow = idx < 2
+                return (
+                  <li
+                    key={post.id}
+                    className={`py-5 ${isTopRow ? '' : 'border-t border-line'}`}
+                  >
+                    <BlogCardCompact post={post} variant="horizontal" />
+                  </li>
+                )
+              })}
+            </ul>
           </div>
         </section>
       )}
 
       {/* ============================================================
-       *  TOPIC HUBS — content clusters
+       *  TOPIC HUBS — 4 hubs × 4 posts each, compact list cards
        * ============================================================ */}
       {topicHubs.length > 0 && (
         <section id="topics" className="border-b border-line bg-cream">
-          <div className="container-hub py-16 md:py-20">
-            <div className="max-w-2xl mb-12">
-              <span className="eyebrow">Topic hubs</span>
-              <h2 className="mt-2 section-title">Choose a topic, go deep.</h2>
-              <p className="mt-3 text-ink-mute">
-                Each topic gathers our best work in one place — start anywhere and
-                keep reading until it clicks.
-              </p>
+          <div className="container-hub py-10 md:py-12">
+            <div className="flex items-end justify-between gap-6 mb-7">
+              <div className="max-w-xl">
+                <span className="eyebrow">Topic hubs</span>
+                <h2 className="mt-1 section-title">Choose a topic, go deep.</h2>
+              </div>
+              <Link href="/blog/clusters" className="btn-link hidden sm:inline-flex">
+                See the map <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
               {topicHubs.map(({ category, items }) => (
-                <article key={category.slug} className="bg-paper rounded-2xl border border-line p-7 md:p-8">
-                  <div className="flex items-start justify-between gap-4 mb-5">
-                    <div>
-                      <div className="flex items-center gap-2 text-2xl">
-                        <span aria-hidden>{category.icon || '✦'}</span>
-                        <h3 className="font-heading font-bold text-xl text-ink tracking-tight">
-                          {category.name}
-                        </h3>
-                      </div>
+                <article
+                  key={category.slug}
+                  className="bg-paper rounded-2xl border border-line p-5 md:p-6"
+                >
+                  <header className="flex items-center justify-between gap-3 pb-3 mb-3 border-b border-line">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span aria-hidden className="text-lg shrink-0">
+                        {category.icon || '✦'}
+                      </span>
+                      <h3 className="font-heading font-bold text-base text-ink tracking-tight truncate">
+                        {category.name || getCategoryName(category.slug)}
+                      </h3>
                     </div>
                     <Link
                       href={`/blog?category=${category.slug}`}
-                      className="text-sm font-semibold text-ink-mute hover:text-ink transition-colors whitespace-nowrap"
+                      className="text-xs font-semibold text-ink-mute hover:text-ink transition-colors whitespace-nowrap"
                     >
                       Browse →
                     </Link>
-                  </div>
+                  </header>
 
                   <ol className="divide-y divide-line">
                     {items.map((post) => (
-                      <li key={post.id} className="py-4 first:pt-0 last:pb-0">
-                        <BlogCardCompact post={post} variant="horizontal" />
+                      <li key={post.id} className="py-2.5 first:pt-0 last:pb-0">
+                        <Link href={`/blog/${post.slug}`} className="group block">
+                          <h4 className="font-heading text-[0.95rem] font-semibold leading-snug text-ink group-hover:text-accent-deep transition-colors line-clamp-2">
+                            {post.title}
+                          </h4>
+                          <div className="mt-1 num text-[11px] text-ink-mute">
+                            {post.readingTime} min read
+                          </div>
+                        </Link>
                       </li>
                     ))}
                   </ol>
                 </article>
               ))}
             </div>
-
-            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {categories.slice(0, 8).map((cat) => (
-                <CategoryCard key={cat.slug} category={cat} />
-              ))}
-            </div>
           </div>
         </section>
       )}
 
       {/* ============================================================
-       *  TRENDING
-       * ============================================================ */}
-      {trending.length > 0 && (
-        <section className="border-b border-line">
-          <div className="container-hub py-16 md:py-20">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
-              <div className="lg:col-span-7">
-                <span className="eyebrow">Trending now</span>
-                <h2 className="mt-2 section-title">What readers are reading</h2>
-                <p className="mt-3 text-ink-mute mb-10 max-w-xl">
-                  The most-read pieces this week, ranked.
-                </p>
-                <TrendingList posts={trending} limit={5} />
-              </div>
-
-              <aside className="lg:col-span-5 lg:pl-8 lg:border-l lg:border-line">
-                <div className="rounded-2xl bg-cream border border-line p-7">
-                  <span className="eyebrow">Get the Sunday brief</span>
-                  <h3 className="mt-3 font-heading text-xl font-bold text-ink leading-tight">
-                    The week, distilled into one short email.
-                  </h3>
-                  <p className="mt-3 text-ink-mute text-sm leading-relaxed">
-                    Beginner-friendly explainers and security checklists, every Sunday.
-                  </p>
-                  <Link href="#newsletter" className="mt-5 btn-primary inline-flex">
-                    Subscribe <ArrowRight className="w-4 h-4" />
-                  </Link>
-                </div>
-              </aside>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ============================================================
-       *  FAQ
+       *  TRENDING + FAQ — combined into one dense band
        * ============================================================ */}
       <section className="border-b border-line">
-        <div className="container-hub py-16 md:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            <div className="lg:col-span-4">
-              <span className="eyebrow">FAQ</span>
-              <h2 className="mt-2 section-title">Common questions, plain answers.</h2>
-              <p className="mt-3 text-ink-mute leading-relaxed">
-                A quick reference to questions we hear from readers every week. For
-                deeper dives, head to our library.
+        <div className="container-hub py-10 md:py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
+            {/* Trending */}
+            <div className="lg:col-span-5">
+              <div className="flex items-center gap-3 mb-5">
+                <span className="eyebrow">Trending</span>
+                <div className="flex-1 h-px bg-line" />
+              </div>
+              <h2 className="section-title">What readers are reading</h2>
+              <p className="mt-2 text-ink-mute text-sm mb-6">
+                The most-read pieces this week, ranked.
               </p>
+              {trending.length > 0 && (
+                <TrendingList posts={trending} limit={6} />
+              )}
+
+              {/* More reads — adds another set of headlines below trending */}
+              {moreReads.length > 0 && (
+                <div className="mt-8 pt-6 border-t border-line">
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="eyebrow-mute">More reads</span>
+                    <div className="flex-1 h-px bg-line" />
+                  </div>
+                  <ol className="space-y-3">
+                    {moreReads.map((post) => (
+                      <li key={post.id}>
+                        <Link href={`/blog/${post.slug}`} className="group flex items-baseline gap-3">
+                          <span className="num text-xs text-ink-faint shrink-0 w-3 text-right">·</span>
+                          <h4 className="font-heading text-sm font-medium leading-snug text-ink-soft group-hover:text-ink transition-colors line-clamp-2">
+                            {post.title}
+                          </h4>
+                          <span className="num text-[11px] text-ink-mute ml-auto shrink-0">
+                            {post.readingTime}m
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              )}
             </div>
-            <div className="lg:col-span-8">
+
+            {/* FAQ */}
+            <div className="lg:col-span-7 lg:pl-10 lg:border-l lg:border-line">
+              <div className="flex items-center gap-3 mb-5">
+                <span className="eyebrow">FAQ</span>
+                <div className="flex-1 h-px bg-line" />
+              </div>
+              <h2 className="section-title">Common questions, plain answers.</h2>
+              <p className="mt-2 text-ink-mute text-sm mb-6">
+                A quick reference to questions we hear from readers every week.
+              </p>
               <FAQAccordion faqs={faqs} />
             </div>
           </div>
@@ -326,7 +337,7 @@ export default async function Homepage() {
       {/* ============================================================
        *  NEWSLETTER CTA
        * ============================================================ */}
-      <section className="container-hub py-16 md:py-20">
+      <section className="container-hub py-10 md:py-14">
         <NewsletterCTALarge />
       </section>
     </>
