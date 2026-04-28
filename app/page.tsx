@@ -140,8 +140,7 @@ export default async function Homepage() {
       </section>
 
       {/* ============================================================
-       *  FRONT PAGE — lead + editor picks + market data, all in one
-       *  dense band (was three separate sections before)
+       *  FRONT PAGE — lead + 2×2 picks grid + market data
        * ============================================================ */}
       {featured && (
         <section className="border-b border-line">
@@ -156,17 +155,15 @@ export default async function Homepage() {
               </div>
 
               <aside className="lg:col-span-5 lg:pl-10 lg:border-l lg:border-line">
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3 mb-5">
                   <span className="eyebrow-mute">Editor picks</span>
                   <div className="flex-1 h-px bg-line" />
                 </div>
-                <ol className="divide-y divide-line">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-7">
                   {editorPicks.map((post) => (
-                    <li key={post.id} className="py-4 first:pt-0 last:pb-0">
-                      <BlogCardCompact post={post} variant="horizontal" />
-                    </li>
+                    <BlogCardCompact key={post.id} post={post} variant="minimal" />
                   ))}
-                </ol>
+                </div>
               </aside>
             </div>
 
@@ -178,7 +175,7 @@ export default async function Homepage() {
       )}
 
       {/* ============================================================
-       *  LATEST — dense 2-col horizontal list (was 3-col card grid)
+       *  LATEST — 4-col card grid (2 rows × 4 cols = 8 posts)
        * ============================================================ */}
       {latestPosts.length > 0 && (
         <section className="border-b border-line">
@@ -193,27 +190,17 @@ export default async function Homepage() {
               </Link>
             </div>
 
-            <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-0">
-              {latestPosts.map((post, idx) => {
-                // Top border on every item except the first row (so the
-                // 2-col grid still reads like clean horizontal rules).
-                const isTopRow = idx < 2
-                return (
-                  <li
-                    key={post.id}
-                    className={`py-5 ${isTopRow ? '' : 'border-t border-line'}`}
-                  >
-                    <BlogCardCompact post={post} variant="horizontal" />
-                  </li>
-                )
-              })}
-            </ul>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
+              {latestPosts.map((post) => (
+                <BlogCardCompact key={post.id} post={post} />
+              ))}
+            </div>
           </div>
         </section>
       )}
 
       {/* ============================================================
-       *  TOPIC HUBS — 4 hubs × 4 posts each, compact list cards
+       *  TOPIC HUBS — 2×2 outer, 2×2 inner grid of titles
        * ============================================================ */}
       {topicHubs.length > 0 && (
         <section id="topics" className="border-b border-line bg-cream">
@@ -234,7 +221,7 @@ export default async function Homepage() {
                   key={category.slug}
                   className="bg-paper rounded-2xl border border-line p-5 md:p-6"
                 >
-                  <header className="flex items-center justify-between gap-3 pb-3 mb-3 border-b border-line">
+                  <header className="flex items-center justify-between gap-3 pb-3 mb-4 border-b border-line">
                     <div className="flex items-center gap-2 min-w-0">
                       <span aria-hidden className="text-lg shrink-0">
                         {category.icon || '✦'}
@@ -251,20 +238,22 @@ export default async function Homepage() {
                     </Link>
                   </header>
 
-                  <ol className="divide-y divide-line">
+                  <div className="grid grid-cols-2 gap-x-5 gap-y-4">
                     {items.map((post) => (
-                      <li key={post.id} className="py-2.5 first:pt-0 last:pb-0">
-                        <Link href={`/blog/${post.slug}`} className="group block">
-                          <h4 className="font-heading text-[0.95rem] font-semibold leading-snug text-ink group-hover:text-accent-deep transition-colors line-clamp-2">
-                            {post.title}
-                          </h4>
-                          <div className="mt-1 num text-[11px] text-ink-mute">
-                            {post.readingTime} min read
-                          </div>
-                        </Link>
-                      </li>
+                      <Link
+                        key={post.id}
+                        href={`/blog/${post.slug}`}
+                        className="group block"
+                      >
+                        <h4 className="font-heading text-[0.95rem] font-semibold leading-snug text-ink group-hover:text-accent-deep transition-colors line-clamp-3">
+                          {post.title}
+                        </h4>
+                        <div className="mt-1.5 num text-[11px] text-ink-mute">
+                          {post.readingTime} min read
+                        </div>
+                      </Link>
                     ))}
-                  </ol>
+                  </div>
                 </article>
               ))}
             </div>
@@ -273,7 +262,7 @@ export default async function Homepage() {
       )}
 
       {/* ============================================================
-       *  TRENDING + FAQ — combined into one dense band
+       *  TRENDING + FAQ — combined band
        * ============================================================ */}
       <section className="border-b border-line">
         <div className="container-hub py-10 md:py-12">
@@ -288,32 +277,30 @@ export default async function Homepage() {
               <p className="mt-2 text-ink-mute text-sm mb-6">
                 The most-read pieces this week, ranked.
               </p>
-              {trending.length > 0 && (
-                <TrendingList posts={trending} limit={6} />
-              )}
+              {trending.length > 0 && <TrendingList posts={trending} limit={6} />}
 
-              {/* More reads — adds another set of headlines below trending */}
               {moreReads.length > 0 && (
                 <div className="mt-8 pt-6 border-t border-line">
                   <div className="flex items-center gap-3 mb-4">
                     <span className="eyebrow-mute">More reads</span>
                     <div className="flex-1 h-px bg-line" />
                   </div>
-                  <ol className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                     {moreReads.map((post) => (
-                      <li key={post.id}>
-                        <Link href={`/blog/${post.slug}`} className="group flex items-baseline gap-3">
-                          <span className="num text-xs text-ink-faint shrink-0 w-3 text-right">·</span>
-                          <h4 className="font-heading text-sm font-medium leading-snug text-ink-soft group-hover:text-ink transition-colors line-clamp-2">
-                            {post.title}
-                          </h4>
-                          <span className="num text-[11px] text-ink-mute ml-auto shrink-0">
-                            {post.readingTime}m
-                          </span>
-                        </Link>
-                      </li>
+                      <Link
+                        key={post.id}
+                        href={`/blog/${post.slug}`}
+                        className="group flex items-baseline gap-3"
+                      >
+                        <h4 className="font-heading text-sm font-medium leading-snug text-ink-soft group-hover:text-ink transition-colors line-clamp-2 flex-1">
+                          {post.title}
+                        </h4>
+                        <span className="num text-[11px] text-ink-mute shrink-0">
+                          {post.readingTime}m
+                        </span>
+                      </Link>
                     ))}
-                  </ol>
+                  </div>
                 </div>
               )}
             </div>
