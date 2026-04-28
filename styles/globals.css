@@ -330,4 +330,39 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
+
+  /* Soft horizontal fade on the edges, used by the live ticker so prices
+   * appear and disappear gracefully instead of clipping at the bounds. */
+  .mask-fade {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black 32px,
+      black calc(100% - 32px),
+      transparent 100%
+    );
+            mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black 32px,
+      black calc(100% - 32px),
+      transparent 100%
+    );
+  }
+
+  /* Continuous horizontal marquee for the live ticker.
+   * Content must be duplicated by the consumer; we translate by -50%
+   * so the second copy seamlessly takes the first copy's place. */
+  @keyframes ticker {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-50%, 0, 0); }
+  }
+  .animate-ticker {
+    animation: ticker 60s linear infinite;
+    will-change: transform;
+  }
+  /* Pause when hovered so readers can actually read a value. */
+  .animate-ticker:hover {
+    animation-play-state: paused;
+  }
 }

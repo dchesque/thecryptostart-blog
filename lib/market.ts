@@ -1,29 +1,51 @@
 /**
  * Lightweight market data fetcher for header ticker and market snapshot.
  *
- * Source: CoinGecko public API (no key required). Falls back to a frozen
- * snapshot if the network call fails so the UI never breaks the page.
+ * Initial render uses the CoinGecko public REST API (server-side, ISR-cached).
+ * The browser then upgrades to a live Binance WebSocket stream for real-time
+ * updates — see components/LiveTicker.tsx.
  *
- * Cached on the server with `next` revalidation so we hit CoinGecko at most
- * once per minute regardless of traffic.
+ * Falls back to a frozen snapshot if the network call fails so the UI never
+ * breaks the page.
  */
 
 export interface MarketCoin {
   id: string
-  symbol: string
+  symbol: string         // display symbol, e.g. "BTC"
+  binanceSymbol: string  // Binance pair, e.g. "BTCUSDT"
   name: string
   price: number
-  change24h: number   // percentage, e.g. 1.42 = +1.42%
+  change24h: number      // percentage, e.g. 1.42 = +1.42%
 }
 
-const COINS: ReadonlyArray<{ id: string; symbol: string; name: string }> = [
-  { id: 'bitcoin',      symbol: 'BTC', name: 'Bitcoin' },
-  { id: 'ethereum',     symbol: 'ETH', name: 'Ethereum' },
-  { id: 'solana',       symbol: 'SOL', name: 'Solana' },
-  { id: 'binancecoin',  symbol: 'BNB', name: 'BNB' },
-  { id: 'ripple',       symbol: 'XRP', name: 'XRP' },
-  { id: 'cardano',      symbol: 'ADA', name: 'Cardano' },
+export const COINS: ReadonlyArray<{
+  id: string
+  symbol: string
+  binanceSymbol: string
+  name: string
+}> = [
+  { id: 'bitcoin',     symbol: 'BTC', binanceSymbol: 'BTCUSDT', name: 'Bitcoin' },
+  { id: 'ethereum',    symbol: 'ETH', binanceSymbol: 'ETHUSDT', name: 'Ethereum' },
+  { id: 'solana',      symbol: 'SOL', binanceSymbol: 'SOLUSDT', name: 'Solana' },
+  { id: 'binancecoin', symbol: 'BNB', binanceSymbol: 'BNBUSDT', name: 'BNB' },
+  { id: 'ripple',      symbol: 'XRP', binanceSymbol: 'XRPUSDT', name: 'XRP' },
+  { id: 'cardano',     symbol: 'ADA', binanceSymbol: 'ADAUSDT', name: 'Cardano' },
 ]
+
+/** Map Binance symbol back to internal coin id, used by the WS client. */
+export const BINANCE_TO_ID: Record<string, string> = COINS.reduce(
+  (acc, c) => {
+    acc[c.binanceSymbol] = c.id
+    return acc
+  },
+  {} as Record<string, string>
+)
+
+/** Combined Binance stream URL for all tracked coins. */
+export const BINANCE_STREAM_URL = (() => {
+  const streams = COINS.map((c) => `${c.binanceSymbol.toLowerCase()}@ticker`).join('/')
+  return `wss://stream.binance.com:9443/stream?streams=${streams}`
+})()
 
 // Frozen seed used when the upstream call fails. Numbers are illustrative —
 // they only render until the first successful fetch revalidates them.
@@ -55,12 +77,13 @@ export async function getMarketPrices(): Promise<MarketCoin[]> {
       { usd?: number; usd_24h_change?: number }
     >
 
-    return COINS.map(({ id, symbol, name }) => {
+    return COINS.map(({ id, symbol, binanceSymbol, name }) => {
       const entry = data[id]
       const seed = SEED[id]
       return {
         id,
         symbol,
+        binanceSymbol,
         name,
         price: typeof entry?.usd === 'number' ? entry.usd : seed.price,
         change24h:
@@ -70,9 +93,10 @@ export async function getMarketPrices(): Promise<MarketCoin[]> {
       }
     })
   } catch {
-    return COINS.map(({ id, symbol, name }) => ({
+    return COINS.map(({ id, symbol, binanceSymbol, name }) => ({
       id,
       symbol,
+      binanceSymbol,
       name,
       price: SEED[id].price,
       change24h: SEED[id].change24h,
