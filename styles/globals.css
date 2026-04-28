@@ -42,9 +42,10 @@
     }
   }
 
-  /* Anchor offset so deep-links don't hide under any sticky chrome */
+  /* Anchor offset so deep-links don't hide under any sticky chrome.
+   * Header (h-14 / 3.5rem) + ticker bar (h-9 / 2.25rem) + small breathing room. */
   :target {
-    scroll-margin-top: 6rem;
+    scroll-margin-top: 6.5rem;
   }
 
   a {
@@ -184,8 +185,10 @@
   .surface-dark .text-ink { @apply text-paper; }
   .surface-dark .text-ink-soft { @apply text-paper/85; }
   .surface-dark .text-ink-mute { @apply text-paper/55; }
+  .surface-dark .text-ink-faint { @apply text-paper/35; }
   .surface-dark .border-line { @apply border-white/10; }
   .surface-dark .bg-cream { @apply bg-white/5; }
+  .surface-dark .bg-paper { @apply bg-ink-soft; }
 
   /*
    * ----------------------------------------------------------------

@@ -14,7 +14,7 @@ import CategoryCard from '@/components/CategoryCard'
 import Breadcrumb from '@/components/Breadcrumb'
 import Sidebar from '@/components/Sidebar'
 import { BLOG_CONFIG, getCategoryName, SITE_CONFIG } from '@/lib/constants'
-import type { BlogCategory } from '@/types/blog'
+import type { BlogCategory, BlogPost, CategoryConfig } from '@/types/blog'
 
 interface BlogPageProps {
   searchParams: Promise<{
@@ -46,9 +46,9 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   const category = categoryParam as BlogCategory | undefined
   const searchQuery = searchParam?.trim()
 
-  let posts: any[] = []
+  let posts: BlogPost[] = []
   let totalCount = 0
-  let categories: any[] = []
+  let categories: CategoryConfig[] = []
 
   if (searchQuery) {
     [posts, categories] = await Promise.all([
