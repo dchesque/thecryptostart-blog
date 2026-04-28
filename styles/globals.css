@@ -147,6 +147,48 @@
 
   /*
    * ----------------------------------------------------------------
+   * Finance / data treatments
+   * ---------------------------------------------------------------- */
+
+  /* Mono numerical data (prices, dates, reading time, stats). */
+  .num {
+    @apply font-mono tabular-nums tracking-tight;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum", "ss01";
+  }
+
+  /* Live "live" pulse dot for tickers and real-time data. */
+  .pulse-dot {
+    @apply relative inline-flex w-1.5 h-1.5 rounded-full bg-up;
+  }
+  .pulse-dot::after {
+    content: '';
+    @apply absolute inset-0 rounded-full bg-up animate-ping opacity-75;
+  }
+
+  /* Up / down delta chips. */
+  .delta-up {
+    @apply num text-up text-xs font-semibold;
+  }
+  .delta-down {
+    @apply num text-down text-xs font-semibold;
+  }
+  .delta-flat {
+    @apply num text-ink-mute text-xs font-semibold;
+  }
+
+  /* Dark "terminal" surface used by the header strip and ticker. */
+  .surface-dark {
+    @apply bg-ink text-paper;
+  }
+  .surface-dark .text-ink { @apply text-paper; }
+  .surface-dark .text-ink-soft { @apply text-paper/85; }
+  .surface-dark .text-ink-mute { @apply text-paper/55; }
+  .surface-dark .border-line { @apply border-white/10; }
+  .surface-dark .bg-cream { @apply bg-white/5; }
+
+  /*
+   * ----------------------------------------------------------------
    * Section / rule helpers
    * ---------------------------------------------------------------- */
   .section {
@@ -275,5 +317,14 @@
       linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
     background-size: 32px 32px;
+  }
+
+  /* Hide scrollbars on horizontal-scroll strips (ticker, chip rows). */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }

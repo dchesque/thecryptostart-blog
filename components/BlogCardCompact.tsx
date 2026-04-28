@@ -45,9 +45,9 @@ export default function BlogCardCompact({
             {post.title}
           </h3>
           <div className="mt-3 flex items-center gap-3 text-xs text-ink-mute">
-            <span>{date}</span>
+            <span className="num">{date}</span>
             <span aria-hidden className="w-1 h-1 rounded-full bg-line" />
-            <span>{post.readingTime} min read</span>
+            <span className="num">{post.readingTime} min read</span>
           </div>
         </div>
       </Link>
@@ -62,9 +62,9 @@ export default function BlogCardCompact({
           {post.title}
         </h3>
         <div className="mt-3 flex items-center gap-3 text-xs text-ink-mute">
-          <span>{date}</span>
+          <span className="num">{date}</span>
           <span aria-hidden className="w-1 h-1 rounded-full bg-line" />
-          <span>{post.readingTime} min read</span>
+          <span className="num">{post.readingTime} min read</span>
         </div>
       </Link>
     )
@@ -99,9 +99,9 @@ export default function BlogCardCompact({
       <div className="mt-5 flex items-center gap-3 text-xs text-ink-mute">
         <span className="font-medium text-ink-soft">{post.author.name}</span>
         <span aria-hidden className="w-1 h-1 rounded-full bg-line" />
-        <span>{date}</span>
+        <span className="num">{date}</span>
         <span aria-hidden className="w-1 h-1 rounded-full bg-line" />
-        <span>{post.readingTime} min read</span>
+        <span className="num">{post.readingTime} min read</span>
       </div>
     </Link>
   )

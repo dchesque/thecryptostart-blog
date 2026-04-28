@@ -34,7 +34,7 @@ export default function TrendingList({
             className="group grid grid-cols-[auto_1fr] gap-5 py-5 items-start"
           >
             <span
-              className="font-heading font-bold text-2xl md:text-3xl text-ink-faint tabular-nums tracking-tight leading-none pt-0.5 group-hover:text-accent transition-colors"
+              className="num font-bold text-2xl md:text-3xl text-ink-faint leading-none pt-0.5 group-hover:text-accent transition-colors"
               aria-hidden
             >
               {String(index + 1).padStart(2, '0')}
@@ -45,9 +45,9 @@ export default function TrendingList({
                 {post.title}
               </h4>
               <div className="mt-2 flex items-center gap-3 text-xs text-ink-mute">
-                <span>{post.readingTime} min read</span>
+                <span className="num">{post.readingTime} min read</span>
                 <span aria-hidden className="w-1 h-1 rounded-full bg-line" />
-                <span>{formatDate(post.publishedAt)}</span>
+                <span className="num">{formatDate(post.publishedAt)}</span>
               </div>
             </div>
           </Link>

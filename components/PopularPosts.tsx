@@ -38,7 +38,7 @@ export default async function PopularPosts({
                 className="group flex gap-4 items-start"
               >
                 <span
-                  className="font-heading font-bold text-lg text-ink-faint tabular-nums leading-none pt-1 shrink-0 group-hover:text-accent transition-colors"
+                  className="num font-bold text-lg text-ink-faint leading-none pt-1 shrink-0 group-hover:text-accent transition-colors"
                   aria-hidden
                 >
                   {String(index + 1).padStart(2, '0')}

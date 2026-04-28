@@ -9,6 +9,7 @@ import CategoryCard from '@/components/CategoryCard'
 import TrendingList from '@/components/TrendingList'
 import FAQAccordion from '@/components/FAQAccordion'
 import NewsletterCTALarge from '@/components/NewsletterCTALarge'
+import MarketSnapshot from '@/components/MarketSnapshot'
 
 import { SITE_CONFIG } from '@/lib/constants'
 import { generateWebsiteSchema, generateOrganizationSchema } from '@/lib/seo'
@@ -112,19 +113,19 @@ export default async function Homepage() {
             <aside className="lg:col-span-5 lg:pl-6 lg:border-l lg:border-line">
               <div className="space-y-1.5 text-sm">
                 <div className="flex items-baseline gap-3">
-                  <span className="font-heading font-bold text-3xl text-ink tabular-nums">
+                  <span className="num font-bold text-3xl text-ink">
                     50k+
                   </span>
                   <span className="text-ink-mute">readers learning every month</span>
                 </div>
                 <div className="flex items-baseline gap-3">
-                  <span className="font-heading font-bold text-3xl text-ink tabular-nums">
+                  <span className="num font-bold text-3xl text-ink">
                     {allPosts.length}+
                   </span>
                   <span className="text-ink-mute">in-depth guides published</span>
                 </div>
                 <div className="flex items-baseline gap-3">
-                  <span className="font-heading font-bold text-3xl text-ink tabular-nums">
+                  <span className="num font-bold text-3xl text-ink">
                     {categories.length}
                   </span>
                   <span className="text-ink-mute">curated topic streams</span>
@@ -173,6 +174,15 @@ export default async function Homepage() {
           </div>
         </section>
       )}
+
+      {/* ============================================================
+       *  MARKET SNAPSHOT — finance-flavored data band
+       * ============================================================ */}
+      <section className="border-b border-line">
+        <div className="container-hub py-14 md:py-16">
+          <MarketSnapshot />
+        </div>
+      </section>
 
       {/* ============================================================
        *  LATEST GRID

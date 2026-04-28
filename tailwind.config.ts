@@ -38,6 +38,24 @@ const config: Config = {
           ink: '#7A2A00',
         },
 
+        // Secondary "data" accent — electric blue. Used for tickers, links
+        // in dense data zones, and to visually balance the warm accent.
+        electric: {
+          DEFAULT: '#1F62D9',
+          soft: '#EDF3FE',
+          deep: '#0F3F94',
+        },
+
+        // Semantic data colors (price up / down)
+        up: {
+          DEFAULT: '#10B981',
+          soft: '#ECFDF5',
+        },
+        down: {
+          DEFAULT: '#EF4444',
+          soft: '#FEF2F2',
+        },
+
         // Legacy crypto-* tokens (kept so existing components don't break)
         crypto: {
           dark: '#1A2A2F',
@@ -66,6 +84,8 @@ const config: Config = {
         display: ['var(--font-montserrat)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         // Editorial serif (used for article body — the reading hub)
         serif: ['var(--font-serif)', 'ui-serif', 'Georgia', 'Cambria', 'serif'],
+        // Monospace (used for prices, tickers, dates, numerical data)
+        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
       },
       fontSize: {
         // A more comfortable reading scale

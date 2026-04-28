@@ -57,7 +57,7 @@ export default function Sidebar({
                   className="group grid grid-cols-[auto_1fr] gap-3 items-start"
                 >
                   <span
-                    className="font-heading font-semibold text-sm text-ink-faint tabular-nums pt-0.5 group-hover:text-accent transition-colors"
+                    className="num font-semibold text-sm text-ink-faint pt-0.5 group-hover:text-accent transition-colors"
                     aria-hidden
                   >
                     {String(index + 1).padStart(2, '0')}
@@ -67,7 +67,7 @@ export default function Sidebar({
                       {post.title}
                     </h4>
                     <div className="mt-1 text-xs text-ink-mute">
-                      {getCategoryName(post.category)} · {formatDate(post.publishedAt)}
+                      {getCategoryName(post.category)} <span className="num">· {formatDate(post.publishedAt)}</span>
                     </div>
                   </div>
                 </Link>

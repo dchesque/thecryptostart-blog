@@ -6,45 +6,45 @@ import { Menu, Search, X } from 'lucide-react'
 import { SITE_CONFIG } from '@/lib/constants'
 import { CategoryConfig } from '@/types/blog'
 
+/**
+ * Site header. Dark "terminal" treatment — gives the publication a finance
+ * publication feel (Bloomberg / FT) without sacrificing the light, serif
+ * editorial body below.
+ */
 export default function Header({ categories = [] }: { categories?: CategoryConfig[] }) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8)
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  // Lock scroll when mobile menu open
+  // Lock scroll while the mobile menu is open
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    return () => {
+      document.body.style.overflow = ''
+    }
   }, [mobileOpen])
 
   const navCategories = categories.slice(0, 5)
 
   return (
-    <header
-      className={`navbar ${scrolled ? 'shadow-sm' : ''}`}
-      style={{ borderBottomColor: scrolled ? 'var(--line)' : 'transparent' }}
-    >
-      <div className="container-wide flex items-center justify-between gap-6 h-16">
+    <header className="surface-dark border-b border-white/10">
+      <div className="container-wide flex items-center justify-between gap-6 h-14">
         {/* Wordmark */}
-        <Link href="/" className="flex items-center gap-2 group" aria-label={`${SITE_CONFIG.name} home`}>
-          <span className="font-heading font-bold text-ink text-lg tracking-tight">
+        <Link
+          href="/"
+          className="flex items-center gap-2 group shrink-0"
+          aria-label={`${SITE_CONFIG.name} home`}
+        >
+          <span className="font-heading font-bold text-paper text-base tracking-tight">
             {SITE_CONFIG.name}
           </span>
-          <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-accent" aria-hidden />
+          <span className="w-1 h-1 rounded-full bg-accent" aria-hidden />
         </Link>
 
         {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-7">
           <Link
             href="/blog"
-            className="text-sm font-medium text-ink-soft hover:text-ink transition-colors"
+            className="text-sm font-medium text-paper/80 hover:text-paper transition-colors"
           >
             All articles
           </Link>
@@ -52,33 +52,34 @@ export default function Header({ categories = [] }: { categories?: CategoryConfi
             <Link
               key={cat.slug}
               href={`/blog?category=${cat.slug}`}
-              className="text-sm font-medium text-ink-soft hover:text-ink transition-colors"
+              className="text-sm font-medium text-paper/80 hover:text-paper transition-colors"
             >
               {cat.name}
             </Link>
           ))}
           <Link
             href="/about"
-            className="text-sm font-medium text-ink-soft hover:text-ink transition-colors"
+            className="text-sm font-medium text-paper/80 hover:text-paper transition-colors"
           >
             About
           </Link>
         </nav>
 
         {/* Right cluster */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => setSearchOpen((o) => !o)}
             aria-label="Search articles"
-            className="hidden md:inline-flex items-center justify-center w-10 h-10 rounded-full text-ink-soft hover:bg-cream transition-colors"
+            aria-expanded={searchOpen}
+            className="hidden md:inline-flex items-center justify-center w-9 h-9 rounded-full text-paper/80 hover:bg-white/10 hover:text-paper transition-colors"
           >
-            <Search className="w-4.5 h-4.5" strokeWidth={2} />
+            <Search className="w-4 h-4" strokeWidth={2} />
           </button>
 
           <Link
-            href="/blog#newsletter"
-            className="hidden md:inline-flex items-center justify-center px-4 py-2 rounded-full bg-ink text-paper text-sm font-semibold hover:bg-ink-soft transition-colors"
+            href="/#newsletter"
+            className="hidden md:inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-accent text-paper text-sm font-semibold hover:bg-accent-deep transition-colors"
           >
             Subscribe
           </Link>
@@ -88,7 +89,7 @@ export default function Header({ categories = [] }: { categories?: CategoryConfi
             onClick={() => setMobileOpen((o) => !o)}
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileOpen}
-            className="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-full text-ink hover:bg-cream transition-colors"
+            className="lg:hidden inline-flex items-center justify-center w-9 h-9 rounded-full text-paper hover:bg-white/10 transition-colors"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -97,16 +98,16 @@ export default function Header({ categories = [] }: { categories?: CategoryConfi
 
       {/* Inline search panel */}
       {searchOpen && (
-        <div className="hidden md:block border-t border-line bg-paper">
-          <div className="container-wide py-4">
+        <div className="hidden md:block border-t border-white/10 bg-ink">
+          <div className="container-wide py-3">
             <form action="/blog" method="GET" className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-mute" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-paper/50" />
               <input
                 type="search"
                 name="search"
                 autoFocus
-                placeholder="Search articles, topics, authors..."
-                className="w-full pl-11 pr-4 py-3 bg-cream border border-line rounded-full text-sm text-ink placeholder:text-ink-faint outline-none focus:border-ink/30 transition-colors"
+                placeholder="Search articles, topics, authors…"
+                className="w-full pl-11 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-full text-sm text-paper placeholder:text-paper/40 outline-none focus:border-white/30 transition-colors"
               />
             </form>
           </div>
@@ -115,14 +116,14 @@ export default function Header({ categories = [] }: { categories?: CategoryConfi
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="lg:hidden fixed inset-x-0 top-16 bottom-0 z-50 bg-paper overflow-y-auto">
+        <div className="lg:hidden fixed inset-x-0 top-[calc(2.25rem+3.5rem)] bottom-0 z-50 bg-paper text-ink overflow-y-auto">
           <div className="container-wide py-6 space-y-6">
             <form action="/blog" method="GET" className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-mute" />
               <input
                 type="search"
                 name="search"
-                placeholder="Search articles..."
+                placeholder="Search articles…"
                 className="w-full pl-11 pr-4 py-3 bg-cream border border-line rounded-full text-sm text-ink placeholder:text-ink-faint outline-none"
               />
             </form>
@@ -155,9 +156,9 @@ export default function Header({ categories = [] }: { categories?: CategoryConfi
             </nav>
 
             <Link
-              href="/blog#newsletter"
+              href="/#newsletter"
               onClick={() => setMobileOpen(false)}
-              className="block w-full text-center px-5 py-3 rounded-full bg-ink text-paper text-sm font-semibold"
+              className="block w-full text-center px-5 py-3 rounded-full bg-accent text-paper text-sm font-semibold"
             >
               Subscribe to newsletter
             </Link>

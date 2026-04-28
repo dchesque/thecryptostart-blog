@@ -53,13 +53,13 @@ export default function PostMeta({
         <div className="min-w-0">
           <div className="text-sm font-semibold text-ink leading-tight">{author.name}</div>
           <div className="text-xs text-ink-mute mt-0.5">
-            <time dateTime={publishedAt}>{published}</time>
+            <time dateTime={publishedAt} className="num">{published}</time>
             <span aria-hidden className="mx-2">·</span>
-            <span>{readingTime} min read</span>
+            <span className="num">{readingTime} min read</span>
             {showUpdate && (
               <>
                 <span aria-hidden className="mx-2">·</span>
-                <span className="text-accent-deep">Updated {updated}</span>
+                <span className="text-accent-deep num">Updated {updated}</span>
               </>
             )}
           </div>
@@ -83,13 +83,13 @@ export default function PostMeta({
         <span className="text-ink-soft font-medium">{author.name}</span>
       </div>
       <span aria-hidden className="text-ink-faint">·</span>
-      <time dateTime={publishedAt}>{published}</time>
+      <time dateTime={publishedAt} className="num">{published}</time>
       <span aria-hidden className="text-ink-faint">·</span>
-      <span>{readingTime} min read</span>
+      <span className="num">{readingTime} min read</span>
       {showUpdate && (
         <>
           <span aria-hidden className="text-ink-faint">·</span>
-          <span className="text-accent-deep">Updated {updated}</span>
+          <span className="text-accent-deep num">Updated {updated}</span>
         </>
       )}
     </div>

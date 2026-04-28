@@ -43,7 +43,7 @@ export default function FeaturedArticleCard({
         <div className="flex items-center gap-3 mb-4">
           <span className="eyebrow">{categoryName}</span>
           <span className="text-ink-faint text-xs">·</span>
-          <span className="text-xs text-ink-mute font-medium">
+          <span className="num text-xs text-ink-mute font-medium">
             {post.readingTime} min read
           </span>
         </div>
@@ -76,7 +76,7 @@ export default function FeaturedArticleCard({
             <span className="block text-sm font-semibold text-ink leading-tight">
               {post.author.name}
             </span>
-            <span className="block text-xs text-ink-mute">
+            <span className="num block text-xs text-ink-mute">
               {formatDate(post.publishedAt)}
             </span>
           </div>

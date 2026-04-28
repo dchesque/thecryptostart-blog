@@ -4,10 +4,11 @@ import '../styles/globals.css'
 import { AuthProvider } from '@/components/AuthProvider'
 import { PublicShell } from '@/components/PublicShell'
 import { SITE_CONFIG } from '@/lib/constants'
-import { Montserrat, Open_Sans, Source_Serif_4 } from 'next/font/google'
+import { Montserrat, Open_Sans, Source_Serif_4, JetBrains_Mono } from 'next/font/google'
 import { AdSenseScript } from '@/components/AdSense'
 import GoogleCMP from '@/components/GoogleCMP'
 import { WebVitals } from '@/components/WebVitals'
+import TickerBar from '@/components/TickerBar'
 import '@/lib/env' // Validate required environment variables at startup
 
 const montserrat = Montserrat({
@@ -30,6 +31,13 @@ const sourceSerif = Source_Serif_4({
   variable: '--font-serif',
   weight: ['400', '500', '600', '700'],
   style: ['normal', 'italic'],
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-mono',
+  weight: ['400', '500', '600', '700'],
 })
 
 export const metadata: Metadata = {
@@ -146,18 +154,18 @@ export default async function RootLayout({
         <AdSenseScript />
       </head>
 
-      <body className={`${openSans.variable} ${montserrat.variable} ${sourceSerif.variable} font-sans bg-paper text-ink antialiased`}>
+      <body className={`${openSans.variable} ${montserrat.variable} ${sourceSerif.variable} ${jetbrainsMono.variable} font-sans bg-paper text-ink antialiased`}>
         <AuthProvider>
           {/* Skip to main content (a11y) */}
           <a
             href="#main-content"
-            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 px-4 py-2 bg-crypto-primary text-white rounded"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 px-4 py-2 bg-accent text-white rounded"
           >
             Skip to main content
           </a>
 
           <WebVitals />
-          <PublicShell categories={categories}>
+          <PublicShell categories={categories} ticker={<TickerBar />}>
             {children}
           </PublicShell>
         </AuthProvider>
