@@ -4,23 +4,39 @@ import '../styles/globals.css'
 import { AuthProvider } from '@/components/AuthProvider'
 import { PublicShell } from '@/components/PublicShell'
 import { SITE_CONFIG } from '@/lib/constants'
-import { Montserrat, Open_Sans } from 'next/font/google'
+import { Montserrat, Open_Sans, Source_Serif_4, JetBrains_Mono } from 'next/font/google'
 import { AdSenseScript } from '@/components/AdSense'
 import GoogleCMP from '@/components/GoogleCMP'
 import { WebVitals } from '@/components/WebVitals'
+import TickerBar from '@/components/TickerBar'
 import '@/lib/env' // Validate required environment variables at startup
 
 const montserrat = Montserrat({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-montserrat',
-  weight: ['400', '500', '700', '800'],
+  weight: ['400', '500', '600', '700', '800'],
 })
 
 const openSans = Open_Sans({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-open-sans',
+  weight: ['400', '500', '600', '700'],
+})
+
+const sourceSerif = Source_Serif_4({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-serif',
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-mono',
   weight: ['400', '500', '600', '700'],
 })
 
@@ -138,18 +154,18 @@ export default async function RootLayout({
         <AdSenseScript />
       </head>
 
-      <body className={`${openSans.variable} ${montserrat.variable} font-sans bg-white text-crypto-charcoal antialiased`}>
+      <body className={`${openSans.variable} ${montserrat.variable} ${sourceSerif.variable} ${jetbrainsMono.variable} font-sans bg-paper text-ink antialiased`}>
         <AuthProvider>
           {/* Skip to main content (a11y) */}
           <a
             href="#main-content"
-            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 px-4 py-2 bg-crypto-primary text-white rounded"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-[6rem] focus:left-4 focus:z-[60] px-4 py-2 bg-accent text-white rounded font-semibold text-sm shadow-lg"
           >
             Skip to main content
           </a>
 
           <WebVitals />
-          <PublicShell categories={categories}>
+          <PublicShell categories={categories} ticker={<TickerBar />}>
             {children}
           </PublicShell>
         </AuthProvider>

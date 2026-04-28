@@ -1,99 +1,167 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Menu, Search, X } from 'lucide-react'
 import { SITE_CONFIG } from '@/lib/constants'
 import { CategoryConfig } from '@/types/blog'
 
+/**
+ * Site header. Dark "terminal" treatment — gives the publication a finance
+ * publication feel (Bloomberg / FT) without sacrificing the light, serif
+ * editorial body below.
+ */
 export default function Header({ categories = [] }: { categories?: CategoryConfig[] }) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+
+  // Lock scroll while the mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [mobileOpen])
+
+  const navCategories = categories.slice(0, 5)
 
   return (
-    <header className="navbar">
-      <nav className="container flex justify-between items-center w-full">
-        {/* Logo */}
-        <Link href="/" className="flex items-center space-x-2">
-          <span className="text-2xl font-bold text-crypto-navy">
+    <header className="surface-dark border-b border-white/10">
+      <div className="container-wide flex items-center justify-between gap-6 h-14">
+        {/* Wordmark */}
+        <Link
+          href="/"
+          className="flex items-center gap-2 group shrink-0"
+          aria-label={`${SITE_CONFIG.name} home`}
+        >
+          <span className="font-heading font-bold text-paper text-base tracking-tight">
             {SITE_CONFIG.name}
           </span>
-          <span className="text-crypto-primary font-bold">Blog</span>
+          <span className="w-1 h-1 rounded-full bg-accent" aria-hidden />
         </Link>
 
-        {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center space-x-10">
-          {categories.slice(0, 4).length > 0 ? (
-            categories.slice(0, 4).map((cat) => (
-              <Link 
-                key={cat.slug}
-                href={`/blog?category=${cat.slug}`} 
-                className="text-crypto-charcoal hover:text-crypto-primary font-bold text-sm uppercase tracking-widest transition-all"
-              >
-                {cat.name}
-              </Link>
-            ))
-          ) : (
-            <>
-              <Link href="/blog?category=bitcoin" className="text-crypto-charcoal hover:text-crypto-primary font-bold text-sm uppercase tracking-widest transition-all">
-                Bitcoin
-              </Link>
-              <Link href="/blog?category=ethereum" className="text-crypto-charcoal hover:text-crypto-primary font-bold text-sm uppercase tracking-widest transition-all">
-                Ethereum
-              </Link>
-            </>
-          )}
-        </div>
-
-        {/* Search & Subscribe */}
-        <div className="hidden md:flex items-center space-x-4">
-          <div className="input-search">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="bg-transparent border-none outline-none text-sm w-40"
-            />
-            <button className="text-xs uppercase font-bold">Search</button>
-          </div>
-          <button className="btn-primary py-2 px-6 text-sm">
-            Subscribe
-          </button>
-        </div>
-
-        {/* Mobile Menu Button */}
-        <button
-          className="md:hidden text-crypto-navy"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            {mobileMenuOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            )}
-          </svg>
-        </button>
-      </nav>
-
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="absolute top-full left-0 right-0 bg-white border-b border-gray-100 p-4 space-y-4 md:hidden animate-fade-in shadow-lg">
-          <Link href="/blog" className="block text-crypto-charcoal hover:text-crypto-primary py-2 font-medium">
-            All Articles
+        {/* Desktop nav */}
+        <nav className="hidden lg:flex items-center gap-7">
+          <Link
+            href="/blog"
+            className="text-sm font-medium text-paper/80 hover:text-paper transition-colors"
+          >
+            All articles
           </Link>
-          {categories.map((cat) => (
-            <Link 
+          {navCategories.map((cat) => (
+            <Link
               key={cat.slug}
-              href={`/blog?category=${cat.slug}`} 
-              className="block text-crypto-charcoal hover:text-crypto-primary py-2 font-medium"
+              href={`/blog?category=${cat.slug}`}
+              className="text-sm font-medium text-paper/80 hover:text-paper transition-colors"
             >
               {cat.name}
             </Link>
           ))}
-          <Link href="/about" className="block text-crypto-charcoal hover:text-crypto-primary py-2 font-medium">
+          <Link
+            href="/about"
+            className="text-sm font-medium text-paper/80 hover:text-paper transition-colors"
+          >
             About
           </Link>
-          <div className="input-search w-full">
-            <input type="text" placeholder="Search..." className="bg-transparent border-none outline-none text-sm w-full" />
-            <button className="text-xs uppercase font-bold">Search</button>
+        </nav>
+
+        {/* Right cluster */}
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setSearchOpen((o) => !o)}
+            aria-label="Search articles"
+            aria-expanded={searchOpen}
+            className="hidden md:inline-flex items-center justify-center w-9 h-9 rounded-full text-paper/80 hover:bg-white/10 hover:text-paper transition-colors"
+          >
+            <Search className="w-4 h-4" strokeWidth={2} />
+          </button>
+
+          <Link
+            href="/#newsletter"
+            className="hidden md:inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-accent text-paper text-sm font-semibold hover:bg-accent-deep transition-colors"
+          >
+            Subscribe
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => setMobileOpen((o) => !o)}
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileOpen}
+            className="lg:hidden inline-flex items-center justify-center w-9 h-9 rounded-full text-paper hover:bg-white/10 transition-colors"
+          >
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Inline search panel */}
+      {searchOpen && (
+        <div className="hidden md:block border-t border-white/10 bg-ink">
+          <div className="container-wide py-3">
+            <form action="/blog" method="GET" className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-paper/50" />
+              <input
+                type="search"
+                name="search"
+                autoFocus
+                placeholder="Search articles, topics, authors…"
+                className="w-full pl-11 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-full text-sm text-paper placeholder:text-paper/40 outline-none focus:border-white/30 transition-colors"
+              />
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-x-0 top-[calc(2.25rem+3.5rem)] bottom-0 z-50 bg-paper text-ink overflow-y-auto">
+          <div className="container-wide py-6 space-y-6">
+            <form action="/blog" method="GET" className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-mute" />
+              <input
+                type="search"
+                name="search"
+                placeholder="Search articles…"
+                className="w-full pl-11 pr-4 py-3 bg-cream border border-line rounded-full text-sm text-ink placeholder:text-ink-faint outline-none"
+              />
+            </form>
+
+            <nav className="space-y-1">
+              <Link
+                href="/blog"
+                onClick={() => setMobileOpen(false)}
+                className="block px-3 py-3 rounded-xl text-base font-semibold text-ink hover:bg-cream"
+              >
+                All articles
+              </Link>
+              {categories.map((cat) => (
+                <Link
+                  key={cat.slug}
+                  href={`/blog?category=${cat.slug}`}
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-3 py-3 rounded-xl text-base font-medium text-ink-soft hover:bg-cream hover:text-ink"
+                >
+                  {cat.name}
+                </Link>
+              ))}
+              <Link
+                href="/about"
+                onClick={() => setMobileOpen(false)}
+                className="block px-3 py-3 rounded-xl text-base font-medium text-ink-soft hover:bg-cream hover:text-ink"
+              >
+                About
+              </Link>
+            </nav>
+
+            <Link
+              href="/#newsletter"
+              onClick={() => setMobileOpen(false)}
+              className="block w-full text-center px-5 py-3 rounded-full bg-accent text-paper text-sm font-semibold"
+            >
+              Subscribe to newsletter
+            </Link>
           </div>
         </div>
       )}

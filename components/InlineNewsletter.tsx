@@ -4,47 +4,43 @@ import React from 'react'
 import NewsletterForm from './NewsletterForm'
 
 interface InlineNewsletterProps {
-    className?: string
-    title?: string
-    description?: string
+  className?: string
+  title?: string
+  description?: string
 }
 
 /**
- * InlineNewsletter component
- * A stylized newsletter signup box to be embedded within blog post content
+ * In-article newsletter signup. Quiet, editorial — sits inside the
+ * reading flow without breaking concentration.
  */
 export default function InlineNewsletter({
-    className = '',
-    title = "Don't miss the next move.",
-    description = "Join our exclusive list for weekly market analysis and alpha."
+  className = '',
+  title = "Read more like this, every Sunday.",
+  description = "One email a week with our best beginner-friendly guides on Bitcoin, security and Web3.",
 }: InlineNewsletterProps) {
-    return (
-        <div className={`not-prose my-12 p-8 sm:p-10 rounded-[2.5rem] bg-crypto-darker border border-white/10 relative overflow-hidden group shadow-5 ${className}`}>
-            {/* Background decoration */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-crypto-primary/10 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-crypto-primary/20 transition-all duration-700"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-crypto-ethereum/5 rounded-full -ml-12 -mb-12 blur-2xl"></div>
-
-            <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-                <div className="flex-1 text-center md:text-left">
-                    <div className="inline-flex items-center gap-2 bg-crypto-primary/10 px-3 py-1 rounded-full border border-crypto-primary/20 mb-4">
-                        <span className="w-1.5 h-1.5 bg-crypto-primary rounded-full"></span>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-crypto-primary">Insider Access</span>
-                    </div>
-                    <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3 font-heading leading-tight italic">
-                        {title}
-                    </h3>
-                    <p className="text-white/60 text-sm font-medium leading-relaxed max-w-md">
-                        {description}
-                    </p>
-                </div>
-
-                <div className="w-full md:w-[400px] shrink-0">
-                    <NewsletterForm />
-                    <p className="mt-4 text-[10px] text-white/30 text-center md:text-left font-medium">
-                        🔒 Your privacy is priority. Unsubscribe with one click.
-                    </p>
-                </div>
-            </div>
+  return (
+    <aside
+      id="newsletter"
+      className={`not-prose my-14 px-6 sm:px-10 py-10 sm:py-12 rounded-2xl bg-cream border border-line ${className}`}
+    >
+      <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-10">
+        <div className="flex-1">
+          <span className="eyebrow">Newsletter</span>
+          <h3 className="mt-2 font-heading text-2xl sm:text-[1.6rem] font-bold text-ink leading-tight tracking-tight max-w-xl">
+            {title}
+          </h3>
+          <p className="mt-3 text-ink-mute leading-relaxed max-w-md">
+            {description}
+          </p>
         </div>
-    )
+
+        <div className="w-full md:w-[360px] shrink-0">
+          <NewsletterForm />
+          <p className="mt-3 text-xs text-ink-mute">
+            No spam. Unsubscribe in one click.
+          </p>
+        </div>
+      </div>
+    </aside>
+  )
 }

@@ -1,50 +1,53 @@
 'use client'
 
+import { ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import StickyHeaderAd from '@/components/StickyHeaderAd'
-import StickyFooterAd from '@/components/StickyFooterAd'
 import ReadingProgressBar from '@/components/ReadingProgressBar'
-import ExitIntentPopup from '@/components/ExitIntentPopup'
 import { CategoryConfig } from '@/types/blog'
 
 /**
- * Wraps content with public site chrome (Header, Footer, Ads, etc.)
- * Only renders on non-admin and non-login routes.
- * Uses usePathname() so this component is client-side only — no headers() call
- * which would cause DYNAMIC_SERVER_USAGE on the entire layout tree.
+ * Wraps public content with the editorial chrome (TickerBar, Header, Footer).
+ *
+ * The TickerBar is passed in as a prop from the layout (server-rendered)
+ * because it's an async server component. PublicShell itself is client-only
+ * to avoid a `headers()` call on the entire layout subtree.
  */
-export function PublicShell({ 
-    children,
-    categories = []
-}: { 
-    children: React.ReactNode,
-    categories?: CategoryConfig[]
+export function PublicShell({
+  children,
+  categories = [],
+  ticker,
+}: {
+  children: ReactNode
+  categories?: CategoryConfig[]
+  ticker?: ReactNode
 }) {
-    const pathname = usePathname()
+  const pathname = usePathname()
 
-    const isAdminRoute = pathname.startsWith('/admin')
-    const isLoginRoute = pathname.startsWith('/login')
-    const isApiRoute = pathname.startsWith('/api')
+  const isAdminRoute = pathname.startsWith('/admin')
+  const isLoginRoute = pathname.startsWith('/login')
+  const isApiRoute = pathname.startsWith('/api')
+  const isPublic = !isAdminRoute && !isLoginRoute && !isApiRoute
 
-    const isPublic = !isAdminRoute && !isLoginRoute && !isApiRoute
+  if (!isPublic) {
+    return <>{children}</>
+  }
 
-    if (!isPublic) {
-        return <>{children}</>
-    }
+  // Reading progress bar is most useful on article pages
+  const isArticle = pathname.startsWith('/blog/') && pathname.split('/').length > 2
 
-    return (
-        <>
-            <ReadingProgressBar />
-            <Header categories={categories} />
-            <StickyHeaderAd slot="header-ad" />
-            <main id="main-content" className="min-h-screen">
-                {children}
-            </main>
-            <Footer categories={categories} />
-            <StickyFooterAd slot="footer-ad" />
-            <ExitIntentPopup />
-        </>
-    )
+  return (
+    <>
+      {isArticle && <ReadingProgressBar />}
+      <div className="sticky top-0 z-40">
+        {ticker}
+        <Header categories={categories} />
+      </div>
+      <main id="main-content" className="min-h-screen">
+        {children}
+      </main>
+      <Footer categories={categories} />
+    </>
+  )
 }

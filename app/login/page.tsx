@@ -1,8 +1,10 @@
 'use client'
 
+import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ArrowRight, Loader2 } from 'lucide-react'
 import { SITE_CONFIG } from '@/lib/constants'
 
 export default function LoginPage() {
@@ -16,103 +18,131 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
-
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      })
-
+      const result = await signIn('credentials', { email, password, redirect: false })
       if (result?.error) {
-        setError('Invalid email or password')
+        setError('Invalid email or password.')
         setLoading(false)
       } else {
         router.push('/admin')
         router.refresh()
       }
     } catch {
-      setError('An error occurred. Please try again.')
+      setError('Something went wrong. Please try again.')
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-crypto-dark py-12 px-4">
-      <div className="max-w-md w-full">
-        <div className="bg-crypto-darker rounded-xl p-8 border border-crypto-primary/20">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">
-              Welcome Back
-            </h1>
-            <p className="text-gray-400">
-              Sign in to {SITE_CONFIG.name}
-            </p>
-          </div>
+    <div className="min-h-screen bg-paper grid lg:grid-cols-2">
+      {/* Left: editorial column */}
+      <aside className="hidden lg:flex flex-col justify-between bg-cream border-r border-line p-12">
+        <Link href="/" className="inline-flex items-baseline gap-2">
+          <span className="font-heading font-bold text-ink text-xl tracking-tight">
+            {SITE_CONFIG.name}
+          </span>
+          <span className="w-1 h-1 rounded-full bg-accent" aria-hidden />
+        </Link>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="max-w-md">
+          <span className="eyebrow">Editorial admin</span>
+          <h2 className="mt-4 font-heading text-3xl font-bold text-ink leading-[1.1] tracking-tight">
+            A patient, beginner-first guide to crypto.
+          </h2>
+          <p className="mt-5 text-ink-mute leading-relaxed">
+            Sign in to write, edit, and publish on {SITE_CONFIG.name}. This area is
+            for editors and contributors only.
+          </p>
+        </div>
+
+        <p className="text-xs text-ink-mute">
+          © {new Date().getFullYear()} {SITE_CONFIG.name}
+        </p>
+      </aside>
+
+      {/* Right: form */}
+      <main className="flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-sm">
+          <Link href="/" className="lg:hidden inline-flex items-baseline gap-2 mb-10">
+            <span className="font-heading font-bold text-ink text-lg tracking-tight">
+              {SITE_CONFIG.name}
+            </span>
+            <span className="w-1 h-1 rounded-full bg-accent" aria-hidden />
+          </Link>
+
+          <span className="eyebrow">Sign in</span>
+          <h1 className="mt-3 font-heading text-3xl font-bold text-ink tracking-tight">
+            Welcome back.
+          </h1>
+          <p className="mt-2 text-ink-mute">
+            Enter your credentials to access the editor.
+          </p>
+
+          <form onSubmit={handleSubmit} className="mt-10 space-y-5">
             {error && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg">
+              <div
+                role="alert"
+                className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              >
                 {error}
               </div>
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-ink mb-1.5">
                 Email
               </label>
               <input
                 id="email"
                 type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-crypto-dark border border-crypto-primary/20 rounded-lg text-white placeholder-gray-500 focus:border-crypto-primary focus:outline-none focus:ring-1 focus:ring-crypto-primary transition"
                 placeholder="you@example.com"
+                className="w-full px-4 py-3 bg-cream border border-line rounded-full text-ink placeholder:text-ink-faint outline-none focus:border-ink/30 focus:bg-paper transition-colors"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-ink mb-1.5">
                 Password
               </label>
               <input
                 id="password"
                 type="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-crypto-dark border border-crypto-primary/20 rounded-lg text-white placeholder-gray-500 focus:border-crypto-primary focus:outline-none focus:ring-1 focus:ring-crypto-primary transition"
-                placeholder="•••••••••"
+                placeholder="••••••••"
+                className="w-full px-4 py-3 bg-cream border border-line rounded-full text-ink placeholder:text-ink-faint outline-none focus:border-ink/30 focus:bg-paper transition-colors"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-crypto-primary hover:bg-crypto-accent text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-accent w-full justify-center"
             >
               {loading ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Signing in...
-                </span>
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Signing in…
+                </>
               ) : (
-                'Sign In'
+                <>
+                  Sign in <ArrowRight className="w-4 h-4" />
+                </>
               )}
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-crypto-primary/10 text-center text-gray-400 text-sm">
-            <p>
-              Please use your registered account.
-            </p>
-          </div>
+          <p className="mt-8 text-xs text-ink-mute text-center">
+            Public site — <Link href="/" className="text-ink hover:text-accent-deep underline-offset-2 underline">go to homepage</Link>
+          </p>
         </div>
-      </div>
+      </main>
     </div>
   )
 }
