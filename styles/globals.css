@@ -4,186 +4,276 @@
 
 @layer base {
   :root {
-    --primary: #FF7400;
-    --dark-navy: #1A2A2F;
-    --background: #FFFFFF;
-    --text-charcoal: #1F2937;
-    /* Darker charcoal for better contrast */
-    --text-muted: #4B5563;
-    /* Medium gray */
-    --text-secondary: #6B7280;
-    /* Light gray but still legible */
-    --light-gray: #F3F4F6;
+    --paper: #FFFFFF;
+    --cream: #FBF9F4;
+    --ink: #15151A;
+    --ink-soft: #2D2D33;
+    --ink-mute: #5C5C66;
+    --line: #E8E4DB;
+    --accent: #E55A12;
+    --accent-deep: #B33F00;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    @apply bg-white text-crypto-charcoal font-sans antialiased;
-    max-width: 100vw;
-    overflow-x: hidden;
+    @apply bg-paper text-ink-soft font-sans antialiased;
+    font-feature-settings: "kern", "liga", "ss01";
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-heading font-bold text-crypto-navy;
-    letter-spacing: -0.02em;
+  ::selection {
+    @apply bg-accent/20 text-ink;
   }
-}
 
-a {
-  color: inherit;
-  text-decoration: none;
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-bold text-ink;
+    letter-spacing: -0.015em;
+  }
+
+  /* Smooth scrolling but respect user preference */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* Anchor offset so deep-links don't hide under any sticky chrome */
+  :target {
+    scroll-margin-top: 6rem;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* Better default focus styles */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
 }
 
 @layer components {
+
+  /*
+   * ----------------------------------------------------------------
+   * Containers
+   * ---------------------------------------------------------------- */
+  .container-hub {
+    @apply mx-auto w-full max-w-hub px-5 sm:px-6 lg:px-8;
+  }
+
+  .container-wide {
+    @apply mx-auto w-full max-w-wide px-5 sm:px-6 lg:px-8;
+  }
+
+  .container-reading {
+    @apply mx-auto w-full max-w-post px-5 sm:px-6 lg:px-0;
+  }
+
+  /*
+   * ----------------------------------------------------------------
+   * Buttons
+   * ---------------------------------------------------------------- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full
+           font-sans font-semibold text-sm transition-all duration-200
+           focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent;
+  }
+
   .btn-primary {
-    @apply bg-crypto-primary text-white px-8 py-4 rounded-xl font-bold transition-all duration-300 hover:-translate-y-1 border-none cursor-pointer inline-flex items-center justify-center;
+    @apply btn bg-ink text-paper hover:bg-ink-soft;
   }
 
-  .btn-primary:hover {
-    box-shadow: 0 20px 40px -15px rgba(255, 116, 0, 0.3);
+  .btn-accent {
+    @apply btn bg-accent text-paper hover:bg-accent-deep;
   }
 
-  .card-article {
-    @apply relative overflow-hidden rounded-[2rem] p-8 min-h-[360px] text-white shadow-3 transition-all duration-500 hover:-translate-y-2 hover:shadow-4 bg-gradient-to-br from-crypto-navy to-[#2C3E50] border border-white/5;
+  .btn-ghost {
+    @apply btn bg-transparent text-ink hover:bg-cream border border-line;
   }
 
-  .card-article::before {
-    content: '';
-    @apply absolute inset-0 bg-black/40 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-[1] transition-all duration-300;
+  .btn-link {
+    @apply inline-flex items-center gap-1.5 text-ink font-semibold text-sm
+           hover:text-accent-deep transition-colors;
   }
 
-  .card-article:hover::before {
-    @apply opacity-100;
+  /*
+   * ----------------------------------------------------------------
+   * Editorial cards
+   * ---------------------------------------------------------------- */
+  .card {
+    @apply bg-paper border border-line rounded-2xl overflow-hidden transition-all duration-300;
   }
 
-  .card-article>* {
-    @apply relative z-[2];
+  .card-hover {
+    @apply card hover:border-ink/20 hover:-translate-y-0.5;
+    box-shadow: 0 1px 2px rgba(15, 15, 20, 0.04);
   }
 
-  /* NEW: Topic Card for better hierarchy */
-  .card-topic {
-    @apply bg-white border border-gray-100 p-8 rounded-[2rem] text-center transition-all duration-300 hover:-translate-y-2;
+  .card-hover:hover {
+    box-shadow: 0 12px 32px -16px rgba(15, 15, 20, 0.16);
   }
 
-  .card-topic:hover {
-    box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.1);
-    @apply border-crypto-primary;
+  /*
+   * ----------------------------------------------------------------
+   * Tags / pills
+   * ---------------------------------------------------------------- */
+  .tag {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
+           text-[11px] font-sans font-semibold uppercase tracking-[0.08em]
+           bg-cream text-ink-soft border border-line transition-colors
+           hover:border-accent/40 hover:text-accent-deep;
   }
 
-  .card-topic .icon-wrapper {
-    @apply text-5xl mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 block;
+  .tag-accent {
+    @apply tag bg-accent-soft text-accent-deep border-accent/20;
   }
 
+  .eyebrow {
+    @apply inline-block text-[11px] font-sans font-bold uppercase
+           tracking-[0.16em] text-accent-deep;
+  }
+
+  .eyebrow-mute {
+    @apply inline-block text-[11px] font-sans font-bold uppercase
+           tracking-[0.16em] text-ink-mute;
+  }
+
+  /*
+   * ----------------------------------------------------------------
+   * Section / rule helpers
+   * ---------------------------------------------------------------- */
+  .section {
+    @apply py-16 md:py-20;
+  }
+
+  .section-tight {
+    @apply py-12 md:py-16;
+  }
+
+  .rule {
+    @apply h-px w-full bg-line;
+  }
+
+  .rule-soft {
+    @apply h-px w-full bg-line-soft;
+  }
+
+  /*
+   * ----------------------------------------------------------------
+   * Editorial title
+   * ---------------------------------------------------------------- */
+  .section-title {
+    @apply font-heading font-bold text-ink text-2xl md:text-3xl tracking-tight;
+  }
+
+  .page-title {
+    @apply font-heading font-bold text-ink tracking-tight;
+    font-size: clamp(2.25rem, 3vw + 1rem, 3.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  /*
+   * ----------------------------------------------------------------
+   * Article body — the core reading hub
+   * .article-body wraps the prose markdown content.
+   * ---------------------------------------------------------------- */
+  .article-body {
+    @apply text-ink-soft;
+    font-family: var(--font-serif), ui-serif, Georgia, serif;
+    font-size: 1.1875rem;
+    line-height: 1.8;
+  }
+
+  .article-body :where(p, ul, ol):not(.not-prose *) {
+    @apply max-w-reading;
+  }
+
+  /*
+   * ----------------------------------------------------------------
+   * Drop cap (used on first paragraph of articles)
+   * ---------------------------------------------------------------- */
+  .has-dropcap > p:first-of-type::first-letter {
+    @apply font-heading font-bold text-ink float-left;
+    font-size: 4.5rem;
+    line-height: 0.85;
+    margin: 0.4rem 0.6rem 0 0;
+    text-transform: uppercase;
+  }
+
+  /*
+   * ----------------------------------------------------------------
+   * Legacy helpers (kept for backwards compat, restyled to new system)
+   * ---------------------------------------------------------------- */
   .badge {
-    @apply inline-block px-3 py-1 rounded-md text-[10px] uppercase font-bold tracking-wider text-white;
-  }
-
-  .badge-bitcoin {
-    @apply bg-crypto-bitcoin;
-  }
-
-  .badge-ethereum {
-    @apply bg-crypto-ethereum;
-  }
-
-  .badge-invest {
-    @apply bg-crypto-invest;
-  }
-
-  .badge-finance {
-    @apply bg-crypto-finance;
-  }
-
-  .badge-press {
-    @apply bg-crypto-press;
-  }
-
-  .badge-products {
-    @apply bg-crypto-products;
+    @apply tag;
   }
 
   .navbar {
-    @apply bg-white/95 backdrop-blur-md px-6 py-5 sticky top-0 z-[1000] flex justify-between items-center shadow-sm border-b border-gray-100;
+    @apply bg-paper/95 backdrop-blur-md sticky top-0 z-40
+           border-b border-line transition-shadow duration-200;
   }
 
   .input-search {
-    @apply flex items-center bg-gray-50 border border-gray-200 rounded-2xl p-2.5 focus-within:bg-white focus-within:border-crypto-primary focus-within:ring-8 focus-within:ring-crypto-primary/5 transition-all w-full md:max-w-sm;
+    @apply flex items-center bg-cream border border-line rounded-full
+           focus-within:bg-paper focus-within:border-ink/20 transition-all w-full;
   }
 
   .input-search input {
-    @apply bg-transparent border-none outline-none text-base px-4 w-full text-crypto-navy font-medium placeholder:text-gray-400;
-  }
-
-  .input-search button {
-    @apply bg-crypto-navy text-white text-xs uppercase font-extrabold px-6 py-2.5 rounded-xl hover:bg-crypto-primary transition-all;
-  }
-
-  .grid-categories {
-    @apply grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-6;
+    @apply bg-transparent border-none outline-none text-sm px-4 py-2.5 w-full
+           text-ink font-medium placeholder:text-ink-faint;
   }
 }
 
-.prose {
-  @apply text-crypto-charcoal leading-relaxed max-w-none;
+/*
+ * --------------------------------------------------------------------
+ * Prose tweaks for the .prose Tailwind plugin output
+ * (defaults are configured via tailwind.config.ts → typography())
+ * -------------------------------------------------------------------- */
+.prose :is(h1, h2, h3, h4) {
+  @apply font-heading;
 }
 
-.prose h1,
-.prose h2,
-.prose h3,
-.prose h4 {
-  @apply text-crypto-navy font-bold;
+.prose img {
+  @apply rounded-xl;
 }
 
-.prose a {
-  @apply text-crypto-primary font-bold hover:text-crypto-accent underline underline-offset-4 transition-all;
+/* Auto-link heading anchors (rehype-autolink-headings) */
+.prose :is(h1, h2, h3, h4, h5, h6) > a {
+  @apply text-inherit no-underline relative;
+  text-decoration: none;
 }
 
-.prose blockquote {
-  @apply border-l-8 border-crypto-primary pl-10 py-4 my-12 italic text-crypto-navy bg-gray-50 rounded-r-3xl;
+.prose :is(h1, h2, h3, h4, h5, h6) > a:hover::before {
+  content: '#';
+  @apply absolute -left-6 text-accent/60 font-normal;
 }
 
+/*
+ * --------------------------------------------------------------------
+ * Utilities
+ * -------------------------------------------------------------------- */
 @layer utilities {
-  .shadow-1 {
-    @apply shadow-sm;
+  .shadow-1 { @apply shadow-sm; }
+  .shadow-2 { @apply shadow; }
+  .shadow-3 { @apply shadow-card; }
+  .shadow-4 { @apply shadow-card-hover; }
+  .shadow-5 { @apply shadow-lift; }
+
+  .text-balance { text-wrap: balance; }
+  .text-pretty { text-wrap: pretty; }
+
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
   }
-
-  .shadow-2 {
-    @apply shadow;
-  }
-
-  .shadow-3 {
-    @apply shadow-lg;
-  }
-
-  .shadow-4 {
-    @apply shadow-2xl;
-  }
-
-  @keyframes slideUp {
-    from {
-      transform: translateY(30px);
-      opacity: 0;
-    }
-
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-
-  .animate-slide-up {
-    animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-}
-
-.section-spacing {
-  @apply py-20 sm:py-24;
-}
-
-.container {
-  @apply max-w-7xl mx-auto px-6 sm:px-8 lg:px-10;
 }

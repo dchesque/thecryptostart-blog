@@ -4,7 +4,7 @@ import '../styles/globals.css'
 import { AuthProvider } from '@/components/AuthProvider'
 import { PublicShell } from '@/components/PublicShell'
 import { SITE_CONFIG } from '@/lib/constants'
-import { Montserrat, Open_Sans } from 'next/font/google'
+import { Montserrat, Open_Sans, Source_Serif_4 } from 'next/font/google'
 import { AdSenseScript } from '@/components/AdSense'
 import GoogleCMP from '@/components/GoogleCMP'
 import { WebVitals } from '@/components/WebVitals'
@@ -14,7 +14,7 @@ const montserrat = Montserrat({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-montserrat',
-  weight: ['400', '500', '700', '800'],
+  weight: ['400', '500', '600', '700', '800'],
 })
 
 const openSans = Open_Sans({
@@ -22,6 +22,14 @@ const openSans = Open_Sans({
   display: 'swap',
   variable: '--font-open-sans',
   weight: ['400', '500', '600', '700'],
+})
+
+const sourceSerif = Source_Serif_4({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-serif',
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
 })
 
 export const metadata: Metadata = {
@@ -138,7 +146,7 @@ export default async function RootLayout({
         <AdSenseScript />
       </head>
 
-      <body className={`${openSans.variable} ${montserrat.variable} font-sans bg-white text-crypto-charcoal antialiased`}>
+      <body className={`${openSans.variable} ${montserrat.variable} ${sourceSerif.variable} font-sans bg-paper text-ink antialiased`}>
         <AuthProvider>
           {/* Skip to main content (a11y) */}
           <a

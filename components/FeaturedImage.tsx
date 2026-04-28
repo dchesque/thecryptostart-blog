@@ -1,47 +1,51 @@
 import Image from 'next/image'
 
 interface FeaturedImageProps {
-    src: string
-    alt: string
-    caption?: string
-    priority?: boolean
-    className?: string
+  src: string
+  alt: string
+  caption?: string
+  priority?: boolean
+  className?: string
+  aspect?: '16/9' | '4/3' | '3/2' | '21/9'
 }
 
-/**
- * FeaturedImage component
- * Hero image with 16:9 aspect ratio, optimized with Next.js Image
- */
 export default function FeaturedImage({
-    src,
-    alt,
-    caption,
-    priority = false,
-    className = '',
+  src,
+  alt,
+  caption,
+  priority = false,
+  className = '',
+  aspect = '16/9',
 }: FeaturedImageProps) {
-    if (!src) return null
+  if (!src) return null
 
-    // Normalize URL
-    const normalizedSrc = src.startsWith('//') ? `https:${src}` : src
+  const normalizedSrc = src.startsWith('//') ? `https:${src}` : src
 
-    return (
-        <figure className={`my-8 ${className}`}>
-            <div className="aspect-video relative rounded-xl overflow-hidden shadow-lg border border-crypto-light">
-                <Image
-                    src={normalizedSrc}
-                    alt={alt}
-                    fill
-                    priority={priority}
-                    loading={priority ? 'eager' : 'lazy'}
-                    className="object-cover"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1000px"
-                />
-            </div>
-            {caption && (
-                <figcaption className="text-center text-sm text-crypto-charcoal/50 mt-3 italic">
-                    {caption}
-                </figcaption>
-            )}
-        </figure>
-    )
+  const aspectClass = {
+    '16/9': 'aspect-[16/9]',
+    '4/3': 'aspect-[4/3]',
+    '3/2': 'aspect-[3/2]',
+    '21/9': 'aspect-[21/9]',
+  }[aspect]
+
+  return (
+    <figure className={`my-8 ${className}`}>
+      <div className={`${aspectClass} relative rounded-2xl overflow-hidden bg-cream`}>
+        <Image
+          src={normalizedSrc}
+          alt={alt}
+          fill
+          priority={priority}
+          loading={priority ? 'eager' : 'lazy'}
+          className="object-cover"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1024px"
+        />
+      </div>
+      {caption && (
+        <figcaption className="mt-3 text-center text-sm text-ink-mute italic">
+          {caption}
+        </figcaption>
+      )}
+    </figure>
+  )
 }

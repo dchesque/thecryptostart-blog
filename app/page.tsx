@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { ArrowRight } from 'lucide-react'
+
 import { getAllPosts, getAllCategories } from '@/lib/posts'
 import FeaturedArticleCard from '@/components/FeaturedArticleCard'
 import BlogCardCompact from '@/components/BlogCardCompact'
@@ -7,56 +9,69 @@ import CategoryCard from '@/components/CategoryCard'
 import TrendingList from '@/components/TrendingList'
 import FAQAccordion from '@/components/FAQAccordion'
 import NewsletterCTALarge from '@/components/NewsletterCTALarge'
-import InlineNewsletter from '@/components/InlineNewsletter'
-import AdSense from '@/components/AdSense'
 
-import { SITE_CONFIG, CACHE_CONFIG } from '@/lib/constants'
+import { SITE_CONFIG } from '@/lib/constants'
 import { generateWebsiteSchema, generateOrganizationSchema } from '@/lib/seo'
 
-// ISR: Revalidate every 60 seconds
 export const revalidate = 61
 
 export const metadata: Metadata = {
-  title: `Crypto for Beginners — Bitcoin, Ethereum & DeFi Guides | ${SITE_CONFIG.name}`,
-  description: 'Learn how to invest in Bitcoin and Web3 with practical, educational guides focused on real security. The best starting point for your crypto journey.',
+  title: `Crypto for beginners — Bitcoin, Ethereum & Web3 guides | ${SITE_CONFIG.name}`,
+  description:
+    'Plain-language guides on Bitcoin, Ethereum and Web3, written for people starting their crypto journey. Practical, security-first, no hype.',
 }
 
 export default async function Homepage() {
   const [allPosts, categories] = await Promise.all([
-    getAllPosts({ limit: 20 }),
+    getAllPosts({ limit: 24 }),
     getAllCategories(),
   ])
 
-  const featuredPost = allPosts[0]
-  const recentPosts = allPosts.slice(1, 7) // Expanded to 6 articles
-  const trendingPosts = allPosts.slice(7, 12)
-  const secondaryFeaturedPosts = allPosts.slice(1, 4) // For the sidebar in featured section
+  const featured = allPosts[0]
+  const editorPicks = allPosts.slice(1, 4)
+  const latestPosts = allPosts.slice(4, 10)
+  const trending = allPosts.slice(10, 15)
+
+  // Topic hubs: 4 most populated categories with their latest 3 posts
+  const topicHubs = categories
+    .map((cat) => {
+      const items = allPosts.filter((p) => p.category === cat.slug).slice(0, 3)
+      return { category: cat, items }
+    })
+    .filter((hub) => hub.items.length >= 2)
+    .slice(0, 4)
 
   const faqs = [
     {
-      question: "Is Bitcoin still a good investment in 2026?",
-      answer: "Bitcoin remains the primary store of value in the digital asset space. While volatility persists, its institutional adoption and the 'digital gold' narrative continue to drive long-term structural demand."
+      question: 'Is Bitcoin still a good investment in 2026?',
+      answer:
+        'Bitcoin remains the primary store of value in the digital asset space. Volatility is real, but institutional adoption and the “digital gold” narrative continue to drive long-term structural demand.',
     },
     {
-      question: "How do I secure my crypto assets properly?",
-      answer: "True security involves using hardware wallets, never sharing your seed phrase, and understanding that 'not your keys, not your coins'. We recommend air-gapped solutions for significant holdings."
+      question: 'How do I secure my crypto assets properly?',
+      answer:
+        'True security means hardware wallets, never sharing your seed phrase, and understanding that “not your keys, not your coins”. For meaningful holdings, use air-gapped or multisig setups.',
     },
     {
-      question: "What is the difference between Ethereum and Bitcoin?",
-      answer: "Bitcoin is primarily digital money and a store of value. Ethereum is a global, decentralized computing platform that enables smart contracts and decentralized applications (dApps)."
+      question: 'What is the difference between Bitcoin and Ethereum?',
+      answer:
+        'Bitcoin is digital money and a store of value. Ethereum is a global, programmable computing platform that powers smart contracts and decentralized applications.',
     },
     {
-      question: "What are the best crypto exchanges for beginners?",
-      answer: "For beginners, we recommend regulated exchanges like Coinbase, Kraken, or Binance (depending on your region). Look for platforms with high liquidity, strong security records, and user-friendly interfaces."
+      question: 'Which exchanges are best for beginners?',
+      answer:
+        'For most beginners, regulated exchanges with strong security records — Coinbase, Kraken, or your regional equivalent — are a sensible starting point. Move funds off-exchange once you’re past the experiment phase.',
     },
     {
-      question: "Do I need to pay taxes on my crypto gains?",
-      answer: "In most jurisdictions, cryptocurrency is treated as property or capital assets. Selling, trading, or spending crypto usually triggers a taxable event. We strongly recommend using crypto tax software and consulting a professional."
+      question: 'Do I need to pay taxes on crypto gains?',
+      answer:
+        'In most jurisdictions, crypto is treated as property. Selling, trading or spending it usually triggers a taxable event. Use crypto tax software and consult a professional in your country.',
     },
     {
-      question: "What is a 'Cold Wallet' and do I need one?",
-      answer: "A cold wallet (or hardware wallet) is a physical device that stores your private keys offline. It is the gold standard for security because it protects your assets from online hacks. If you hold more than $500 in crypto, it's worth the investment."
-    }
+      question: 'What is a cold wallet and do I need one?',
+      answer:
+        'A cold (or hardware) wallet stores your private keys offline, isolated from internet attacks. If you hold more than a token amount, it’s the safest option for self-custody.',
+    },
   ]
 
   return (
@@ -64,166 +79,246 @@ export default async function Homepage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify([
-            generateWebsiteSchema(),
-            generateOrganizationSchema(),
-          ])
+          __html: JSON.stringify([generateWebsiteSchema(), generateOrganizationSchema()]),
         }}
       />
 
-      {/* 1. HERO SECTION (High Impact) */}
-      <section className="pt-24 pb-12 md:pt-32 md:pb-20 bg-gradient-to-r from-crypto-darker to-crypto-navy text-white relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-0 w-[1000px] h-[1000px] bg-crypto-primary/10 rounded-full blur-[160px] -mr-80 -mt-80" />
-          <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-crypto-secondary/5 rounded-full blur-[120px] -ml-40 -mb-40" />
-        </div>
-
-        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8 relative z-10 text-center md:text-left">
-          <div className="max-w-4xl mx-auto md:mx-0">
-            <h1 className="text-6xl md:text-8xl font-black mb-8 leading-[0.9] tracking-tighter text-white">
-              Guide to <span className="text-crypto-primary">Bitcoin</span>, Crypto & Web3.
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-12 leading-relaxed max-w-2xl font-medium">
-              Join 50,000+ readers learning how to invest and secure digital assets. Practical, non-technical guides for the next generation of finance.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-5 justify-center md:justify-start">
-              <Link href="/blog" className="px-10 py-5 bg-crypto-primary hover:bg-crypto-accent text-white font-black rounded-2xl transition-all shadow-xl shadow-crypto-primary/30 flex items-center justify-center text-lg">
-                Start Learning Now →
-              </Link>
-              <Link href="/blog" className="px-10 py-5 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl transition-all border border-white/10 flex items-center justify-center backdrop-blur-md text-lg">
-                Explore All Guides
-              </Link>
+      {/* ============================================================
+       *  HERO — editorial, light, balanced
+       * ============================================================ */}
+      <section className="border-b border-line">
+        <div className="container-hub pt-16 pb-12 md:pt-24 md:pb-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-end">
+            <div className="lg:col-span-7">
+              <span className="eyebrow">A crypto blog for beginners</span>
+              <h1 className="mt-4 font-heading font-bold tracking-tight leading-[1.02] text-ink text-balance text-5xl md:text-6xl lg:text-[4.5rem]">
+                Crypto, explained without the noise.
+              </h1>
+              <p className="mt-7 text-lg md:text-xl text-ink-soft leading-relaxed max-w-2xl">
+                Plain-language guides on Bitcoin, Ethereum, DeFi and Web3 — written
+                for people learning their way around digital money. Practical,
+                security-first, and free of hype.
+              </p>
+              <div className="mt-10 flex flex-wrap items-center gap-4">
+                <Link href="/blog" className="btn-accent">
+                  Start reading <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link href="#topics" className="btn-ghost">
+                  Browse topics
+                </Link>
+              </div>
             </div>
+
+            <aside className="lg:col-span-5 lg:pl-6 lg:border-l lg:border-line">
+              <div className="space-y-1.5 text-sm">
+                <div className="flex items-baseline gap-3">
+                  <span className="font-heading font-bold text-3xl text-ink tabular-nums">
+                    50k+
+                  </span>
+                  <span className="text-ink-mute">readers learning every month</span>
+                </div>
+                <div className="flex items-baseline gap-3">
+                  <span className="font-heading font-bold text-3xl text-ink tabular-nums">
+                    {allPosts.length}+
+                  </span>
+                  <span className="text-ink-mute">in-depth guides published</span>
+                </div>
+                <div className="flex items-baseline gap-3">
+                  <span className="font-heading font-bold text-3xl text-ink tabular-nums">
+                    {categories.length}
+                  </span>
+                  <span className="text-ink-mute">curated topic streams</span>
+                </div>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-line text-sm text-ink-mute italic leading-relaxed">
+                “The clearest crypto resource I’ve sent to family. No hype, no
+                shilling — just patient explainers.”
+                <br />
+                <span className="not-italic block mt-2 font-medium text-ink-soft">
+                  — early reader
+                </span>
+              </div>
+            </aside>
           </div>
         </div>
       </section>
 
-      {/* 2. FEATURED SECTION (No Sidebar/Optimized) */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <div className="flex items-center gap-4 mb-10">
-                <span className="w-2 h-8 bg-crypto-primary rounded-full" />
-                <h2 className="text-3xl md:text-4xl font-black text-crypto-darker tracking-tight">Featured of the Week</h2>
+      {/* ============================================================
+       *  LEAD STORY + EDITOR PICKS
+       * ============================================================ */}
+      {featured && (
+        <section className="border-b border-line">
+          <div className="container-hub py-16 md:py-20">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+              <div className="lg:col-span-8">
+                <span className="eyebrow">The lead</span>
+                <div className="mt-6">
+                  <FeaturedArticleCard post={featured} />
+                </div>
               </div>
-              {featuredPost && <FeaturedArticleCard post={featuredPost} />}
+
+              <aside className="lg:col-span-4 lg:pl-8 lg:border-l lg:border-line">
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="eyebrow-mute">Editor picks</span>
+                  <div className="flex-1 h-px bg-line" />
+                </div>
+                <div className="space-y-7">
+                  {editorPicks.map((post) => (
+                    <BlogCardCompact key={post.id} post={post} variant="minimal" />
+                  ))}
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ============================================================
+       *  LATEST GRID
+       * ============================================================ */}
+      {latestPosts.length > 0 && (
+        <section className="border-b border-line">
+          <div className="container-hub py-16 md:py-20">
+            <div className="flex items-end justify-between gap-6 mb-10">
+              <div className="max-w-xl">
+                <span className="eyebrow">Latest</span>
+                <h2 className="mt-2 section-title">Fresh from the desk</h2>
+                <p className="mt-3 text-ink-mute">
+                  Just-published explainers, security checklists and market notes.
+                </p>
+              </div>
+              <Link href="/blog" className="btn-link hidden sm:inline-flex">
+                All articles <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
 
-            <div className="lg:col-span-1">
-              <h3 className="text-xl font-black text-crypto-darker mb-8 uppercase tracking-widest text-secondary opacity-50">Related Highlights</h3>
-              <div className="space-y-6">
-                {secondaryFeaturedPosts.map(post => (
-                  <Link key={post.id} href={`/blog/${post.slug}`} className="group block border-b border-gray-100 pb-6 last:border-0 hover:translate-x-1 transition-transform">
-                    <span className="text-[10px] font-black uppercase text-crypto-primary mb-2 block">{post.category}</span>
-                    <h4 className="text-lg font-bold text-crypto-darker group-hover:text-crypto-primary transition-colors line-clamp-2 leading-snug">
-                      {post.title}
-                    </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+              {latestPosts.map((post) => (
+                <BlogCardCompact key={post.id} post={post} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ============================================================
+       *  TOPIC HUBS — content clusters
+       * ============================================================ */}
+      {topicHubs.length > 0 && (
+        <section id="topics" className="border-b border-line bg-cream">
+          <div className="container-hub py-16 md:py-20">
+            <div className="max-w-2xl mb-12">
+              <span className="eyebrow">Topic hubs</span>
+              <h2 className="mt-2 section-title">Choose a topic, go deep.</h2>
+              <p className="mt-3 text-ink-mute">
+                Each topic gathers our best work in one place — start anywhere and
+                keep reading until it clicks.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12">
+              {topicHubs.map(({ category, items }) => (
+                <article key={category.slug} className="bg-paper rounded-2xl border border-line p-7 md:p-8">
+                  <div className="flex items-start justify-between gap-4 mb-5">
+                    <div>
+                      <div className="flex items-center gap-2 text-2xl">
+                        <span aria-hidden>{category.icon || '✦'}</span>
+                        <h3 className="font-heading font-bold text-xl text-ink tracking-tight">
+                          {category.name}
+                        </h3>
+                      </div>
+                    </div>
+                    <Link
+                      href={`/blog?category=${category.slug}`}
+                      className="text-sm font-semibold text-ink-mute hover:text-ink transition-colors whitespace-nowrap"
+                    >
+                      Browse →
+                    </Link>
+                  </div>
+
+                  <ol className="divide-y divide-line">
+                    {items.map((post) => (
+                      <li key={post.id} className="py-4 first:pt-0 last:pb-0">
+                        <BlogCardCompact post={post} variant="horizontal" />
+                      </li>
+                    ))}
+                  </ol>
+                </article>
+              ))}
+            </div>
+
+            <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {categories.slice(0, 8).map((cat) => (
+                <CategoryCard key={cat.slug} category={cat} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ============================================================
+       *  TRENDING
+       * ============================================================ */}
+      {trending.length > 0 && (
+        <section className="border-b border-line">
+          <div className="container-hub py-16 md:py-20">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
+              <div className="lg:col-span-7">
+                <span className="eyebrow">Trending now</span>
+                <h2 className="mt-2 section-title">What readers are reading</h2>
+                <p className="mt-3 text-ink-mute mb-10 max-w-xl">
+                  The most-read pieces this week, ranked.
+                </p>
+                <TrendingList posts={trending} limit={5} />
+              </div>
+
+              <aside className="lg:col-span-5 lg:pl-8 lg:border-l lg:border-line">
+                <div className="rounded-2xl bg-cream border border-line p-7">
+                  <span className="eyebrow">Get the Sunday brief</span>
+                  <h3 className="mt-3 font-heading text-xl font-bold text-ink leading-tight">
+                    The week, distilled into one short email.
+                  </h3>
+                  <p className="mt-3 text-ink-mute text-sm leading-relaxed">
+                    Beginner-friendly explainers and security checklists, every Sunday.
+                  </p>
+                  <Link href="#newsletter" className="mt-5 btn-primary inline-flex">
+                    Subscribe <ArrowRight className="w-4 h-4" />
                   </Link>
-                ))}
-              </div>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ============================================================
+       *  FAQ
+       * ============================================================ */}
+      <section className="border-b border-line">
+        <div className="container-hub py-16 md:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <div className="lg:col-span-4">
+              <span className="eyebrow">FAQ</span>
+              <h2 className="mt-2 section-title">Common questions, plain answers.</h2>
+              <p className="mt-3 text-ink-mute leading-relaxed">
+                A quick reference to questions we hear from readers every week. For
+                deeper dives, head to our library.
+              </p>
+            </div>
+            <div className="lg:col-span-8">
+              <FAQAccordion faqs={faqs} />
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. LEADERBOARD AD */}
-      <section className="bg-gray-50 py-8 border-y border-gray-100">
-        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
-          <div className="text-center mb-4">
-            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Sponsored Content</span>
-          </div>
-          <AdSense slot="homepage-leaderboard" format="horizontal" />
-        </div>
-      </section>
-
-      {/* 4. RECENT POSTS GRID (Expanded) */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
-          <div className="flex flex-col md:flex-row items-end justify-between mb-12 gap-6">
-            <div className="max-w-xl">
-              <h2 className="text-4xl md:text-5xl font-black text-crypto-darker tracking-tight mb-4">The Latest Insights</h2>
-              <p className="text-gray-500 text-lg">Fresh perspectives on market moves, security updates, and Web3 trends.</p>
-            </div>
-            <Link href="/blog" className="px-6 py-3 bg-gray-50 hover:bg-gray-100 text-crypto-darker font-bold rounded-xl transition-all border border-gray-200 flex items-center gap-2">
-              View All Articles <span className="text-crypto-primary">→</span>
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {recentPosts.map(post => (
-              <BlogCardCompact key={post.id} post={post} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 5. NEWSLETTER CTA INLINE */}
-      <section className="py-8 bg-white">
-        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
-          <InlineNewsletter />
-        </div>
-      </section>
-
-      {/* 6. IN-CONTENT AD */}
-      <section className="py-12 bg-gray-50/50">
-        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
-          <AdSense slot="homepage-in-content" />
-        </div>
-      </section>
-
-      {/* 7. CATEGORIES SECTION */}
-      <section className="py-16 md:py-24 bg-white overflow-hidden">
-        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
-          <div className="flex items-center justify-between mb-12">
-            <h2 className="text-3xl md:text-4xl font-black text-crypto-darker tracking-tight">Explore by Topic</h2>
-            <div className="w-24 h-1 bg-gray-100 rounded-full" />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {categories.slice(0, 8).map(cat => (
-              <CategoryCard key={cat.slug} category={cat} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 8. TRENDING SECTION */}
-      <section className="py-16 md:py-24 bg-gray-50">
-        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
-          <div className="grid grid-cols-1 gap-16 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <h2 className="text-3xl md:text-4xl font-black text-crypto-darker tracking-tight mb-10">Trending Now</h2>
-              <TrendingList posts={trendingPosts} limit={5} />
-            </div>
-            <div className="hidden lg:block">
-              <div className="sticky top-24">
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 block text-center">Sponsored</span>
-                <AdSense slot="homepage-sidebar" format="vertical" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 9. FAQ SECTION */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-black text-crypto-darker tracking-tight mb-6">Frequently Asked Questions</h2>
-              <p className="text-gray-500 text-xl max-w-2xl mx-auto">Everything you need to know about the crypto world in simple terms.</p>
-            </div>
-            <FAQAccordion faqs={faqs} />
-          </div>
-        </div>
-      </section>
-
-      {/* 10. NEWSLETTER CTA FINAL */}
-      <section className="py-20 md:py-32 bg-crypto-darker">
-        <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
-          <NewsletterCTALarge />
-        </div>
+      {/* ============================================================
+       *  NEWSLETTER CTA
+       * ============================================================ */}
+      <section className="container-hub py-16 md:py-20">
+        <NewsletterCTALarge />
       </section>
     </>
   )
 }
-

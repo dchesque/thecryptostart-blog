@@ -1,126 +1,175 @@
 import type { Metadata } from 'next'
+import { CheckCircle2, ArrowRight } from 'lucide-react'
+import Breadcrumb from '@/components/Breadcrumb'
+import { SITE_CONFIG } from '@/lib/constants'
 
 export const metadata: Metadata = {
-    title: 'Submit a Guest Post | TheCryptoStart',
-    description: 'Write for TheCryptoStart and reach 50K+ monthly readers. Get backlink, build authority.',
+  title: `Write for us — Guest post guidelines | ${SITE_CONFIG.name}`,
+  description: `Pitch a guest post to ${SITE_CONFIG.name} and reach 50K+ monthly readers learning about crypto. Read our submission guidelines.`,
 }
 
-export default function GuestPostGuidelines() {
-    return (
-        <article className="max-w-4xl mx-auto py-16 px-6 prose prose-lg prose-invert lg:prose-xl">
-            <header className="mb-12 border-b border-white/10 pb-8">
-                <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-                    Guest Post Guidelines
-                </h1>
-                <p className="text-xl text-gray-400 mt-4 italic">
-                    Contribua para a educação cripto e alcance milhares de entusiastas.
-                </p>
-            </header>
+const benefits = [
+  'Reach 50,000+ monthly readers learning crypto.',
+  'Build authority and a quality byline in the space.',
+  'A real backlink to your site or project.',
+  'Coverage on our newsletter and socials.',
+]
 
-            <div className="bg-blue-900/10 border border-blue-500/20 rounded-2xl p-8 mb-12">
-                <h2 className="text-2xl font-semibold !mt-0">Por que escrever para o TheCryptoStart?</h2>
-                <ul className="grid md:grid-cols-2 gap-4 mt-6">
-                    <li className="flex items-start gap-3">
-                        <span className="text-cyan-400 font-bold">✓</span>
-                        <span>Alcance mais de 50.000 leitores mensais</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                        <span className="text-cyan-400 font-bold">✓</span>
-                        <span>Construa autoridade no mercado cripto</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                        <span className="text-cyan-400 font-bold">✓</span>
-                        <span>Link de qualidade (Backlink) para seu site/projeto</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                        <span className="text-cyan-400 font-bold">✓</span>
-                        <span>Exposição em nossas redes sociais</span>
-                    </li>
-                </ul>
+const requirements = [
+  { label: 'Length',     value: '1,500 – 2,500 words' },
+  { label: 'Originality', value: '100% original — never published elsewhere' },
+  { label: 'Topics',     value: 'Bitcoin, Ethereum, DeFi, security, Web3' },
+  { label: 'Quality',    value: 'Researched, fact-checked, beginner-friendly tone' },
+]
+
+const topics = [
+  'Bitcoin & Ethereum',
+  'DeFi & staking',
+  'Security & self-custody',
+  'Web3 & NFTs',
+  'Project breakdowns',
+  'Beginner investment guides',
+]
+
+const steps = [
+  { step: 'Pitch',       desc: 'Send your topic idea and a short outline.' },
+  { step: 'Approval',    desc: 'We review and reply within 2–3 working days.' },
+  { step: 'Drafting',    desc: 'Write the piece following our style guide.' },
+  { step: 'Editing',     desc: 'We polish copy, structure and SEO together.' },
+  { step: 'Publication', desc: 'Goes live with your byline, bio and links.' },
+]
+
+export default function GuestPostGuidelines() {
+  return (
+    <div className="bg-paper">
+      <header className="border-b border-line">
+        <div className="container-hub pt-10 md:pt-14 pb-12 md:pb-16">
+          <Breadcrumb
+            items={[
+              { name: 'Home', url: '/' },
+              { name: 'Write for us', url: '/guest-post-guidelines' },
+            ]}
+            className="mb-7"
+          />
+          <span className="eyebrow">Contribute</span>
+          <h1 className="mt-3 page-title text-balance max-w-3xl">
+            Write for {SITE_CONFIG.name}.
+          </h1>
+          <p className="mt-6 text-lg md:text-xl text-ink-soft leading-relaxed max-w-2xl">
+            We accept guest posts from writers, builders and researchers who can
+            explain crypto clearly to beginners. Here's what we publish, and how
+            to pitch.
+          </p>
+        </div>
+      </header>
+
+      <section className="container-hub py-16 md:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 max-w-wide mx-auto">
+          <div className="lg:col-span-8 space-y-16">
+
+            {/* Benefits */}
+            <div>
+              <h2 className="section-title mb-6">Why write with us</h2>
+              <ul className="grid sm:grid-cols-2 gap-y-3 gap-x-6">
+                {benefits.map((b) => (
+                  <li key={b} className="flex items-start gap-3 text-ink-soft">
+                    <CheckCircle2 className="w-5 h-5 mt-0.5 text-accent shrink-0" />
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            <section>
-                <h2 className="text-3xl font-bold mb-6">Requisitos Técnicos</h2>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-gray-300">
-                        <thead className="text-white border-b border-white/10">
-                            <tr>
-                                <th className="py-4 font-semibold">Critério</th>
-                                <th className="py-4 font-semibold">Padrão Esperado</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                            <tr>
-                                <td className="py-4 font-medium">Tamanho</td>
-                                <td className="py-4">1500 a 2500 palavras</td>
-                            </tr>
-                            <tr>
-                                <td className="py-4 font-medium">Originalidade</td>
-                                <td className="py-4">Conteúdo 100% inédito (não publicado antes)</td>
-                            </tr>
-                            <tr>
-                                <td className="py-4 font-medium">Tópicos</td>
-                                <td className="py-4">Bitcoin, Ethereum, DeFi, Segurança, Web3</td>
-                            </tr>
-                            <tr>
-                                <td className="py-4 font-medium">Qualidade</td>
-                                <td className="py-4">Pesquisa profunda, fatos verificados e tom educativo</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <section className="mt-16">
-                <h2 className="text-3xl font-bold mb-6">Tópicos que Aceitamos</h2>
-                <div className="grid md:grid-cols-3 gap-6 not-prose">
-                    {['Bitcoin & Ethereum', 'DeFi & Staking', 'Segurança Cripto', 'Web3 & NFTs', 'Análise de Projetos', 'Guias de Investimento'].map((topic) => (
-                        <div key={topic} className="p-4 rounded-xl bg-white/5 border border-white/10 text-center hover:border-cyan-500/50 transition-colors">
-                            {topic}
-                        </div>
+            {/* Requirements */}
+            <div>
+              <h2 className="section-title mb-6">What we look for</h2>
+              <div className="rounded-2xl border border-line overflow-hidden">
+                <table className="w-full text-left">
+                  <tbody className="divide-y divide-line">
+                    {requirements.map((req) => (
+                      <tr key={req.label}>
+                        <th
+                          scope="row"
+                          className="py-4 px-5 sm:px-6 align-top font-heading font-semibold text-ink w-1/3 bg-cream"
+                        >
+                          {req.label}
+                        </th>
+                        <td className="py-4 px-5 sm:px-6 text-ink-soft">{req.value}</td>
+                      </tr>
                     ))}
-                </div>
-            </section>
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-            <section className="mt-16 bg-gradient-to-br from-gray-900 to-black p-10 rounded-3xl border border-white/10 shadow-2xl">
-                <h2 className="text-3xl font-bold mb-8 text-center">Processo de Submissão</h2>
-                <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-cyan-500/30 before:to-transparent">
-                    {[
-                        { step: 'Pitch', desc: 'Envie sua ideia de tópico e breve resumo para análise.' },
-                        { step: 'Aprovação', desc: 'Nossa equipe revisa sua ideia e dá feedback em 2-3 dias.' },
-                        { step: 'Escrita', desc: 'Crie seu artigo seguindo nossas diretrizes de estilo.' },
-                        { step: 'Revisão', desc: 'Fazemos ajustes finos e sugestões de otimização SEO.' },
-                        { step: 'Publicação', desc: 'Seu artigo vai ao ar com sua biografia e créditos.' },
-                    ].map((item, i) => (
-                        <div key={i} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-full border border-cyan-500 bg-black text-cyan-400 font-bold shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
-                                {i + 1}
-                            </div>
-                            <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-xl border border-white/5 bg-white/5">
-                                <h3 className="font-bold text-lg text-white">{item.step}</h3>
-                                <p className="text-gray-400 text-sm mt-1">{item.desc}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </section>
+            {/* Topics */}
+            <div>
+              <h2 className="section-title mb-6">Topics we accept</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {topics.map((topic) => (
+                  <div
+                    key={topic}
+                    className="rounded-xl border border-line bg-cream px-4 py-3 text-center text-sm font-medium text-ink"
+                  >
+                    {topic}
+                  </div>
+                ))}
+              </div>
+            </div>
 
-            <section className="mt-16 text-center">
-                <h2 className="text-3xl font-bold mb-4">Pronto para começar?</h2>
-                <p className="text-gray-400 mb-8">
-                    Envie sua proposta de tópico para o e-mail:
-                </p>
-                <div className="inline-block p-6 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 mb-8">
-                    <span className="text-2xl font-mono text-cyan-400 font-bold">hello@thecryptostart.com</span>
-                </div>
-                <p className="text-sm text-gray-500">
-                    Assunto: "Guest Post Pitch: [Seu Tópico]"
-                </p>
-            </section>
+            {/* Process */}
+            <div>
+              <h2 className="section-title mb-6">How submission works</h2>
+              <ol className="space-y-5">
+                {steps.map((item, i) => (
+                  <li
+                    key={item.step}
+                    className="grid grid-cols-[auto_1fr] gap-5 items-start"
+                  >
+                    <span className="font-heading font-bold text-2xl text-ink-faint tabular-nums leading-none pt-1">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <div>
+                      <h3 className="font-heading text-lg font-bold text-ink">
+                        {item.step}
+                      </h3>
+                      <p className="mt-1 text-ink-soft">{item.desc}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
 
-            <footer className="mt-20 pt-10 border-t border-white/10 text-center text-sm text-gray-500">
-                <p>&copy; {new Date().getFullYear()} TheCryptoStart Blog. Reservamos o direito de recusar ou editar qualquer conteúdo submetido.</p>
-            </footer>
-        </article>
-    )
+          {/* Aside */}
+          <aside className="lg:col-span-4">
+            <div className="lg:sticky lg:top-24 rounded-2xl bg-cream border border-line p-7">
+              <span className="eyebrow">Pitch us</span>
+              <h3 className="mt-3 font-heading text-xl font-bold text-ink leading-snug">
+                Send a short outline.
+              </h3>
+              <p className="mt-2 text-ink-mute leading-relaxed">
+                Email us with the subject line:
+              </p>
+              <p className="mt-2 font-mono text-sm text-ink bg-paper border border-line rounded-lg px-3 py-2">
+                Guest pitch: [your topic]
+              </p>
+
+              <a
+                href={`mailto:${SITE_CONFIG.email}`}
+                className="mt-6 btn-accent w-full justify-center"
+              >
+                Email {SITE_CONFIG.email} <ArrowRight className="w-4 h-4" />
+              </a>
+
+              <p className="mt-4 text-xs text-ink-mute leading-relaxed">
+                We reserve the right to refuse or edit any submission. Pieces are
+                published under your byline with a short bio and one link.
+              </p>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </div>
+  )
 }

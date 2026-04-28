@@ -1,31 +1,20 @@
 import Link from 'next/link'
-import { getAllPosts, getTotalPostsCount, searchPosts, getAllCategories } from '@/lib/posts'
-import BlogCardCompact from '@/components/BlogCardCompact'
-import CategoryCard from '@/components/CategoryCard'
-import PopularPosts from '@/components/PopularPosts'
-import CategoryLinks from '@/components/CategoryLinks'
-import AdSense from '@/components/AdSense'
-import Sidebar from '@/components/Sidebar'
-import { BLOG_CONFIG, getCategoryName } from '@/lib/constants'
-import type { BlogCategory } from '@/types/blog'
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Metadata } from 'next'
-import { SITE_CONFIG } from '@/lib/constants'
 
-
-export async function generateMetadata({ searchParams }: BlogPageProps): Promise<Metadata> {
-  const { category } = await searchParams
-  if (category) {
-    const categoryName = getCategoryName(category)
-    return {
-      title: `${categoryName} Articles — Crypto Guides | ${SITE_CONFIG.name}`,
-      description: `Explore our best ${categoryName} articles. Learn everything about ${categoryName} with practical, beginner-friendly guides focused on real security and education.`,
-    }
-  }
-  return {
-    title: `Crypto Blog — Bitcoin, Ethereum & DeFi Articles | ${SITE_CONFIG.name}`,
-    description: 'Explore our latest articles about cryptocurrency, blockchain, DeFi, NFTs, and Web3. Practical guides for beginners and advanced investors.',
-  }
-}
+import {
+  getAllPosts,
+  getTotalPostsCount,
+  searchPosts,
+  getAllCategories,
+} from '@/lib/posts'
+import BlogCardCompact from '@/components/BlogCardCompact'
+import FeaturedArticleCard from '@/components/FeaturedArticleCard'
+import CategoryCard from '@/components/CategoryCard'
+import Breadcrumb from '@/components/Breadcrumb'
+import Sidebar from '@/components/Sidebar'
+import { BLOG_CONFIG, getCategoryName, SITE_CONFIG } from '@/lib/constants'
+import type { BlogCategory } from '@/types/blog'
 
 interface BlogPageProps {
   searchParams: Promise<{
@@ -35,15 +24,30 @@ interface BlogPageProps {
   }>
 }
 
+export async function generateMetadata({ searchParams }: BlogPageProps): Promise<Metadata> {
+  const { category } = await searchParams
+  if (category) {
+    const categoryName = getCategoryName(category)
+    return {
+      title: `${categoryName} — Crypto guides | ${SITE_CONFIG.name}`,
+      description: `Plain-language ${categoryName} guides, written for beginners. Browse our editorial library on ${categoryName}.`,
+    }
+  }
+  return {
+    title: `The library — Bitcoin, Ethereum & Web3 | ${SITE_CONFIG.name}`,
+    description:
+      'Browse our editorial library: Bitcoin, Ethereum, DeFi, security and Web3 — all written for crypto beginners.',
+  }
+}
+
 export default async function BlogPage({ searchParams }: BlogPageProps) {
   const { page: pageParam, category: categoryParam, search: searchParam } = await searchParams
   const page = parseInt(pageParam || '1', 10)
   const category = categoryParam as BlogCategory | undefined
   const searchQuery = searchParam?.trim()
 
-  // Fetch posts based on search or regular listing
-  let posts
-  let totalCount
+  let posts: any[] = []
+  let totalCount = 0
   let categories: any[] = []
 
   if (searchQuery) {
@@ -65,8 +69,13 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
   }
 
   const totalPages = Math.ceil(totalCount / BLOG_CONFIG.postsPerPage)
+  const isFiltered = Boolean(category || searchQuery)
+  const lead = !isFiltered && page === 1 ? posts[0] : null
+  const grid = !isFiltered && page === 1 ? posts.slice(1) : posts
 
-  // Build pagination URL
+  const categoryName = category ? getCategoryName(category) : null
+
+  // Pagination URL builder
   const buildPageUrl = (pageNum: number) => {
     const params = new URLSearchParams()
     params.set('page', pageNum.toString())
@@ -75,117 +84,214 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
     return `/blog?${params.toString()}`
   }
 
+  // Breadcrumbs
+  const crumbs = [
+    { name: 'Home', url: '/' },
+    { name: 'Articles', url: '/blog' },
+    ...(category ? [{ name: categoryName!, url: `/blog?category=${category}` }] : []),
+    ...(searchQuery ? [{ name: `“${searchQuery}”`, url: '#' }] : []),
+  ]
+
+  // Page kicker / title
+  const kicker = searchQuery
+    ? 'Search results'
+    : category
+      ? 'Topic'
+      : 'The library'
+  const title = searchQuery
+    ? `Results for “${searchQuery}”`
+    : category
+      ? categoryName!
+      : 'Editorial guides on crypto, written for beginners'
+  const subtitle = searchQuery
+    ? `${posts.length} ${posts.length === 1 ? 'article' : 'articles'} found.`
+    : category
+      ? `Every article we've published on ${categoryName?.toLowerCase()} — practical, security-first and beginner-friendly.`
+      : 'A growing library of explainers, security guides and market commentary. No jargon. No hype.'
+
   return (
-    <div className="min-h-screen bg-gray-50/30 py-24">
-      <div className="w-full max-w-[1440px] mx-auto px-4 lg:px-8">
+    <div className="bg-paper">
+      {/* ------------------------------------------------------------
+       *  PAGE HEADER
+       * ------------------------------------------------------------ */}
+      <header className="border-b border-line">
+        <div className="container-hub pt-10 md:pt-14 pb-12 md:pb-16">
+          <Breadcrumb items={crumbs} className="mb-7" />
 
-        {/* Header Section */}
-        <div className="mb-12">
-          <nav className="mb-6 text-sm text-gray-400 font-medium" aria-label="Breadcrumb">
-            <Link href="/" className="hover:text-crypto-primary transition-colors">Home</Link>
-            <span className="mx-2">/</span>
-            <span className="text-crypto-darker">Blog</span>
-          </nav>
-
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div>
-              <h1 className="text-4xl md:text-6xl font-black text-crypto-darker tracking-tight mb-4">
-                {searchQuery
-                  ? `Results for: "${searchQuery}"`
-                  : category
-                    ? getCategoryName(category)
-                    : 'Library & Insights'
-                }
-              </h1>
-              <p className="text-lg text-gray-500 max-w-2xl font-medium">
-                {category
-                  ? `Exploring the best guides and tutorials on ${getCategoryName(category)}.`
-                  : 'Your ultimate encyclopedia on the cryptoasset market, security, and innovation.'
-                }
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+            <div className="lg:col-span-8">
+              <span className="eyebrow">{kicker}</span>
+              <h1 className="mt-3 page-title text-balance max-w-3xl">{title}</h1>
+              <p className="mt-5 text-lg text-ink-soft leading-relaxed max-w-2xl">
+                {subtitle}
               </p>
             </div>
 
-            {/* Sticky/Modern Search Form */}
-            <form action="/blog" method="GET" className="w-full md:max-w-xs relative group">
-              <input
-                type="text"
-                name="search"
-                placeholder="Search resources..."
-                defaultValue={searchQuery}
-                className="w-full pl-12 pr-4 py-3 bg-white border border-gray-100 rounded-2xl shadow-sm focus:ring-2 focus:ring-crypto-primary/20 outline-none transition-all font-medium text-sm"
-              />
-              <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-crypto-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </form>
-          </div>
-        </div>
-
-        {/* 2-Column Grid Layout */}
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_300px]">
-
-          {/* Main Content (List) */}
-          <div>
-            {/* Top Ad */}
-            <div className="mb-10 rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 min-h-[120px] flex items-center justify-center">
-              <AdSense slot="blog-top" />
+            <div className="lg:col-span-4">
+              <form action="/blog" method="GET" className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-mute" />
+                <input
+                  type="search"
+                  name="search"
+                  defaultValue={searchQuery || ''}
+                  placeholder="Search the library…"
+                  className="w-full pl-11 pr-4 py-3 bg-cream border border-line rounded-full text-sm text-ink placeholder:text-ink-faint outline-none focus:border-ink/30 transition-colors"
+                />
+              </form>
             </div>
+          </div>
 
+          {/* Topic chips */}
+          {!searchQuery && (
+            <nav aria-label="Topics" className="mt-10 flex flex-wrap gap-2">
+              <Link
+                href="/blog"
+                className={`tag ${!category ? 'bg-ink text-paper border-ink hover:text-paper hover:border-ink' : ''}`}
+              >
+                All
+              </Link>
+              {categories.map((cat) => (
+                <Link
+                  key={cat.slug}
+                  href={`/blog?category=${cat.slug}`}
+                  className={`tag ${category === cat.slug ? 'bg-ink text-paper border-ink hover:text-paper hover:border-ink' : ''}`}
+                >
+                  {cat.name}
+                </Link>
+              ))}
+            </nav>
+          )}
+        </div>
+      </header>
+
+      {/* ------------------------------------------------------------
+       *  LEAD STORY (only on the unfiltered first page)
+       * ------------------------------------------------------------ */}
+      {lead && (
+        <section className="border-b border-line">
+          <div className="container-hub py-12 md:py-16">
+            <FeaturedArticleCard post={lead} />
+          </div>
+        </section>
+      )}
+
+      {/* ------------------------------------------------------------
+       *  ARTICLE GRID + SIDEBAR
+       * ------------------------------------------------------------ */}
+      <section className="container-hub py-12 md:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-12 lg:gap-16">
+          <div>
             {posts.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                  {posts.map((post) => (
+                <div className="flex items-center justify-between gap-4 mb-8">
+                  <h2 className="font-heading text-xl font-bold text-ink tracking-tight">
+                    {searchQuery ? 'Matching articles' : category ? `Latest ${categoryName}` : 'Latest articles'}
+                  </h2>
+                  {totalCount > BLOG_CONFIG.postsPerPage && !searchQuery && (
+                    <span className="text-sm text-ink-mute">
+                      Page {page} of {totalPages}
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-12">
+                  {grid.map((post) => (
                     <BlogCardCompact key={post.id} post={post} />
                   ))}
                 </div>
 
-                {/* Pagination */}
                 {totalPages > 1 && !searchQuery && (
-                  <nav className="flex items-center justify-center gap-2 py-8 border-t border-gray-100" aria-label="Pagination">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
-                      const isCurrent = pageNum === page
-                      return (
-                        <Link
-                          key={pageNum}
-                          href={buildPageUrl(pageNum)}
-                          className={`w-12 h-12 rounded-xl font-bold flex items-center justify-center transition-all ${isCurrent
-                            ? 'bg-crypto-primary text-white shadow-lg'
-                            : 'bg-white text-crypto-navy hover:bg-gray-100 border border-gray-100'
-                            }`}
-                        >
-                          {pageNum}
-                        </Link>
-                      )
-                    })}
+                  <nav
+                    className="mt-16 pt-8 border-t border-line flex items-center justify-between"
+                    aria-label="Pagination"
+                  >
+                    {page > 1 ? (
+                      <Link
+                        href={buildPageUrl(page - 1)}
+                        className="btn-ghost"
+                      >
+                        <ChevronLeft className="w-4 h-4" /> Previous
+                      </Link>
+                    ) : (
+                      <span />
+                    )}
+
+                    <ol className="hidden sm:flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                        const isCurrent = pageNum === page
+                        return (
+                          <li key={pageNum}>
+                            <Link
+                              href={buildPageUrl(pageNum)}
+                              aria-current={isCurrent ? 'page' : undefined}
+                              className={`w-10 h-10 inline-flex items-center justify-center rounded-full text-sm font-semibold transition-colors ${
+                                isCurrent
+                                  ? 'bg-ink text-paper'
+                                  : 'text-ink-mute hover:bg-cream hover:text-ink'
+                              }`}
+                            >
+                              {pageNum}
+                            </Link>
+                          </li>
+                        )
+                      })}
+                    </ol>
+
+                    {page < totalPages ? (
+                      <Link
+                        href={buildPageUrl(page + 1)}
+                        className="btn-ghost"
+                      >
+                        Next <ChevronRight className="w-4 h-4" />
+                      </Link>
+                    ) : (
+                      <span />
+                    )}
                   </nav>
                 )}
               </>
             ) : (
-              <div className="text-center py-24 bg-white rounded-[3rem] border border-gray-100">
-                <div className="text-6xl mb-6">🔍</div>
-                <h3 className="text-2xl font-black text-crypto-darker mb-2">Nothing found</h3>
-                <p className="text-gray-500 mb-8 max-w-sm mx-auto">We couldn't find any articles for your search. Try different keywords or explore our categories.</p>
-                <Link href="/blog" className="px-8 py-3 bg-crypto-primary text-white font-bold rounded-xl">View All</Link>
+              <div className="border border-line rounded-2xl p-12 text-center bg-cream">
+                <h3 className="font-heading text-xl font-bold text-ink mb-2">
+                  Nothing matched.
+                </h3>
+                <p className="text-ink-mute max-w-sm mx-auto mb-6">
+                  We couldn't find articles for that search. Try a different keyword or browse our topics.
+                </p>
+                <Link href="/blog" className="btn-primary">View all articles</Link>
               </div>
             )}
           </div>
 
-          {/* Sidebar */}
-          <Sidebar categories={categories} recentPosts={posts} />
+          <Sidebar
+            categories={categories}
+            recentPosts={posts.slice(0, 5)}
+          />
         </div>
+      </section>
 
-        {/* Categories Section (Secondary Grid) */}
-        {!category && !searchQuery && (
-          <section className="mt-24 pt-24 border-t border-gray-100">
-            <h2 className="text-3xl font-black text-crypto-darker mb-10">Articles by Category</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {categories.map(cat => (
+      {/* ------------------------------------------------------------
+       *  TOPIC HUBS — only on the unfiltered first page
+       * ------------------------------------------------------------ */}
+      {!isFiltered && page === 1 && categories.length > 0 && (
+        <section className="border-t border-line bg-cream">
+          <div className="container-hub py-16 md:py-20">
+            <div className="max-w-2xl mb-10">
+              <span className="eyebrow">Browse the library</span>
+              <h2 className="mt-3 section-title">Choose a topic, go deep.</h2>
+              <p className="mt-3 text-ink-soft leading-relaxed">
+                Each topic is a curated stream of guides — start with the basics or
+                jump into more advanced material when you're ready.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {categories.map((cat) => (
                 <CategoryCard key={cat.slug} category={cat} />
               ))}
             </div>
-          </section>
-        )}
-      </div>
+          </div>
+        </section>
+      )}
     </div>
   )
 }

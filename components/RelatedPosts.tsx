@@ -1,91 +1,68 @@
 import Link from 'next/link'
 import Image from 'next/image'
-
 import type { BlogPost } from '@/types/blog'
 import { getCategoryName } from '@/lib/constants'
 
 interface RelatedPostsProps {
   posts: BlogPost[]
+  title?: string
 }
 
 /**
- * Related posts component
- * Displays a grid of related articles
+ * Related-articles strip placed after the article body.
+ * Editorial-light: no shadows, no overlay badges.
  */
-export default function RelatedPosts({ posts }: RelatedPostsProps) {
-  if (posts.length === 0) return null
+export default function RelatedPosts({ posts, title = 'Continue reading' }: RelatedPostsProps) {
+  if (!posts || posts.length === 0) return null
 
   return (
-    <section className="pt-12 border-t border-gray-100">
-      <h2 className="text-3xl font-bold text-crypto-navy mb-8 flex items-center gap-3">
-        <span className="w-2 h-8 bg-crypto-primary rounded-full"></span>
-        Related Articles
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {posts.slice(0, 3).map((post) => (
-          <article
-            key={post.id}
-            className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-          >
-            <Link href={`/blog/${post.slug}`} className="flex flex-col h-full">
-              {/* Image Container */}
-              <div className="aspect-video relative overflow-hidden bg-gray-100">
-                {post.featuredImage ? (
-                  <Image
-                    src={post.featuredImage.url}
-                    alt={post.featuredImage.title || post.title}
-                    fill
-                    loading="lazy"
-                    className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-crypto-primary/20 to-crypto-accent/20 flex items-center justify-center">
-                    <span className="text-4xl opacity-30">📄</span>
+    <section className="not-prose">
+      <div className="flex items-end justify-between gap-4 mb-8">
+        <h2 className="font-heading text-2xl md:text-[1.625rem] font-bold text-ink tracking-tight">
+          {title}
+        </h2>
+        <Link
+          href="/blog"
+          className="hidden sm:inline-flex items-center gap-1 text-sm text-ink-mute hover:text-ink transition-colors"
+        >
+          Browse all articles →
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
+        {posts.slice(0, 3).map((post) => {
+          const categoryName = getCategoryName(post.category)
+          return (
+            <article key={post.id} className="group">
+              <Link href={`/blog/${post.slug}`} className="block">
+                {post.featuredImage && (
+                  <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-cream mb-5">
+                    <Image
+                      src={post.featuredImage.url}
+                      alt={post.featuredImage.title || post.title}
+                      fill
+                      loading="lazy"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
                   </div>
                 )}
-                {/* Category Badge on Image */}
-                <div className="absolute top-4 left-4">
-                  <span className="px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest text-crypto-primary shadow-sm border border-white/20">
-                    {getCategoryName(post.category)}
-                  </span>
-                </div>
-              </div>
 
-              {/* Content Container */}
-              <div className="p-6 flex flex-col flex-1">
-                <h3 className="text-lg font-bold text-crypto-navy mb-3 line-clamp-2 group-hover:text-crypto-primary transition-colors min-h-[3.5rem]">
+                <span className="eyebrow">{categoryName}</span>
+                <h3 className="mt-3 font-heading text-lg leading-snug text-ink group-hover:text-accent-deep transition-colors line-clamp-3 text-balance">
                   {post.title}
                 </h3>
-                
-                {/* Author & Reading Time Meta */}
-                <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between text-xs text-gray-500">
-                  <div className="flex items-center gap-2">
-                    {post.author.image && (
-                      <div className="relative w-6 h-6 rounded-full overflow-hidden border border-gray-200">
-                        <Image 
-                          src={post.author.image} 
-                          alt={post.author.name} 
-                          fill 
-                          className="object-cover"
-                        />
-                      </div>
-                    )}
-                    <span className="font-semibold text-crypto-charcoal/80">{post.author.name}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 opacity-60">
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>{post.readingTime} min</span>
-                  </div>
+
+                <div className="mt-3 flex items-center gap-3 text-xs text-ink-mute">
+                  <span className="font-medium text-ink-soft">{post.author.name}</span>
+                  <span aria-hidden className="w-1 h-1 rounded-full bg-line" />
+                  <span>{post.readingTime} min read</span>
                 </div>
-              </div>
-            </Link>
-          </article>
-        ))}
+              </Link>
+            </article>
+          )
+        })}
       </div>
     </section>
   )
 }
-

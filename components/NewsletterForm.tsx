@@ -1,72 +1,86 @@
 'use client'
 
 import { useState, FormEvent } from 'react'
+import { ArrowRight } from 'lucide-react'
 
 interface NewsletterFormProps {
   className?: string
+  variant?: 'light' | 'dark'
+  buttonLabel?: string
 }
 
-/**
- * Newsletter subscription form component
- * Handles email collection for marketing
- */
-export default function NewsletterForm({ className = '' }: NewsletterFormProps) {
+export default function NewsletterForm({
+  className = '',
+  variant = 'light',
+  buttonLabel = 'Subscribe',
+}: NewsletterFormProps) {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-
     if (!email.trim()) return
-
     setStatus('loading')
-
     try {
-      // TODO: Implement newsletter API endpoint
-      // For now, simulate a successful subscription
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
+      // TODO: Wire to /api/newsletter
+      await new Promise(resolve => setTimeout(resolve, 700))
       setStatus('success')
-      setMessage('Thanks for subscribing! Check your inbox to confirm.')
+      setMessage('Subscribed. Check your inbox to confirm.')
       setEmail('')
-    } catch (error) {
+    } catch {
       setStatus('error')
       setMessage('Something went wrong. Please try again.')
     }
   }
 
+  const isDark = variant === 'dark'
+
+  const inputCls = isDark
+    ? 'bg-white/5 border-white/15 text-paper placeholder:text-white/40 focus:border-white/40'
+    : 'bg-paper border-line text-ink placeholder:text-ink-faint focus:border-ink/30'
+
+  const buttonCls = isDark
+    ? 'bg-paper text-ink hover:bg-cream'
+    : 'bg-ink text-paper hover:bg-ink-soft'
+
+  const messageCls = isDark
+    ? status === 'success' ? 'text-paper/90' : 'text-red-300'
+    : status === 'success' ? 'text-accent-deep' : 'text-red-600'
+
   return (
     <div className={`w-full ${className}`}>
-      <form onSubmit={handleSubmit} className="relative group">
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
+        <label className="sr-only" htmlFor="newsletter-email">Email address</label>
         <input
+          id="newsletter-email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="your@email.com"
+          placeholder="you@example.com"
           required
           disabled={status === 'loading'}
-          className="w-full pl-5 pr-32 py-3 rounded-xl bg-white border-2 border-crypto-primary/10 text-crypto-navy placeholder:text-crypto-charcoal/30 focus:border-crypto-primary focus:outline-none focus:ring-4 focus:ring-crypto-primary/5 transition-all text-base font-medium disabled:opacity-50"
+          autoComplete="email"
+          className={`flex-1 px-5 py-3 rounded-full border outline-none text-base transition-colors disabled:opacity-50 ${inputCls}`}
         />
         <button
           type="submit"
           disabled={status === 'loading'}
-          className="absolute right-1.5 top-1.5 bottom-1.5 px-6 rounded-lg bg-crypto-primary hover:bg-crypto-accent text-white font-bold transition-all flex items-center gap-2 group-hover:shadow-lg disabled:opacity-50 text-sm"
+          className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all disabled:opacity-50 ${buttonCls}`}
         >
           {status === 'loading' ? (
-            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <span className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
           ) : (
-            'Subscribe'
+            <>
+              {buttonLabel}
+              <ArrowRight className="w-4 h-4" />
+            </>
           )}
         </button>
       </form>
 
-      {status !== 'idle' && status !== 'loading' && (
-        <p
-          className={`mt-4 text-sm font-medium ${status === 'success' ? 'text-crypto-primary' : 'text-crypto-danger'
-            }`}
-          role="alert"
-        >
+      {(status === 'success' || status === 'error') && (
+        <p className={`mt-3 text-sm ${messageCls}`} role="status" aria-live="polite">
           {message}
         </p>
       )}
