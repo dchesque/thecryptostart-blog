@@ -16,8 +16,8 @@ export default async function MarketSnapshot({ className = '', limit = 4 }: Mark
 
   return (
     <section className={className}>
-      <div className="flex items-end justify-between gap-4 mb-8">
-        <div>
+      <div className="flex items-end justify-between gap-4 mb-6 sm:mb-8">
+        <div className="min-w-0">
           <span className="eyebrow">Market snapshot</span>
           <h2 className="mt-2 section-title">Where the market sits today.</h2>
           <p className="mt-2 text-ink-mute text-sm">
@@ -26,13 +26,13 @@ export default async function MarketSnapshot({ className = '', limit = 4 }: Mark
         </div>
         <Link
           href="/blog?category=investing-and-strategy"
-          className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-ink-mute hover:text-ink transition-colors"
+          className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-ink-mute hover:text-ink transition-colors whitespace-nowrap shrink-0"
         >
           Strategy guides <ArrowUpRight className="w-4 h-4" />
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {coins.map((coin) => {
           const up = coin.change24h > 0
           const flat = coin.change24h === 0
@@ -43,30 +43,30 @@ export default async function MarketSnapshot({ className = '', limit = 4 }: Mark
           return (
             <article
               key={coin.id}
-              className="rounded-2xl border border-line bg-paper p-5 flex flex-col gap-4"
+              className="rounded-xl sm:rounded-2xl border border-line bg-paper p-4 sm:p-5 flex flex-col gap-3 sm:gap-4"
             >
-              <header className="flex items-start justify-between gap-3">
-                <div>
+              <header className="flex items-start justify-between gap-2 sm:gap-3">
+                <div className="min-w-0">
                   <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-mute">
                     {coin.symbol} · USD
                   </div>
-                  <div className="font-heading text-base font-semibold text-ink mt-0.5">
+                  <div className="font-heading text-sm sm:text-base font-semibold text-ink mt-0.5 truncate">
                     {coin.name}
                   </div>
                 </div>
                 <span
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${chipBg} ${deltaCls} text-[11px] font-semibold num`}
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${chipBg} ${deltaCls} text-[10px] sm:text-[11px] font-semibold num shrink-0`}
                 >
                   {Icon && <Icon className="w-3 h-3" aria-hidden />}
                   {formatChange(coin.change24h)}
                 </span>
               </header>
 
-              <div className="num font-heading text-2xl font-bold text-ink leading-none">
+              <div className="num font-heading text-xl sm:text-2xl font-bold text-ink leading-none">
                 ${formatPrice(coin.price)}
               </div>
 
-              <div className="text-[11px] text-ink-mute">
+              <div className="text-[10px] sm:text-[11px] text-ink-mute">
                 24h change · USD spot
               </div>
             </article>

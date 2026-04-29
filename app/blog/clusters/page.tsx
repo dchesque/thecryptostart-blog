@@ -44,32 +44,32 @@ export default async function ContentClustersPage() {
   return (
     <div className="bg-paper">
       <header className="border-b border-line">
-        <div className="container-hub pt-10 md:pt-14 pb-12 md:pb-16">
+        <div className="container-hub pt-8 sm:pt-10 md:pt-14 pb-10 sm:pb-12 md:pb-16">
           <Breadcrumb
             items={[
               { name: 'Home', url: '/' },
               { name: 'Articles', url: '/blog' },
               { name: 'Topic clusters', url: '/blog/clusters' },
             ]}
-            className="mb-7"
+            className="mb-6 sm:mb-7"
           />
           <span className="eyebrow">The full map</span>
           <h1 className="mt-3 page-title text-balance max-w-3xl">
             Every article, organised by topic.
           </h1>
-          <p className="mt-6 text-lg text-ink-soft leading-relaxed max-w-2xl">
+          <p className="mt-5 sm:mt-6 text-base sm:text-lg text-ink-soft leading-relaxed max-w-2xl">
             A complete index of the library — pick a topic, see what's there, and
             jump straight to the article that answers your question.
           </p>
         </div>
       </header>
 
-      <section className="container-hub py-16 md:py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <section className="container-hub py-12 sm:py-16 md:py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
           {allClusters.map(({ category, posts: clusterPosts }) => (
             <article
               key={category.slug}
-              className="rounded-2xl border border-line bg-paper p-7 flex flex-col"
+              className="rounded-2xl border border-line bg-paper p-5 sm:p-7 flex flex-col"
             >
               <div className="flex items-start justify-between gap-4 mb-5">
                 <div>

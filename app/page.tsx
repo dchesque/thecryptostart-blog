@@ -88,19 +88,19 @@ export default async function Homepage() {
        *  HERO — preserved (editorial, light, balanced)
        * ============================================================ */}
       <section className="border-b border-line">
-        <div className="container-hub pt-16 pb-12 md:pt-24 md:pb-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-end">
+        <div className="container-hub pt-12 pb-10 sm:pt-16 sm:pb-12 md:pt-24 md:pb-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-end">
             <div className="lg:col-span-7">
               <span className="eyebrow">A crypto blog for beginners</span>
-              <h1 className="mt-4 font-heading font-bold tracking-tight leading-[1.02] text-ink text-balance text-5xl md:text-6xl lg:text-[4.5rem]">
+              <h1 className="mt-4 font-heading font-bold tracking-tight leading-[1.05] text-ink text-balance text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem]">
                 Crypto, explained without the noise.
               </h1>
-              <p className="mt-7 text-lg md:text-xl text-ink-soft leading-relaxed max-w-2xl">
+              <p className="mt-6 sm:mt-7 text-base sm:text-lg md:text-xl text-ink-soft leading-relaxed max-w-2xl">
                 Plain-language guides on Bitcoin, Ethereum, DeFi and Web3 — written
                 for people learning their way around digital money. Practical,
                 security-first, and free of hype.
               </p>
-              <div className="mt-10 flex flex-wrap items-center gap-4">
+              <div className="mt-8 sm:mt-10 flex flex-wrap items-center gap-3 sm:gap-4">
                 <Link href="/blog" className="btn-accent">
                   Start reading <ArrowRight className="w-4 h-4" />
                 </Link>
@@ -110,23 +110,23 @@ export default async function Homepage() {
               </div>
             </div>
 
-            <aside className="lg:col-span-5 lg:pl-6 lg:border-l lg:border-line">
+            <aside className="lg:col-span-5 lg:pl-6 lg:border-l lg:border-line pt-8 lg:pt-0 mt-6 lg:mt-0 border-t border-line lg:border-t-0">
               <div className="space-y-1.5 text-sm">
                 <div className="flex items-baseline gap-3">
-                  <span className="num font-bold text-3xl text-ink">50k+</span>
+                  <span className="num font-bold text-2xl sm:text-3xl text-ink">50k+</span>
                   <span className="text-ink-mute">readers learning every month</span>
                 </div>
                 <div className="flex items-baseline gap-3">
-                  <span className="num font-bold text-3xl text-ink">{allPosts.length}+</span>
+                  <span className="num font-bold text-2xl sm:text-3xl text-ink">{allPosts.length}+</span>
                   <span className="text-ink-mute">in-depth guides published</span>
                 </div>
                 <div className="flex items-baseline gap-3">
-                  <span className="num font-bold text-3xl text-ink">{categories.length}</span>
+                  <span className="num font-bold text-2xl sm:text-3xl text-ink">{categories.length}</span>
                   <span className="text-ink-mute">curated topic streams</span>
                 </div>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-line text-sm text-ink-mute italic leading-relaxed">
+              <div className="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-line text-sm text-ink-mute italic leading-relaxed">
                 “The clearest crypto resource I’ve sent to family. No hype, no
                 shilling — just patient explainers.”
                 <br />
@@ -154,12 +154,12 @@ export default async function Homepage() {
                 <FeaturedArticleCard post={featured} />
               </div>
 
-              <aside className="lg:col-span-5 lg:pl-10 lg:border-l lg:border-line">
+              <aside className="lg:col-span-5 lg:pl-10 lg:border-l lg:border-line pt-8 lg:pt-0 border-t border-line lg:border-t-0">
                 <div className="flex items-center gap-3 mb-5">
                   <span className="eyebrow-mute">Editor picks</span>
                   <div className="flex-1 h-px bg-line" />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-7">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6 sm:gap-y-7">
                   {editorPicks.map((post) => (
                     <BlogCardCompact key={post.id} post={post} variant="minimal" />
                   ))}
@@ -238,14 +238,14 @@ export default async function Homepage() {
                     </Link>
                   </header>
 
-                  <div className="grid grid-cols-2 gap-x-5 gap-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3 sm:gap-y-4">
                     {items.map((post) => (
                       <Link
                         key={post.id}
                         href={`/blog/${post.slug}`}
                         className="group block"
                       >
-                        <h4 className="font-heading text-[0.95rem] font-semibold leading-snug text-ink group-hover:text-accent-deep transition-colors line-clamp-3">
+                        <h4 className="font-heading text-[0.95rem] font-semibold leading-snug text-ink group-hover:text-accent-deep transition-colors line-clamp-2 sm:line-clamp-3">
                           {post.title}
                         </h4>
                         <div className="mt-1.5 num text-[11px] text-ink-mute">
@@ -306,7 +306,7 @@ export default async function Homepage() {
             </div>
 
             {/* FAQ */}
-            <div className="lg:col-span-7 lg:pl-10 lg:border-l lg:border-line">
+            <div className="lg:col-span-7 lg:pl-10 lg:border-l lg:border-line pt-10 lg:pt-0 border-t border-line lg:border-t-0">
               <div className="flex items-center gap-3 mb-5">
                 <span className="eyebrow">FAQ</span>
                 <div className="flex-1 h-px bg-line" />

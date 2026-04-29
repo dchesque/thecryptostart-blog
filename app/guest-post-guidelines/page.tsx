@@ -143,7 +143,7 @@ export default function GuestPostGuidelines() {
 
           {/* Aside */}
           <aside className="lg:col-span-4">
-            <div className="lg:sticky lg:top-24 rounded-2xl bg-cream border border-line p-7">
+            <div className="lg:sticky lg:top-[6.5rem] rounded-2xl bg-cream border border-line p-5 sm:p-7">
               <span className="eyebrow">Pitch us</span>
               <h3 className="mt-3 font-heading text-xl font-bold text-ink leading-snug">
                 Send a short outline.
@@ -151,7 +151,7 @@ export default function GuestPostGuidelines() {
               <p className="mt-2 text-ink-mute leading-relaxed">
                 Email us with the subject line:
               </p>
-              <p className="mt-2 font-mono text-sm text-ink bg-paper border border-line rounded-lg px-3 py-2">
+              <p className="mt-2 font-mono text-xs sm:text-sm text-ink bg-paper border border-line rounded-lg px-3 py-2 break-all">
                 Guest pitch: [your topic]
               </p>
 
@@ -159,8 +159,12 @@ export default function GuestPostGuidelines() {
                 href={`mailto:${SITE_CONFIG.email}`}
                 className="mt-6 btn-accent w-full justify-center"
               >
-                Email {SITE_CONFIG.email} <ArrowRight className="w-4 h-4" />
+                <span className="truncate">Email us</span>
+                <ArrowRight className="w-4 h-4 shrink-0" />
               </a>
+              <p className="mt-2 text-xs text-ink-mute text-center break-all font-mono">
+                {SITE_CONFIG.email}
+              </p>
 
               <p className="mt-4 text-xs text-ink-mute leading-relaxed">
                 We reserve the right to refuse or edit any submission. Pieces are

@@ -22,27 +22,27 @@ interface AuthorCardProps {
 export default function AuthorCard({ author, category, className = '' }: AuthorCardProps) {
   return (
     <aside
-      className={`bg-cream border border-line rounded-2xl p-7 sm:p-9 flex flex-col sm:flex-row gap-6 items-start ${className}`}
+      className={`bg-cream border border-line rounded-2xl p-5 sm:p-7 md:p-9 flex flex-col sm:flex-row gap-5 sm:gap-6 items-start ${className}`}
     >
       {/* Avatar */}
       <div className="shrink-0">
         {author.image ? (
-          <div className="relative w-20 h-20 rounded-full overflow-hidden ring-1 ring-line bg-paper">
+          <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden ring-1 ring-line bg-paper">
             <Image src={author.image} alt={author.name} fill sizes="80px" className="object-cover" />
           </div>
         ) : (
-          <div className="w-20 h-20 rounded-full bg-paper border border-line flex items-center justify-center text-3xl font-heading font-bold text-ink">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-paper border border-line flex items-center justify-center text-2xl sm:text-3xl font-heading font-bold text-ink">
             {author.name.charAt(0)}
           </div>
         )}
       </div>
 
       {/* Info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
+      <div className="flex-1 min-w-0 w-full">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="min-w-0">
             <div className="eyebrow-mute mb-1">Written by</div>
-            <h4 className="font-heading text-xl font-bold text-ink">{author.name}</h4>
+            <h4 className="font-heading text-lg sm:text-xl font-bold text-ink truncate">{author.name}</h4>
             {author.title && (
               <p className="text-sm text-ink-mute mt-0.5">{author.title}</p>
             )}

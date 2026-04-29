@@ -143,7 +143,7 @@ export default function LiveTicker({ initialCoins }: LiveTickerProps) {
       role="region"
       aria-label="Crypto market prices"
     >
-      <div className="container-wide flex items-center gap-4 h-9 overflow-hidden">
+      <div className="container-wide flex items-center gap-3 sm:gap-4 h-9 overflow-hidden">
         {/* Status pill */}
         <div className="hidden sm:flex items-center gap-2 shrink-0 text-paper">
           <span
@@ -163,7 +163,7 @@ export default function LiveTicker({ initialCoins }: LiveTickerProps) {
         {/* Marquee */}
         <div className="relative flex-1 overflow-hidden mask-fade">
           <ul
-            className="flex items-center gap-7 whitespace-nowrap motion-safe:animate-ticker hover:[animation-play-state:paused] py-1"
+            className="flex items-center gap-5 sm:gap-7 whitespace-nowrap motion-safe:animate-ticker hover:[animation-play-state:paused] py-1"
             aria-live="off"
           >
             {loopedCoins.map((coin, idx) => {
