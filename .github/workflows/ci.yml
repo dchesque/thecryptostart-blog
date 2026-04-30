@@ -67,7 +67,7 @@ jobs:
           cache-dependency-path: mcp-server/package-lock.json
 
       - name: Install
-        run: npm install
+        run: npm ci
 
       - name: Type-check
         run: npx tsc -p . --noEmit
