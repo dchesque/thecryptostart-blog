@@ -42,8 +42,8 @@ const ShareButtons: React.FC<ShareButtonsProps> = ({
   }
 
   const baseBtn = variant === 'pill'
-    ? 'w-9 h-9 rounded-full border border-line bg-paper'
-    : 'w-9 h-9 rounded-full'
+    ? 'w-10 h-10 rounded-full border border-line bg-paper'
+    : 'w-10 h-10 rounded-full'
   const sharedClasses = `inline-flex items-center justify-center text-ink-mute hover:text-ink hover:bg-cream transition-colors ${baseBtn}`
 
   const layout = direction === 'vertical' ? 'flex-col' : 'flex-row'

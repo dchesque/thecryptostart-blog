@@ -13,27 +13,27 @@ export default function AboutPage() {
   return (
     <div className="bg-paper">
       <header className="border-b border-line">
-        <div className="container-hub pt-10 md:pt-14 pb-12 md:pb-16">
+        <div className="container-hub pt-8 sm:pt-10 md:pt-14 pb-10 sm:pb-12 md:pb-16">
           <Breadcrumb
             items={[
               { name: 'Home', url: '/' },
               { name: 'About', url: '/about' },
             ]}
-            className="mb-7"
+            className="mb-6 sm:mb-7"
           />
           <span className="eyebrow">About</span>
           <h1 className="mt-3 page-title text-balance max-w-3xl">
             A patient, beginner-first guide to crypto.
           </h1>
-          <p className="mt-6 text-lg md:text-xl text-ink-soft leading-relaxed max-w-2xl">
+          <p className="mt-5 sm:mt-6 text-base sm:text-lg md:text-xl text-ink-soft leading-relaxed max-w-2xl">
             {SITE_CONFIG.name} exists for one reason: to help curious newcomers
             understand digital money without being overwhelmed, misled, or sold to.
           </p>
         </div>
       </header>
 
-      <section className="container-hub py-16 md:py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <section className="container-hub py-12 sm:py-16 md:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12">
           <article className="lg:col-span-8 prose prose-lg article-body max-w-none">
             <h2>Our mission</h2>
             <p>
@@ -80,8 +80,8 @@ export default function AboutPage() {
           </article>
 
           <aside className="lg:col-span-4 lg:pl-8 lg:border-l lg:border-line">
-            <div className="lg:sticky lg:top-24 space-y-8">
-              <div className="rounded-2xl bg-cream border border-line p-7">
+            <div className="lg:sticky lg:top-[6.5rem] space-y-8">
+              <div className="rounded-2xl bg-cream border border-line p-5 sm:p-7">
                 <span className="eyebrow">Stay close</span>
                 <h3 className="mt-3 font-heading text-lg font-bold text-ink leading-snug">
                   Get our best beginner guides every Sunday.

@@ -115,14 +115,14 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
        *  PAGE HEADER
        * ------------------------------------------------------------ */}
       <header className="border-b border-line">
-        <div className="container-hub pt-10 md:pt-14 pb-12 md:pb-16">
-          <Breadcrumb items={crumbs} className="mb-7" />
+        <div className="container-hub pt-8 sm:pt-10 md:pt-14 pb-10 sm:pb-12 md:pb-16">
+          <Breadcrumb items={crumbs} className="mb-6 sm:mb-7" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-end">
             <div className="lg:col-span-8">
               <span className="eyebrow">{kicker}</span>
               <h1 className="mt-3 page-title text-balance max-w-3xl">{title}</h1>
-              <p className="mt-5 text-lg text-ink-soft leading-relaxed max-w-2xl">
+              <p className="mt-4 sm:mt-5 text-base sm:text-lg text-ink-soft leading-relaxed max-w-2xl">
                 {subtitle}
               </p>
             </div>
@@ -169,7 +169,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
        * ------------------------------------------------------------ */}
       {lead && (
         <section className="border-b border-line">
-          <div className="container-hub py-12 md:py-16">
+          <div className="container-hub py-10 sm:py-12 md:py-16">
             <FeaturedArticleCard post={lead} />
           </div>
         </section>
@@ -178,23 +178,23 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
       {/* ------------------------------------------------------------
        *  ARTICLE GRID + SIDEBAR
        * ------------------------------------------------------------ */}
-      <section className="container-hub py-12 md:py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-12 lg:gap-16">
+      <section className="container-hub py-10 sm:py-12 md:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-10 sm:gap-12 lg:gap-16">
           <div>
             {posts.length > 0 ? (
               <>
-                <div className="flex items-center justify-between gap-4 mb-8">
+                <div className="flex items-center justify-between gap-4 mb-6 sm:mb-8">
                   <h2 className="font-heading text-xl font-bold text-ink tracking-tight">
                     {searchQuery ? 'Matching articles' : category ? `Latest ${categoryName}` : 'Latest articles'}
                   </h2>
                   {totalCount > BLOG_CONFIG.postsPerPage && !searchQuery && (
-                    <span className="text-sm text-ink-mute">
-                      Page {page} of {totalPages}
+                    <span className="num text-sm text-ink-mute shrink-0">
+                      {page} / {totalPages}
                     </span>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 sm:gap-x-8 gap-y-10 sm:gap-y-12">
                   {grid.map((post) => (
                     <BlogCardCompact key={post.id} post={post} />
                   ))}
@@ -202,7 +202,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
                 {totalPages > 1 && !searchQuery && (
                   <nav
-                    className="mt-16 pt-8 border-t border-line flex items-center justify-between"
+                    className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-line flex items-center justify-between gap-3"
                     aria-label="Pagination"
                   >
                     {page > 1 ? (
@@ -251,7 +251,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                 )}
               </>
             ) : (
-              <div className="border border-line rounded-2xl p-12 text-center bg-cream">
+              <div className="border border-line rounded-2xl p-8 sm:p-12 text-center bg-cream">
                 <h3 className="font-heading text-xl font-bold text-ink mb-2">
                   Nothing matched.
                 </h3>
@@ -275,8 +275,8 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
        * ------------------------------------------------------------ */}
       {!isFiltered && page === 1 && categories.length > 0 && (
         <section className="border-t border-line bg-cream">
-          <div className="container-hub py-16 md:py-20">
-            <div className="max-w-2xl mb-10">
+          <div className="container-hub py-12 sm:py-16 md:py-20">
+            <div className="max-w-2xl mb-8 sm:mb-10">
               <span className="eyebrow">Browse the library</span>
               <h2 className="mt-3 section-title">Choose a topic, go deep.</h2>
               <p className="mt-3 text-ink-soft leading-relaxed">
@@ -284,7 +284,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
                 jump into more advanced material when you're ready.
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {categories.map((cat) => (
                 <CategoryCard key={cat.slug} category={cat} />
               ))}

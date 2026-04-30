@@ -14,21 +14,21 @@ export default function PrivacyPage() {
   return (
     <div className="bg-paper">
       <header className="border-b border-line">
-        <div className="container-hub pt-10 md:pt-14 pb-12 md:pb-16">
+        <div className="container-hub pt-8 sm:pt-10 md:pt-14 pb-10 sm:pb-12 md:pb-16">
           <Breadcrumb
             items={[
               { name: 'Home', url: '/' },
               { name: 'Privacy', url: '/privacy' },
             ]}
-            className="mb-7"
+            className="mb-6 sm:mb-7"
           />
           <span className="eyebrow">Legal</span>
           <h1 className="mt-3 page-title">Privacy policy</h1>
-          <p className="mt-4 text-sm text-ink-mute">Last updated: {lastUpdated}</p>
+          <p className="mt-4 num text-sm text-ink-mute">Last updated: {lastUpdated}</p>
         </div>
       </header>
 
-      <section className="container-hub py-12 md:py-16">
+      <section className="container-hub py-10 sm:py-12 md:py-16">
         <article className="prose prose-lg article-body max-w-post">
           <p>
             Welcome to <strong>{SITE_CONFIG.name}</strong> (&quot;we&quot;,

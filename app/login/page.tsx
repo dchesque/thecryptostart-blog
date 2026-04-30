@@ -61,9 +61,9 @@ export default function LoginPage() {
       </aside>
 
       {/* Right: form */}
-      <main className="flex items-center justify-center p-6 sm:p-12">
+      <main className="flex items-center justify-center p-5 sm:p-8 md:p-12">
         <div className="w-full max-w-sm">
-          <Link href="/" className="lg:hidden inline-flex items-baseline gap-2 mb-10">
+          <Link href="/" className="lg:hidden inline-flex items-baseline gap-2 mb-8 sm:mb-10">
             <span className="font-heading font-bold text-ink text-lg tracking-tight">
               {SITE_CONFIG.name}
             </span>

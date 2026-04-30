@@ -15,8 +15,8 @@ export default function Footer({ categories = [] }: { categories?: CategoryConfi
 
   return (
     <footer className="bg-cream border-t border-line">
-      <div className="container-wide py-16">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
+      <div className="container-wide py-12 sm:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-10">
           {/* Brand */}
           <div className="md:col-span-5">
             <Link href="/" className="inline-flex items-baseline gap-2">
@@ -100,7 +100,7 @@ export default function Footer({ categories = [] }: { categories?: CategoryConfi
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-line flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="mt-10 sm:mt-12 pt-6 sm:pt-8 border-t border-line flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <p className="text-xs text-ink-mute">
             © {year} {SITE_CONFIG.name}. Educational content — not financial advice.
           </p>

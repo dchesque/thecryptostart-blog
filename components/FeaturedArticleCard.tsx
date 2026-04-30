@@ -24,10 +24,10 @@ export default function FeaturedArticleCard({
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className={`group grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 items-center ${className}`}
+      className={`group grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-6 md:gap-10 items-center ${className}`}
     >
       {post.featuredImage?.url && (
-        <div className="md:col-span-7 relative aspect-[16/10] md:aspect-[5/3] rounded-2xl overflow-hidden bg-cream">
+        <div className="md:col-span-7 relative aspect-[16/10] md:aspect-[5/3] rounded-xl sm:rounded-2xl overflow-hidden bg-cream">
           <Image
             src={post.featuredImage.url}
             alt={post.title}
@@ -40,7 +40,7 @@ export default function FeaturedArticleCard({
       )}
 
       <div className={post.featuredImage?.url ? 'md:col-span-5' : 'md:col-span-12'}>
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-3 sm:mb-4">
           <span className="eyebrow">{categoryName}</span>
           <span className="text-ink-faint text-xs">·</span>
           <span className="num text-xs text-ink-mute font-medium">
@@ -48,15 +48,15 @@ export default function FeaturedArticleCard({
           </span>
         </div>
 
-        <h2 className="font-heading font-bold text-ink leading-[1.05] tracking-tight text-balance text-3xl md:text-4xl lg:text-[2.75rem] group-hover:text-accent-deep transition-colors">
+        <h2 className="font-heading font-bold text-ink leading-[1.08] tracking-tight text-balance text-2xl sm:text-3xl md:text-4xl lg:text-[2.75rem] group-hover:text-accent-deep transition-colors">
           {post.title}
         </h2>
 
-        <p className="mt-5 text-lg text-ink-soft leading-relaxed line-clamp-3 max-w-prose">
+        <p className="mt-4 sm:mt-5 text-base sm:text-lg text-ink-soft leading-relaxed line-clamp-3 max-w-prose">
           {post.description}
         </p>
 
-        <div className="mt-7 flex items-center gap-3">
+        <div className="mt-5 sm:mt-7 flex items-center gap-3">
           {post.author.image ? (
             <div className="relative w-10 h-10 rounded-full overflow-hidden ring-1 ring-line">
               <Image

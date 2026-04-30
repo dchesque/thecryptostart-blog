@@ -24,6 +24,7 @@
   body {
     @apply bg-paper text-ink-soft font-sans antialiased;
     font-feature-settings: "kern", "liga", "ss01";
+    overflow-x: hidden;
   }
 
   ::selection {
@@ -220,8 +221,8 @@
 
   .page-title {
     @apply font-heading font-bold text-ink tracking-tight;
-    font-size: clamp(2.25rem, 3vw + 1rem, 3.5rem);
-    line-height: 1.05;
+    font-size: clamp(1.875rem, 4vw + 0.75rem, 3.5rem);
+    line-height: 1.08;
     letter-spacing: -0.02em;
   }
 
@@ -332,22 +333,27 @@
   }
 
   /* Soft horizontal fade on the edges, used by the live ticker so prices
-   * appear and disappear gracefully instead of clipping at the bounds. */
+   * appear and disappear gracefully instead of clipping at the bounds.
+   * Smaller fade on mobile so we don't waste 20% of the viewport. */
   .mask-fade {
+    --mask-fade-w: 16px;
     -webkit-mask-image: linear-gradient(
       to right,
       transparent 0,
-      black 32px,
-      black calc(100% - 32px),
+      black var(--mask-fade-w),
+      black calc(100% - var(--mask-fade-w)),
       transparent 100%
     );
             mask-image: linear-gradient(
       to right,
       transparent 0,
-      black 32px,
-      black calc(100% - 32px),
+      black var(--mask-fade-w),
+      black calc(100% - var(--mask-fade-w)),
       transparent 100%
     );
+  }
+  @media (min-width: 640px) {
+    .mask-fade { --mask-fade-w: 32px; }
   }
 
   /* Continuous horizontal marquee for the live ticker.

@@ -238,9 +238,9 @@ export default async function PostPage({ params }: PostPageProps) {
          *  HERO — light, editorial, centered
          * ============================================================ */}
         <header className="border-b border-line">
-          <div className="container-hub pt-8 pb-12 md:pt-12 md:pb-16">
+          <div className="container-hub pt-6 pb-10 sm:pt-8 sm:pb-12 md:pt-12 md:pb-16">
             <div className="max-w-measure mx-auto">
-              <Breadcrumb items={breadcrumbs} className="mb-8" />
+              <Breadcrumb items={breadcrumbs} className="mb-6 sm:mb-8" />
 
               <Link
                 href={`/blog?category=${post.category}`}
@@ -249,15 +249,15 @@ export default async function PostPage({ params }: PostPageProps) {
                 {categoryName}
               </Link>
 
-              <h1 className="mt-4 font-heading font-bold text-ink leading-[1.05] tracking-tight text-balance text-4xl sm:text-5xl md:text-[3.25rem]">
+              <h1 className="mt-3 sm:mt-4 font-heading font-bold text-ink leading-[1.08] tracking-tight text-balance text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem]">
                 {post.title}
               </h1>
 
-              <p className="mt-6 text-lg md:text-xl text-ink-soft leading-relaxed max-w-prose">
+              <p className="mt-5 sm:mt-6 text-base sm:text-lg md:text-xl text-ink-soft leading-relaxed max-w-prose">
                 {post.description}
               </p>
 
-              <div className="mt-8 flex flex-wrap items-center justify-between gap-6">
+              <div className="mt-6 sm:mt-8 flex flex-wrap items-start sm:items-center justify-between gap-4 sm:gap-6">
                 <PostMeta
                   variant="stacked"
                   author={post.author}
@@ -277,9 +277,9 @@ export default async function PostPage({ params }: PostPageProps) {
 
           {/* Lead image */}
           {post.featuredImage?.url && (
-            <div className="container-hub pb-12 md:pb-16">
+            <div className="container-hub pb-10 sm:pb-12 md:pb-16">
               <div className="max-w-wide mx-auto">
-                <figure className="relative aspect-[16/9] md:aspect-[21/9] rounded-2xl overflow-hidden bg-cream">
+                <figure className="relative aspect-[16/9] md:aspect-[21/9] rounded-xl sm:rounded-2xl overflow-hidden bg-cream">
                   <Image
                     src={post.featuredImage.url}
                     alt={post.title}
@@ -297,8 +297,8 @@ export default async function PostPage({ params }: PostPageProps) {
         {/* ============================================================
          *  BODY — reading column with sticky sidebar (TOC + share)
          * ============================================================ */}
-        <div className="container-hub py-12 md:py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px] gap-12 lg:gap-16 max-w-wide mx-auto">
+        <div className="container-hub py-10 sm:py-12 md:py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px] gap-10 sm:gap-12 lg:gap-16 max-w-wide mx-auto">
 
             {/* Reading column */}
             <div className="min-w-0 max-w-post mx-auto lg:mx-0 w-full">
@@ -415,7 +415,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
             {/* Sidebar — desktop sticky reading aids */}
             <aside className="hidden lg:block">
-              <div className="sticky top-24 space-y-10">
+              <div className="sticky top-[6.5rem] space-y-10">
                 {headings.length >= 2 && (
                   <TableOfContents content={post.content} />
                 )}
