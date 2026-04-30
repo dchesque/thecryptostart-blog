@@ -1,0 +1,46 @@
+name: Retention cleanup
+
+# Daily sweep of SystemLog/SpamLog/PasswordReset/PendingSubscribers
+# according to the policy in docs/technical/DECISIONS.md (D8).
+#
+# Required repo secrets:
+#   PROD_URL          — e.g. https://thecryptostart.com
+#   ADMIN_API_KEY     — same secret the app validates in proxy.ts
+
+on:
+  schedule:
+    # 03:17 UTC daily — odd minute to avoid the noisy on-the-hour rush.
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: 'Dry run (no deletions)'
+        required: false
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: POST /api/admin/cleanup
+        run: |
+          DRY="${{ github.event.inputs.dryRun || 'false' }}"
+          BODY=$(printf '{"dryRun":%s}' "$DRY")
+          echo "Calling cleanup with body: $BODY"
+          HTTP_CODE=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
+            -X POST "$PROD_URL/api/admin/cleanup" \
+            -H "content-type: application/json" \
+            -H "x-api-key: $ADMIN_API_KEY" \
+            -d "$BODY")
+          echo "HTTP $HTTP_CODE"
+          cat /tmp/resp.json
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Cleanup failed (HTTP $HTTP_CODE)"
+            exit 1
+          fi
+        env:
+          PROD_URL: ${{ secrets.PROD_URL }}
+          ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
