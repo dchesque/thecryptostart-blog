@@ -301,16 +301,16 @@ Sem isso, F0 e qualquer migration futura é manual = arriscado.
 
 ## 13. Decisões abertas (perguntas para o usuário)
 
-> Bloqueiam o início de cada fase. Marcar quando responder.
+> ✅ **Respondidas em 2026-04-30 — ver [`DECISIONS.md`](./DECISIONS.md).**
 
-- [ ] **F2**: confirma Resend? Tem domínio próprio para envio?
-- [ ] **F2**: queremos welcome email pós-confirm ou só confirm?
-- [ ] **F3**: MCP no mesmo monorepo (`mcp-server/`) ou repo separado?
-- [ ] **F3**: gerar OpenAPI a partir dos Zod (sim, recomendo) ou só docstrings?
-- [ ] **F4**: `MCP_WRITES_ENABLED` default `false` mesmo em prod?
-- [ ] **F5**: queremos `seo-fix-pr` que abre PR no GitHub, ou só relatório?
-- [ ] **F6**: vai existir tier público ou MCP é só interno?
-- [ ] **Geral**: orçamento mensal disponível para infra (Sentry, Upstash, Resend, Fly)?
+- [x] **F2**: Resend confirmado (D1).
+- [x] **F2**: welcome email com 3-5 posts em destaque (D5).
+- [x] **F3**: monorepo `mcp-server/` (D2).
+- [x] **F3**: OpenAPI público em `/api/docs` (D6).
+- [x] **F4**: `MCP_WRITES_ENABLED=false` default (D3).
+- [x] **F5**: só relatório markdown, sem PR automático (D7).
+- [x] **F6**: só interno — F6 sai do roadmap (D4).
+- [x] **Geral**: free tiers (US$ 0) (D8).
 
 ## 14. Estimativa de esforço (ballpark)
 
