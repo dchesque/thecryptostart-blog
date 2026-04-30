@@ -1,5 +1,6 @@
 import { prisma } from './prisma'
 import { NextRequest } from 'next/server'
+import { checkRateLimit as unifiedRateLimit } from './rate-limit'
 
 const RATE_LIMIT_WINDOW = 60 * 60 * 1000 // 1 hour
 const MAX_COMMENTS_PER_HOUR = 5
@@ -36,8 +37,16 @@ export async function checkRateLimit(
     email: string
 ): Promise<boolean> {
     try {
-        const oneHourAgo = new Date(Date.now() - RATE_LIMIT_WINDOW)
+        // Distributed limit (Upstash if configured, in-memory fallback)
+        const ipResult = await unifiedRateLimit(`comments:ip:${ipAddress}`, MAX_COMMENTS_PER_HOUR, RATE_LIMIT_WINDOW)
+        if (ipResult.limited) return false
 
+        const emailResult = await unifiedRateLimit(`comments:email:${email}`, MAX_COMMENTS_PER_HOUR, RATE_LIMIT_WINDOW)
+        if (emailResult.limited) return false
+
+        // Defense in depth: also count from DB (catches old comments before
+        // the rate-limit window persisted; protects against memory loss).
+        const oneHourAgo = new Date(Date.now() - RATE_LIMIT_WINDOW)
         const recentCount = await prisma.comment.count({
             where: {
                 OR: [
