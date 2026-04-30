@@ -9,11 +9,12 @@ const PATH = '/api/admin/revalidate'
  * Trigger Next.js ISR/cache invalidation on demand.
  *
  * Body:
- *   { paths?: string[], tags?: string[], slug?: string }
+ *   { paths?: string[], tags?: string[], slug?: string, profile?: string }
  *
- *   - paths: explicit paths to revalidate ("/", "/blog", "/blog/foo")
- *   - tags:  cache tags to revalidate
- *   - slug:  shortcut — revalidates "/", "/blog", "/blog/<slug>", "/sitemap.xml"
+ *   - paths:   explicit paths to revalidate ("/", "/blog", "/blog/foo")
+ *   - tags:    cache tags to revalidate (Next 16 requires a profile)
+ *   - slug:    shortcut — revalidates "/", "/blog", "/blog/<slug>", "/sitemap.xml"
+ *   - profile: cacheLife profile for tag invalidation (default: "default")
  *
  * Returns the list of revalidated paths/tags.
  */
@@ -26,10 +27,11 @@ export async function POST(req: NextRequest) {
 
     try {
         const body = await req.json().catch(() => ({}))
-        const { paths, tags, slug } = body as {
+        const { paths, tags, slug, profile } = body as {
             paths?: string[]
             tags?: string[]
             slug?: string
+            profile?: string
         }
 
         const revalidated: { paths: string[]; tags: string[] } = { paths: [], tags: [] }
@@ -48,8 +50,9 @@ export async function POST(req: NextRequest) {
             revalidated.paths.push(p)
         }
         if (Array.isArray(tags)) {
+            const cacheProfile = profile || 'default'
             for (const tag of tags.filter(Boolean)) {
-                revalidateTag(tag)
+                revalidateTag(tag, cacheProfile)
                 revalidated.tags.push(tag)
             }
         }

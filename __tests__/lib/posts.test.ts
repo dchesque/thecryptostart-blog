@@ -19,10 +19,8 @@ describe('calculateWordCount', () => {
     })
 
     it('does not crash on null-ish input', () => {
-        // @ts-expect-error
-        expect(calculateWordCount(null as any)).toBe(0)
-        // @ts-expect-error
-        expect(calculateWordCount(undefined as any)).toBe(0)
+        expect(calculateWordCount(null as unknown as string)).toBe(0)
+        expect(calculateWordCount(undefined as unknown as string)).toBe(0)
     })
 })
 

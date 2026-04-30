@@ -85,12 +85,21 @@ const SubscriberSchema = z.object({
     updatedAt: z.string(),
 }).openapi('NewsletterSubscriber')
 
+// Flat reply schema (one level deep) — OpenAPI doesn't model recursion
+// cleanly, and the public /api/comments handler also only returns 1 level.
+const CommentReplySchema = z.object({
+    id: z.string(),
+    authorName: z.string(),
+    content: z.string(),
+    createdAt: z.string(),
+}).openapi('CommentReply')
+
 const CommentSchema = z.object({
     id: z.string(),
     authorName: z.string(),
     content: z.string(),
     createdAt: z.string(),
-    replies: z.array(z.lazy(() => CommentSchema)).optional(),
+    replies: z.array(CommentReplySchema).optional(),
 }).openapi('Comment')
 
 export function buildOpenApiSpec() {
