@@ -5,22 +5,21 @@
 
 import { createGSCClient, GSCAnalytics } from '@/lib/gsc-client'
 import { NextResponse } from 'next/server'
-import { auth } from '@/auth'
+import { checkApiAuth } from '@/lib/auth-check'
 import { logRequest, logSuccess, logWarn, logError, createTimer } from '@/lib/logger'
 
 const PATH = '/api/gsc/analytics'
 const CACHE_TTL = 3600
 
-export async function GET() {
+export async function GET(request: Request) {
     const t = createTimer()
     logRequest('GET', PATH)
 
     try {
-        const session = await auth()
-
-        if (!session?.user) {
-            logWarn({ method: 'GET', path: PATH, status: 401, extra: { reason: 'Unauthorized — no session' } })
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        const authError = await checkApiAuth(request)
+        if (authError) {
+            logWarn({ method: 'GET', path: PATH, status: 401, extra: { reason: 'Unauthorized — no session/api key' } })
+            return authError
         }
 
         // Try/catch separado para inicialização do cliente GSC.

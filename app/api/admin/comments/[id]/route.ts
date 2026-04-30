@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { logRequest, logSuccess, logWarn, logError, createTimer } from '@/lib/logger'
+import { checkApiAuth } from '@/lib/auth-check'
 
 const PATH = '/api/admin/comments/[id]'
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const authError = await checkApiAuth(req)
+    if (authError) return authError
+
     const t = createTimer()
     const { id } = await params
 
@@ -24,8 +29,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                 status: status as any,
                 modifiedAt: new Date(),
                 modifiedBy: 'ADMIN'
-            }
+            },
+            select: { id: true, status: true, postSlug: true }
         })
+
+        if (comment.postSlug) revalidatePath(`/blog/${comment.postSlug}`)
 
         logSuccess({ method: 'PATCH', path: PATH, durationMs: t.ms(), extra: { id, status: comment.status } })
         return NextResponse.json(comment)
@@ -36,12 +44,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const authError = await checkApiAuth(req)
+    if (authError) return authError
+
     const t = createTimer()
     const { id } = await params
     logRequest('DELETE', PATH, { id })
 
     try {
-        // Delete comment and its replies
+        const target = await prisma.comment.findUnique({ where: { id }, select: { postSlug: true } })
+
         const { count } = await prisma.comment.deleteMany({
             where: {
                 OR: [
@@ -50,6 +62,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
                 ]
             }
         })
+
+        if (target?.postSlug) revalidatePath(`/blog/${target.postSlug}`)
 
         logSuccess({ method: 'DELETE', path: PATH, status: 204, durationMs: t.ms(), extra: { id, deletedCount: count } })
         return new NextResponse(null, { status: 204 })

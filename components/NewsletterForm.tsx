@@ -23,14 +23,21 @@ export default function NewsletterForm({
     if (!email.trim()) return
     setStatus('loading')
     try {
-      // TODO: Wire to /api/newsletter
-      await new Promise(resolve => setTimeout(resolve, 700))
+      const res = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), source: 'newsletter-form' }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(data?.error || 'Subscription failed')
+      }
       setStatus('success')
-      setMessage('Subscribed. Check your inbox to confirm.')
+      setMessage(data?.message || 'Subscribed. Check your inbox to confirm.')
       setEmail('')
-    } catch {
+    } catch (err: any) {
       setStatus('error')
-      setMessage('Something went wrong. Please try again.')
+      setMessage(err?.message || 'Something went wrong. Please try again.')
     }
   }
 

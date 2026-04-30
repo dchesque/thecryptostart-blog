@@ -8,14 +8,14 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
         const session = await auth()
-        
+
         // Suporte a API Key para diagnóstico via terminal/browser externo
-        const { searchParams } = new URL(NextResponse.next().url)
+        const { searchParams } = new URL(request.url)
         const apiKeyParam = searchParams.get('key')
-        const apiKeyHeader = NextResponse.next().headers.get('x-api-key')
+        const apiKeyHeader = request.headers.get('x-api-key')
         const isValidApiKey = (apiKeyParam === process.env.ADMIN_API_KEY) || (apiKeyHeader === process.env.ADMIN_API_KEY)
 
         if (!session?.user && !isValidApiKey) {
