@@ -15,7 +15,8 @@ import {
     Settings,
     FileText,
     FolderTree,
-    UserCircle
+    UserCircle,
+    Mail
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -60,6 +61,11 @@ export function AdminSidebar({ userRoles, userName, userImage }: SidebarProps) {
             href: "/admin/authors",
             label: "Authors",
             icon: UserCircle,
+        },
+        {
+            href: "/admin/newsletter",
+            label: "Newsletter",
+            icon: Mail,
         },
         {
             href: "/admin/gsc-dashboard",
