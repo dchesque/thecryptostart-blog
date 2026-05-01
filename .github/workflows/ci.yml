@@ -54,8 +54,9 @@ jobs:
     name: MCP server — type-check + test + build
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    env:
-      ACTIONS_STEP_DEBUG: 'true'
+    defaults:
+      run:
+        working-directory: mcp-server
     steps:
       - uses: actions/checkout@v5
 
@@ -63,60 +64,14 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Show repo layout
-        run: |
-          set -x
-          pwd
-          ls -la
-          ls -la mcp-server || true
-          node --version
-          npm --version
-
       - name: Install
-        working-directory: mcp-server
-        run: |
-          set -x
-          npm ci --verbose 2>&1 | tail -50
+        run: npm ci
 
       - name: Type-check
-        working-directory: mcp-server
         run: npx tsc -p . --noEmit
 
-      - name: Test (config) — capture output
-        working-directory: mcp-server
-        run: |
-          set +e
-          npx vitest run src/config.test.ts --reporter=verbose > test-config.log 2>&1
-          code=$?
-          echo "=========== test-config.log ==========="
-          cat test-config.log
-          echo "=========== exit=$code ==========="
-          {
-            echo "## Vitest config output"
-            echo '```'
-            cat test-config.log
-            echo '```'
-            echo "exit=$code"
-          } >> "$GITHUB_STEP_SUMMARY"
-          # Emit each failure-ish line as an annotation so it shows up
-          # outside the (auth-walled) raw log viewer.
-          grep -nE 'FAIL|×|Error|expected|received|AssertionError|Cannot find|ReferenceError|TypeError|at /|at src/' test-config.log | while IFS=: read -r line text; do
-            # Strip ANSI escape codes from the captured text
-            clean=$(printf '%s' "$text" | sed -E 's/\x1B\[[0-9;]*[mK]//g')
-            echo "::error file=mcp-server/test-config.log,line=$line::$clean"
-          done
-          exit $code
-
-      - name: Test (helpers)
-        if: success()
-        working-directory: mcp-server
-        run: npx vitest run src/helpers.test.ts --reporter=verbose
-
-      - name: Test (api-client)
-        if: success()
-        working-directory: mcp-server
-        run: npx vitest run src/api-client.test.ts --reporter=verbose
+      - name: Test
+        run: npm test
 
       - name: Build
-        working-directory: mcp-server
         run: npm run build
