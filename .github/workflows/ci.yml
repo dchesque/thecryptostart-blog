@@ -82,15 +82,24 @@ jobs:
         working-directory: mcp-server
         run: npx tsc -p . --noEmit
 
-      - name: Test (config)
+      - name: Test (config) — capture output
         working-directory: mcp-server
-        run: npx vitest run src/config.test.ts --reporter=verbose
+        run: |
+          set +e
+          npx vitest run src/config.test.ts --reporter=verbose > test-config.log 2>&1
+          code=$?
+          echo "=========== test-config.log ==========="
+          cat test-config.log
+          echo "=========== exit=$code ==========="
+          exit $code
 
       - name: Test (helpers)
+        if: success()
         working-directory: mcp-server
         run: npx vitest run src/helpers.test.ts --reporter=verbose
 
       - name: Test (api-client)
+        if: success()
         working-directory: mcp-server
         run: npx vitest run src/api-client.test.ts --reporter=verbose
 
