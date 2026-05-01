@@ -54,9 +54,8 @@ jobs:
     name: MCP server — type-check + test + build
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    defaults:
-      run:
-        working-directory: mcp-server
+    env:
+      ACTIONS_STEP_DEBUG: 'true'
     steps:
       - uses: actions/checkout@v5
 
@@ -64,21 +63,29 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Show context
+      - name: Show repo layout
         run: |
+          set -x
+          pwd
+          ls -la
+          ls -la mcp-server || true
           node --version
           npm --version
-          ls -la
-          cat package.json | head -25
 
       - name: Install
-        run: npm ci
+        working-directory: mcp-server
+        run: |
+          set -x
+          npm ci --verbose 2>&1 | tail -50
 
       - name: Type-check
+        working-directory: mcp-server
         run: npx tsc -p . --noEmit
 
       - name: Test
+        working-directory: mcp-server
         run: npm test
 
       - name: Build
+        working-directory: mcp-server
         run: npm run build
