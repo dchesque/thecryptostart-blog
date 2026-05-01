@@ -279,6 +279,25 @@ export function buildOpenApiSpec() {
         responses: { 200: { description: 'Health', content: { 'application/json': { schema: z.object({ status: z.string(), timestamp: z.string(), database: z.string() }) } } } },
     })
 
+    registry.registerPath({
+        method: 'get',
+        path: '/api/version',
+        summary: 'Build/runtime metadata (version, git sha, build time)',
+        tags: ['Public'],
+        responses: {
+            200: {
+                description: 'Release info baked at build time',
+                content: { 'application/json': { schema: z.object({
+                    version: z.string(),
+                    gitSha: z.string(),
+                    gitBranch: z.string(),
+                    builtAt: z.string().nullable(),
+                    nodeEnv: z.string(),
+                }) } },
+            },
+        },
+    })
+
     // ============================
     // PUBLIC — Comments
     // ============================

@@ -64,4 +64,10 @@ describe('buildOpenApiSpec', () => {
         expect(post).toBeDefined()
         expect(JSON.stringify(post?.security || [])).toMatch(/AdminApiKey|Session/)
     })
+
+    it('declares the public version endpoint', () => {
+        const get = spec.paths?.['/api/version']?.get
+        expect(get).toBeDefined()
+        expect(get?.tags).toContain('Public')
+    })
 })
