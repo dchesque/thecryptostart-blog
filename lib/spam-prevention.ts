@@ -32,17 +32,29 @@ export function getClientIP(request: Request | NextRequest): string {
     )
 }
 
+export type CommentRateLimitResult = {
+    allowed: boolean
+    remaining: number
+    resetAt: Date
+    limit: number
+}
+
 export async function checkRateLimit(
     ipAddress: string,
-    email: string
-): Promise<boolean> {
+    email: string,
+): Promise<CommentRateLimitResult> {
+    const fallbackResetAt = new Date(Date.now() + RATE_LIMIT_WINDOW)
     try {
         // Distributed limit (Upstash if configured, in-memory fallback)
         const ipResult = await unifiedRateLimit(`comments:ip:${ipAddress}`, MAX_COMMENTS_PER_HOUR, RATE_LIMIT_WINDOW)
-        if (ipResult.limited) return false
+        if (ipResult.limited) {
+            return { allowed: false, remaining: 0, resetAt: ipResult.resetAt, limit: MAX_COMMENTS_PER_HOUR }
+        }
 
         const emailResult = await unifiedRateLimit(`comments:email:${email}`, MAX_COMMENTS_PER_HOUR, RATE_LIMIT_WINDOW)
-        if (emailResult.limited) return false
+        if (emailResult.limited) {
+            return { allowed: false, remaining: 0, resetAt: emailResult.resetAt, limit: MAX_COMMENTS_PER_HOUR }
+        }
 
         // Defense in depth: also count from DB (catches old comments before
         // the rate-limit window persisted; protects against memory loss).
@@ -56,10 +68,17 @@ export async function checkRateLimit(
             },
         })
 
-        return recentCount < MAX_COMMENTS_PER_HOUR
+        const remaining = Math.min(ipResult.remaining, emailResult.remaining, MAX_COMMENTS_PER_HOUR - recentCount)
+        return {
+            allowed: recentCount < MAX_COMMENTS_PER_HOUR,
+            remaining: Math.max(remaining, 0),
+            resetAt: ipResult.resetAt,
+            limit: MAX_COMMENTS_PER_HOUR,
+        }
     } catch (error) {
         console.error('Rate limit check error:', error)
-        return true // Allow on error to avoid blocking legitimate users
+        // Allow on error to avoid blocking legitimate users
+        return { allowed: true, remaining: MAX_COMMENTS_PER_HOUR, resetAt: fallbackResetAt, limit: MAX_COMMENTS_PER_HOUR }
     }
 }
 
