@@ -9,7 +9,10 @@
 
 - Free tier (3k emails/mês) cobre o volume atual.
 - Setup: criar conta, verificar domínio (SPF/DKIM/DMARC), env `RESEND_API_KEY`.
-- Templates serão em React Email (`@react-email/components`) — alinhado a Next.
+- Templates: **HTML inline** (string templates) em `lib/email/*.ts`. React Email
+  ficou de fora — adiciona 2 deps e cria fricção de SSR/build sem ganho real
+  para os 3 templates atuais. Migrar se passarmos de ~10 templates ou
+  precisarmos de previews dev.
 
 **Implicação**: F2 já tem stack definida.
 

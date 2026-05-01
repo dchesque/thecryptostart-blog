@@ -4,6 +4,17 @@ import { postSchema } from '@/lib/validations/admin'
 import { handleApiError } from '@/lib/api-error'
 import { z } from 'zod'
 import { checkApiAuth } from '@/lib/auth-check'
+import { calculateWordCount, calculateReadingTime } from '@/lib/posts'
+
+function ensureMetrics(data: z.infer<typeof postSchema>) {
+    const wc = data.wordCount && data.wordCount > 0
+        ? data.wordCount
+        : calculateWordCount(data.content || '')
+    const rt = data.readingTime && data.readingTime > 0
+        ? data.readingTime
+        : calculateReadingTime(wc)
+    return { ...data, wordCount: wc, readingTime: rt }
+}
 
 export async function GET(req: NextRequest) {
     const authError = await checkApiAuth(req)
@@ -68,7 +79,7 @@ export async function POST(req: NextRequest) {
         if (authError) return authError
 
         const body = await req.json()
-        const data = postSchema.parse(body)
+        const data = ensureMetrics(postSchema.parse(body))
 
         const post = await prisma.post.create({
             data

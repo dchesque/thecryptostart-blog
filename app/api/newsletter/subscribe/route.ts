@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { randomBytes } from 'crypto'
 import { getClientIP } from '@/lib/spam-prevention'
+import { checkRateLimit } from '@/lib/rate-limit'
+import { sendSubscriptionConfirmation } from '@/lib/email'
 import { logRequest, logSuccess, logWarn, logError, createTimer } from '@/lib/logger'
 
 const PATH = '/api/newsletter/subscribe'
@@ -13,8 +15,8 @@ const subscribeSchema = z.object({
     website: z.string().optional(), // honeypot
 })
 
-const SOFT_RATE_LIMIT_WINDOW_MS = 60 * 1000 // 1 minute
-const lastByIp = new Map<string, number>()
+const RATE_LIMIT_WINDOW_MS = 60 * 1000 // 1 minute
+const RATE_LIMIT_MAX = 3 // 3 subscribe attempts/min/IP
 
 export async function POST(req: NextRequest) {
     const t = createTimer()
@@ -37,39 +39,50 @@ export async function POST(req: NextRequest) {
         }
 
         const ip = getClientIP(req)
-        const now = Date.now()
-        const last = lastByIp.get(ip)
-        if (last && now - last < SOFT_RATE_LIMIT_WINDOW_MS) {
+        const rl = await checkRateLimit(`newsletter:subscribe:ip:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)
+        if (rl.limited) {
             logWarn({ method: 'POST', path: PATH, status: 429, extra: { reason: 'Rate limit', ip } })
             return NextResponse.json({ error: 'Too many requests, slow down.' }, { status: 429 })
         }
-        lastByIp.set(ip, now)
 
         const normalizedEmail = email.toLowerCase().trim()
 
         const existing = await prisma.newsletterSubscriber.findUnique({ where: { email: normalizedEmail } })
         if (existing) {
             if (existing.status === 'UNSUBSCRIBED') {
+                const newToken = randomBytes(24).toString('hex')
                 await prisma.newsletterSubscriber.update({
                     where: { email: normalizedEmail },
-                    data: { status: 'PENDING', confirmToken: randomBytes(24).toString('hex') },
+                    data: { status: 'PENDING', confirmToken: newToken },
                 })
+                // Resubscribe → resend confirm email (best-effort, doesn't block response)
+                sendSubscriptionConfirmation(normalizedEmail, newToken).catch(() => {})
+            } else if (existing.status === 'PENDING' && existing.confirmToken) {
+                // Resend the same confirm email — user may have lost the previous one
+                sendSubscriptionConfirmation(normalizedEmail, existing.confirmToken).catch(() => {})
             }
             // Idempotent response — never confirm/deny existence beyond a generic message
             logSuccess({ method: 'POST', path: PATH, status: 200, durationMs: t.ms(), extra: { email: normalizedEmail, existed: true } })
             return NextResponse.json({ message: 'Subscription updated', success: true }, { status: 200 })
         }
 
+        const confirmToken = randomBytes(24).toString('hex')
         const subscriber = await prisma.newsletterSubscriber.create({
             data: {
                 email: normalizedEmail,
                 source: source || null,
                 ipAddress: ip,
                 userAgent: req.headers.get('user-agent') || null,
-                confirmToken: randomBytes(24).toString('hex'),
+                confirmToken,
                 status: 'PENDING',
             },
             select: { id: true },
+        })
+
+        // Best-effort send. Failure must NOT block the response — the user
+        // can retry; the token stays valid.
+        sendSubscriptionConfirmation(normalizedEmail, confirmToken).catch((err) => {
+            logError({ method: 'POST', path: PATH, error: err, extra: { reason: 'Confirm email send failed' } })
         })
 
         logSuccess({ method: 'POST', path: PATH, status: 201, durationMs: t.ms(), extra: { id: subscriber.id } })
