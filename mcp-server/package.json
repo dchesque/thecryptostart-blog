@@ -10,7 +10,9 @@
   "scripts": {
     "build": "tsc -p .",
     "dev": "tsx watch src/server.ts",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.20.0",
@@ -19,6 +21,7 @@
   "devDependencies": {
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",
-    "@types/node": "^22.7.5"
+    "@types/node": "^22.7.5",
+    "vitest": "^2.1.5"
   }
 }
