@@ -58,4 +58,10 @@ describe('buildOpenApiSpec', () => {
         expect(adminPath).toBeDefined()
         expect(JSON.stringify(adminPath?.security || [])).toMatch(/AdminApiKey|Session/)
     })
+
+    it('declares the cleanup retention endpoint', () => {
+        const post = spec.paths?.['/api/admin/cleanup']?.post
+        expect(post).toBeDefined()
+        expect(JSON.stringify(post?.security || [])).toMatch(/AdminApiKey|Session/)
+    })
 })

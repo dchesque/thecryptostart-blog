@@ -114,6 +114,25 @@ Posso começar isso já — ou prefere abrir PR primeiro do que está em
 
 ---
 
+## Operacional — retenção de dados (implementação de D8)
+
+| Tabela | Retenção | Como |
+|--------|----------|------|
+| `SystemLog` | 30 d | `/api/admin/cleanup` (job `Retention cleanup` no GitHub Actions, cron 03:17 UTC) |
+| `SpamLog` | 90 d | mesmo endpoint, parâmetro `spamLogDays` |
+| `NewsletterSubscriber` em `PENDING` | 30 d | mesmo endpoint, parâmetro `pendingSubscriberDays` |
+| `PasswordReset` expirado | imediato | mesmo endpoint, todo dia |
+| `Comment` SPAM/REJECTED | indefinido | mantido para auditoria |
+| `Post` DRAFT | indefinido | autor decide |
+
+Trigger: workflow `.github/workflows/retention-cleanup.yml`. Secrets do
+repo: `PROD_URL` + `ADMIN_API_KEY`.
+
+`workflow_dispatch` permite rodar manualmente com `dryRun=true` antes de
+mudar parâmetros.
+
 ### Histórico
 
 - **2026-04-30**: decisões iniciais travadas (D1-D8) — sessão de auditoria.
+- **2026-04-30**: D8 implementado — endpoint `/api/admin/cleanup` + cron
+  diário no GitHub Actions.
