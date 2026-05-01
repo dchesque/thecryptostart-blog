@@ -44,6 +44,18 @@ export function markdownText(text: string) {
 }
 
 /**
+ * Defense against an LLM accidentally deleting content.
+ * The caller must pass `confirm` equal to literally "DELETE <slug>".
+ * Throws a structured error otherwise.
+ */
+export function requireDeleteConfirm(slug: string, confirm: string): void {
+    const expected = `DELETE ${slug}`
+    if (confirm !== expected) {
+        throw new Error(`Refusing to delete: confirm must equal exactly "${expected}".`)
+    }
+}
+
+/**
  * Minimal Zod → JSON Schema conversion. We only need shapes the MCP client
  * uses to build the tool form. Avoids pulling zod-to-json-schema as a dep.
  */

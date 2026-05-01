@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import type { ApiClient } from '../api-client.js'
-import { registerTool, jsonText } from '../helpers.js'
+import { registerTool, jsonText, requireDeleteConfirm } from '../helpers.js'
 
 export function registerPostTools(server: Server, api: ApiClient, writesEnabled: boolean) {
     registerTool(server, {
@@ -139,10 +139,7 @@ export function registerPostTools(server: Server, api: ApiClient, writesEnabled:
             confirm: z.string().min(1),
         }),
         handler: async ({ id, slug, confirm }) => {
-            const expected = `DELETE ${slug}`
-            if (confirm !== expected) {
-                throw new Error(`Refusing to delete: confirm must equal exactly "${expected}".`)
-            }
+            requireDeleteConfirm(slug, confirm)
             await api.delete(`/api/admin/posts/${id}`)
             return jsonText({ deleted: true, id, slug })
         },
