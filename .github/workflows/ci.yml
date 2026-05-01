@@ -23,11 +23,11 @@ jobs:
       ADMIN_API_KEY: ci-placeholder
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
 
       - name: Install
@@ -51,26 +51,27 @@ jobs:
           NEXT_TELEMETRY_DISABLED: '1'
 
   mcp:
-    name: MCP server — type-check + build
+    name: MCP server — type-check + test + build
     runs-on: ubuntu-latest
     timeout-minutes: 5
     defaults:
       run:
         working-directory: mcp-server
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: '20'
-          cache: npm
-          cache-dependency-path: mcp-server/package-lock.json
+          node-version: '22'
 
       - name: Install
         run: npm ci
 
       - name: Type-check
         run: npx tsc -p . --noEmit
+
+      - name: Test
+        run: npm test
 
       - name: Build
         run: npm run build
