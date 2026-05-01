@@ -116,18 +116,23 @@ export function logError({ method, path, status = 500, error, extra }: ApiLogOpt
 /**
  * Objeto logger centralizado para uso em qualquer parte do sistema (incluindo middlewares).
  */
+const skipPersist = !!process.env.JEST_WORKER_ID
+
 export const logger = {
     info(source: string, message: string, data?: any) {
+        if (skipPersist) return Promise.resolve()
         return (prisma as any).systemLog.create({
             data: { level: 'INFO', source, message, data: data || undefined }
         }).catch((err: any) => console.error('[Logger] Info failed:', err));
     },
     warn(source: string, message: string, data?: any) {
+        if (skipPersist) return Promise.resolve()
         return (prisma as any).systemLog.create({
             data: { level: 'WARN', source, message, data: data || undefined }
         }).catch((err: any) => console.error('[Logger] Warn failed:', err));
     },
     error(source: string, message: string, data?: any) {
+        if (skipPersist) return Promise.resolve()
         return (prisma as any).systemLog.create({
             data: { level: 'ERROR', source, message, data: data || undefined }
         }).catch((err: any) => {
