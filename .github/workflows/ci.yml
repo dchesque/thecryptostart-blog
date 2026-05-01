@@ -51,7 +51,7 @@ jobs:
           NEXT_TELEMETRY_DISABLED: '1'
 
   mcp:
-    name: MCP server — type-check + build
+    name: MCP server — type-check + test + build
     runs-on: ubuntu-latest
     timeout-minutes: 5
     defaults:
@@ -63,8 +63,13 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
-          cache: npm
-          cache-dependency-path: mcp-server/package-lock.json
+
+      - name: Show context
+        run: |
+          node --version
+          npm --version
+          ls -la
+          cat package.json | head -25
 
       - name: Install
         run: npm ci
