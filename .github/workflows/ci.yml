@@ -82,9 +82,17 @@ jobs:
         working-directory: mcp-server
         run: npx tsc -p . --noEmit
 
-      - name: Test
+      - name: Test (config)
         working-directory: mcp-server
-        run: npm test
+        run: npx vitest run src/config.test.ts --reporter=verbose
+
+      - name: Test (helpers)
+        working-directory: mcp-server
+        run: npx vitest run src/helpers.test.ts --reporter=verbose
+
+      - name: Test (api-client)
+        working-directory: mcp-server
+        run: npx vitest run src/api-client.test.ts --reporter=verbose
 
       - name: Build
         working-directory: mcp-server
