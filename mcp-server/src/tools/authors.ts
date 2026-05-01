@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import type { ApiClient } from '../api-client.js'
-import { registerTool, jsonText } from '../helpers.js'
+import { registerTool, jsonText, requireDeleteConfirm } from '../helpers.js'
 
 export function registerAuthorTools(server: Server, api: ApiClient, writesEnabled: boolean) {
     registerTool(server, {
@@ -50,8 +50,7 @@ export function registerAuthorTools(server: Server, api: ApiClient, writesEnable
         description: 'Admin: delete author. Requires MCP_WRITES_ENABLED=true and confirm token "DELETE <slug>".',
         inputSchema: z.object({ id: z.string().min(1), slug: z.string().min(1), confirm: z.string().min(1) }),
         handler: async ({ id, slug, confirm }) => {
-            const expected = `DELETE ${slug}`
-            if (confirm !== expected) throw new Error(`confirm must equal "${expected}"`)
+            requireDeleteConfirm(slug, confirm)
             await api.delete(`/api/admin/authors/${id}`)
             return jsonText({ deleted: true, id, slug })
         },
