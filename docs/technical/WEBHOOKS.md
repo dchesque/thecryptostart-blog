@@ -9,6 +9,8 @@ The blog fires HTTP webhooks on selected events so external services
 |-------|--------------|---------|
 | `post.published` | `POST /api/admin/posts/{id}/publish` with `publish: true` | id, slug, title, excerpt, url, publishDate, category, author |
 | `post.unpublished` | same endpoint with `publish: false` | same shape |
+| `comment.received` | `POST /api/comments` (any new comment, including spam) | id, postSlug, authorName, content, status, spamScore, isReply |
+| `comment.moderated` | `PATCH /api/admin/comments/{id}` (status change) | id, postSlug, status, moderatedBy |
 
 More events can be added in the future without breaking consumers — check
 the `type` field.
@@ -18,9 +20,12 @@ the `type` field.
 Three env vars on the blog:
 
 ```bash
-# Comma-separated. Empty/unset disables webhooks for that event.
+# Comma-separated. Empty/unset disables webhooks for that event group.
 PUBLISH_WEBHOOK_URLS="https://hooks.zapier.com/...,https://n8n.example/webhook/post-published"
 UNPUBLISH_WEBHOOK_URLS=""
+# Both comment.received and comment.moderated share this single URL list.
+# Filter by `type` on the consumer side.
+COMMENT_WEBHOOK_URLS="https://discord.com/api/webhooks/<id>/<token>"
 # Optional. If set, every body is signed with HMAC-SHA256 and sent in
 # the X-Webhook-Signature header as "sha256=<hex>".
 WEBHOOK_SECRET="<generate with: openssl rand -hex 32>"
