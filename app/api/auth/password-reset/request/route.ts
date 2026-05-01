@@ -5,6 +5,7 @@ import { randomBytes } from 'crypto'
 import { sendPasswordReset } from '@/lib/email'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { getIP } from '@/lib/rate-limit'
+import { rateLimitHeaders } from '@/lib/rate-limit-headers'
 import { logRequest, logSuccess, logWarn, logError, createTimer } from '@/lib/logger'
 
 const PATH = '/api/auth/password-reset/request'
@@ -32,18 +33,23 @@ export async function POST(req: NextRequest) {
 
         const ip = getIP(req)
         const rl = await checkRateLimit(`pwreset:ip:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)
+        const rlInfo = { limit: RATE_LIMIT_MAX, remaining: rl.remaining, resetAt: rl.resetAt }
         if (rl.limited) {
             logWarn({ method: 'POST', path: PATH, status: 429, extra: { reason: 'Rate limit', ip } })
-            return NextResponse.json({ error: 'Too many requests, slow down.' }, { status: 429 })
+            return NextResponse.json(
+                { error: 'Too many requests, slow down.' },
+                { status: 429, headers: rateLimitHeaders(rlInfo, { include429: true }) },
+            )
         }
 
+        const headers = rateLimitHeaders(rlInfo)
         const email = parsed.data.email.toLowerCase().trim()
 
         // Always respond identically — never leak whether the email exists.
         const user = await prisma.user.findUnique({ where: { email }, select: { id: true } })
         if (!user) {
             logSuccess({ method: 'POST', path: PATH, durationMs: t.ms(), extra: { email, found: false } })
-            return NextResponse.json({ message: 'If the account exists, an email was sent.', success: true })
+            return NextResponse.json({ message: 'If the account exists, an email was sent.', success: true }, { headers })
         }
 
         // Invalidate previous tokens for this user (only the latest is usable)
@@ -63,7 +69,7 @@ export async function POST(req: NextRequest) {
         })
 
         logSuccess({ method: 'POST', path: PATH, durationMs: t.ms(), extra: { email, found: true } })
-        return NextResponse.json({ message: 'If the account exists, an email was sent.', success: true })
+        return NextResponse.json({ message: 'If the account exists, an email was sent.', success: true }, { headers })
     } catch (error) {
         logError({ method: 'POST', path: PATH, error })
         return NextResponse.json({ error: 'Failed to process request' }, { status: 500 })

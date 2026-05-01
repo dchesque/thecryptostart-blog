@@ -7,6 +7,7 @@ import {
     detectSpam,
     logSpam,
 } from '@/lib/spam-prevention'
+import { rateLimitHeaders } from '@/lib/rate-limit-headers'
 import { dispatchWebhook } from '@/lib/webhooks'
 import { logRequest, logSuccess, logWarn, logError, createTimer } from '@/lib/logger'
 
@@ -53,13 +54,14 @@ export async function POST(request: NextRequest) {
         }
 
         // 4. Rate limiting check
-        const isAllowed = await checkRateLimit(clientIP, authorEmail)
-        if (!isAllowed) {
+        const rl = await checkRateLimit(clientIP, authorEmail)
+        const rlInfo = { limit: rl.limit, remaining: rl.remaining, resetAt: rl.resetAt }
+        if (!rl.allowed) {
             await logSpam(authorEmail, clientIP, 'rate_limit', 'medium')
             logWarn({ method: 'POST', path: PATH, status: 429, extra: { reason: 'Rate limit exceeded', ip: clientIP } })
             return NextResponse.json(
                 { error: 'Too many comments. Please try again later.' },
-                { status: 429 }
+                { status: 429, headers: rateLimitHeaders(rlInfo, { include429: true }) },
             )
         }
 
@@ -125,7 +127,7 @@ export async function POST(request: NextRequest) {
                 commentId: comment.id,
                 status: isSpam ? 'SPAM' : 'PENDING',
             },
-            { status: 201 }
+            { status: 201, headers: rateLimitHeaders(rlInfo) },
         )
     } catch (error) {
         logError({ method: 'POST', path: PATH, error })
