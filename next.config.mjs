@@ -1,8 +1,45 @@
+import { execSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import withBundleAnalyzer from '@next/bundle-analyzer';
 // import withPWA from 'next-pwa';
 
+// Build-time release metadata. Surfaced by /api/version.
+function readReleaseMeta() {
+  let version = 'unknown';
+  try {
+    const pkg = JSON.parse(readFileSync('./package.json', 'utf8'));
+    version = pkg.version || 'unknown';
+  } catch {}
+
+  // Allow CI to inject these explicitly (GitHub Actions, EasyPanel build args).
+  // Fall back to a local `git rev-parse` if available.
+  let gitSha = process.env.GIT_SHA || process.env.VERCEL_GIT_COMMIT_SHA || '';
+  let gitBranch = process.env.GIT_BRANCH || process.env.VERCEL_GIT_COMMIT_REF || '';
+  if (!gitSha || !gitBranch) {
+    try {
+      if (!gitSha) gitSha = execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+      if (!gitBranch) gitBranch = execSync('git rev-parse --abbrev-ref HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+    } catch {}
+  }
+
+  return {
+    version,
+    gitSha: gitSha || 'unknown',
+    gitBranch: gitBranch || 'unknown',
+    builtAt: new Date().toISOString(),
+  };
+}
+
+const release = readReleaseMeta();
+
 const nextConfig = {
   output: 'standalone',
+  env: {
+    NEXT_PUBLIC_APP_VERSION: release.version,
+    NEXT_PUBLIC_GIT_SHA: release.gitSha,
+    NEXT_PUBLIC_GIT_BRANCH: release.gitBranch,
+    NEXT_PUBLIC_BUILT_AT: release.builtAt,
+  },
   images: {
     // loader: 'custom',
     // loaderFile: './lib/contentful-loader.ts',
