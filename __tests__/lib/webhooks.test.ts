@@ -45,15 +45,21 @@ describe('verifySignature', () => {
 
 describe('dispatchWebhook', () => {
     const origFetch = global.fetch
-    const origUrls = process.env.PUBLISH_WEBHOOK_URLS
+    const origPubUrls = process.env.PUBLISH_WEBHOOK_URLS
+    const origUnpubUrls = process.env.UNPUBLISH_WEBHOOK_URLS
+    const origCommentUrls = process.env.COMMENT_WEBHOOK_URLS
     const origSecret = process.env.WEBHOOK_SECRET
 
     afterEach(() => {
         global.fetch = origFetch
-        if (origUrls === undefined) delete process.env.PUBLISH_WEBHOOK_URLS
-        else process.env.PUBLISH_WEBHOOK_URLS = origUrls
-        if (origSecret === undefined) delete process.env.WEBHOOK_SECRET
-        else process.env.WEBHOOK_SECRET = origSecret
+        const restore = (k: string, v: string | undefined) => {
+            if (v === undefined) delete process.env[k]
+            else process.env[k] = v
+        }
+        restore('PUBLISH_WEBHOOK_URLS', origPubUrls)
+        restore('UNPUBLISH_WEBHOOK_URLS', origUnpubUrls)
+        restore('COMMENT_WEBHOOK_URLS', origCommentUrls)
+        restore('WEBHOOK_SECRET', origSecret)
     })
 
     it('no-ops when URL list env is missing', async () => {
@@ -112,5 +118,60 @@ describe('dispatchWebhook', () => {
 
         const result = await dispatchWebhook({ type: 'post.published', occurredAt: '2026-01-01T00:00:00Z', data: {} })
         expect(result.attempted).toEqual(['https://broken.example/hook'])
+    })
+
+    it('comment.received uses COMMENT_WEBHOOK_URLS', async () => {
+        delete process.env.PUBLISH_WEBHOOK_URLS
+        process.env.COMMENT_WEBHOOK_URLS = 'https://moderation.example/hook'
+        delete process.env.WEBHOOK_SECRET
+        const calls: any[] = []
+        global.fetch = (async (url: any, init: any) => {
+            calls.push({ url, init })
+            return new Response('ok', { status: 200 })
+        }) as any
+
+        const result = await dispatchWebhook({
+            type: 'comment.received',
+            occurredAt: '2026-01-01T00:00:00Z',
+            data: { id: 'c1', postSlug: 'foo', status: 'PENDING' },
+        })
+        expect(result.attempted).toEqual(['https://moderation.example/hook'])
+        const body = JSON.parse(calls[0].init.body)
+        expect(body.type).toBe('comment.received')
+        expect(body.data.status).toBe('PENDING')
+        expect((calls[0].init.headers as any)['x-webhook-event']).toBe('comment.received')
+    })
+
+    it('comment.moderated reuses the same COMMENT_WEBHOOK_URLS env', async () => {
+        process.env.COMMENT_WEBHOOK_URLS = 'https://moderation.example/hook'
+        delete process.env.PUBLISH_WEBHOOK_URLS
+        const calls: any[] = []
+        global.fetch = (async (url: any, init: any) => {
+            calls.push({ url, init })
+            return new Response('ok', { status: 200 })
+        }) as any
+
+        const result = await dispatchWebhook({
+            type: 'comment.moderated',
+            occurredAt: '2026-01-01T00:00:00Z',
+            data: { id: 'c1', status: 'APPROVED', moderatedBy: 'ADMIN' },
+        })
+        expect(result.attempted).toEqual(['https://moderation.example/hook'])
+        expect(JSON.parse(calls[0].init.body).type).toBe('comment.moderated')
+    })
+
+    it('comment events do NOT fire when COMMENT_WEBHOOK_URLS is unset (even if PUBLISH_WEBHOOK_URLS is set)', async () => {
+        process.env.PUBLISH_WEBHOOK_URLS = 'https://other.example/hook'
+        delete process.env.COMMENT_WEBHOOK_URLS
+        const fetchSpy = jest.fn()
+        global.fetch = fetchSpy as any
+
+        const result = await dispatchWebhook({
+            type: 'comment.received',
+            occurredAt: '2026-01-01T00:00:00Z',
+            data: {},
+        })
+        expect(result.attempted).toEqual([])
+        expect(fetchSpy).not.toHaveBeenCalled()
     })
 })

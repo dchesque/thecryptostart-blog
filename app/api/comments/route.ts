@@ -7,6 +7,7 @@ import {
     detectSpam,
     logSpam,
 } from '@/lib/spam-prevention'
+import { dispatchWebhook } from '@/lib/webhooks'
 import { logRequest, logSuccess, logWarn, logError, createTimer } from '@/lib/logger'
 
 const HONEYPOT_FIELD = 'website'
@@ -101,6 +102,21 @@ export async function POST(request: NextRequest) {
                 parentId: parentId || null,
             },
         })
+
+        // Best-effort webhook notification (Discord/Slack moderation queue)
+        dispatchWebhook({
+            type: 'comment.received',
+            occurredAt: new Date().toISOString(),
+            data: {
+                id: comment.id,
+                postSlug: comment.postSlug,
+                authorName: comment.authorName,
+                content: comment.content,
+                status: comment.status,
+                spamScore: comment.spamScore,
+                isReply: !!comment.parentId,
+            },
+        }).catch(() => {})
 
         logSuccess({ method: 'POST', path: PATH, status: 201, durationMs: t.ms(), extra: { commentId: comment.id, postSlug, status: comment.status } })
         return NextResponse.json(

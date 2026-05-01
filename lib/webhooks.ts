@@ -4,6 +4,9 @@
  * Configuration via env (comma-separated lists):
  *   PUBLISH_WEBHOOK_URLS    — URLs to POST when a post is published
  *   UNPUBLISH_WEBHOOK_URLS  — URLs to POST when a post is unpublished
+ *   COMMENT_WEBHOOK_URLS    — URLs to POST when a comment is created or
+ *                              moderated (any status change). Use this
+ *                              to wire moderation queues to Discord/Slack.
  *   WEBHOOK_SECRET          — optional shared secret for HMAC-SHA256 signing
  *                              (sent in X-Webhook-Signature: sha256=<hex>)
  *
@@ -17,20 +20,31 @@
 import { createHmac, timingSafeEqual } from 'crypto'
 import { logger } from './logger'
 
+export type WebhookEventType =
+    | 'post.published'
+    | 'post.unpublished'
+    | 'comment.received'
+    | 'comment.moderated'
+
 type WebhookEvent = {
-    type: 'post.published' | 'post.unpublished'
+    type: WebhookEventType
     occurredAt: string
     data: Record<string, unknown>
 }
 
 const TIMEOUT_MS = 5_000
 
-function urlsFor(event: WebhookEvent['type']): string[] {
-    const env = event === 'post.published'
-        ? process.env.PUBLISH_WEBHOOK_URLS
-        : process.env.UNPUBLISH_WEBHOOK_URLS
-    if (!env) return []
-    return env.split(',').map((s) => s.trim()).filter(Boolean)
+function urlsFor(event: WebhookEventType): string[] {
+    let raw: string | undefined
+    switch (event) {
+        case 'post.published': raw = process.env.PUBLISH_WEBHOOK_URLS; break
+        case 'post.unpublished': raw = process.env.UNPUBLISH_WEBHOOK_URLS; break
+        case 'comment.received':
+        case 'comment.moderated':
+            raw = process.env.COMMENT_WEBHOOK_URLS; break
+    }
+    if (!raw) return []
+    return raw.split(',').map((s) => s.trim()).filter(Boolean)
 }
 
 export function signPayload(secret: string, body: string): string {

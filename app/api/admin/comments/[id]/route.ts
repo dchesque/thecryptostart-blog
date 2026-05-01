@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { logRequest, logSuccess, logWarn, logError, createTimer } from '@/lib/logger'
 import { checkApiAuth } from '@/lib/auth-check'
+import { dispatchWebhook } from '@/lib/webhooks'
 
 const PATH = '/api/admin/comments/[id]'
 
@@ -34,6 +35,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         })
 
         if (comment.postSlug) revalidatePath(`/blog/${comment.postSlug}`)
+
+        dispatchWebhook({
+            type: 'comment.moderated',
+            occurredAt: new Date().toISOString(),
+            data: {
+                id: comment.id,
+                postSlug: comment.postSlug,
+                status: comment.status,
+                moderatedBy: 'ADMIN',
+            },
+        }).catch(() => {})
 
         logSuccess({ method: 'PATCH', path: PATH, durationMs: t.ms(), extra: { id, status: comment.status } })
         return NextResponse.json(comment)
